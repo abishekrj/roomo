@@ -1,0 +1,304 @@
+(() => {
+  "use strict";
+  const API = "http://localhost:5001/api";
+  const TOKEN_KEY = "roomoAdminToken";
+  const $ = (id) => document.getElementById(id);
+  let token = sessionStorage.getItem(TOKEN_KEY);
+  let properties = [];
+  const currentPage = document.body.dataset.page || "dashboard";
+
+  function notice(message, type = "info") {
+    const el = $("pageNotice");
+    if (!el) return;
+    el.textContent = message;
+    el.className = `notice show ${type}`;
+  }
+
+  async function request(path, options = {}) {
+    const headers = {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+    let response;
+    try {
+      response = await fetch(`${API}${path}`, { ...options, headers });
+    } catch {
+      throw new Error("Cannot connect to ROOMO API. Make sure the backend is running on port 5001.");
+    }
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        token = null;
+      }
+      throw new Error(data.message || `Request failed (${response.status}).`);
+    }
+    return data;
+  }
+
+  function formatPrice(value) {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value) || 0);
+  }
+  function statusBadge(status) {
+    const span = document.createElement("span");
+    span.className = `status status-${String(status).toLowerCase()}`;
+    span.textContent = status;
+    return span;
+  }
+  function cell(row, value) {
+    const td = document.createElement("td");
+    td.textContent = value == null ? "" : String(value);
+    row.appendChild(td);
+    return td;
+  }
+  function propertyCell(row, p) {
+    const td = document.createElement("td");
+    const title = document.createElement("div");
+    title.className = "property-name";
+    title.textContent = p.title;
+    const loc = document.createElement("div");
+    loc.className = "property-location";
+    loc.textContent = [p.city, p.state].filter(Boolean).join(", ");
+    td.append(title, loc);
+    row.appendChild(td);
+  }
+  async function loadProperties() {
+    const result = await request("/admin/properties");
+    properties = Array.isArray(result.properties) ? result.properties : [];
+    renderPage();
+  }
+  function renderDashboard() {
+    if (!$ ("totalCount")) return;
+    $("totalCount").textContent = properties.length;
+    $("publishedCount").textContent = properties.filter(p => p.status === "PUBLISHED").length;
+    const body = $("recentTableBody");
+    if (!body) return;
+    body.replaceChildren();
+    properties.slice(0, 5).forEach(p => {
+      const row = document.createElement("tr");
+      propertyCell(row, p);
+      cell(row, formatPrice(p.nightlyPrice));
+      const td = document.createElement("td");
+      td.appendChild(statusBadge(p.status));
+      row.appendChild(td);
+      body.appendChild(row);
+    });
+    $("recentEmpty").classList.toggle("hidden", properties.length > 0);
+  }
+
+  function renderRooms() {
+    const body = $("propertyTableBody");
+    if (!body) return;
+    body.replaceChildren();
+    $("emptyState").classList.toggle("hidden", properties.length > 0);
+    properties.forEach(p => {
+      const row = document.createElement("tr");
+      propertyCell(row, p);
+      cell(row, formatPrice(p.nightlyPrice));
+      cell(row, p.maxGuests);
+      const statusCell = cell(row, "");
+      statusCell.appendChild(statusBadge(p.status));
+      const statusAction = cell(row, "");
+      const select = document.createElement("select");
+      select.className = "status-select";
+      select.setAttribute("aria-label", `Change status for ${p.title}`);
+      ["DRAFT", "PUBLISHED", "ARCHIVED"].forEach(st => {
+        const option = document.createElement("option");
+        option.value = st;
+        option.textContent = st;
+        option.selected = p.status === st;
+        select.appendChild(option);
+      });
+      select.addEventListener("change", async () => {
+        const previousStatus = p.status;
+        select.disabled = true;
+        try {
+          await request(`/admin/properties/${encodeURIComponent(p.id)}/status`, { method: "PATCH", body: JSON.stringify({ status: select.value }) });
+          notice("Property status updated successfully.", "success");
+          await loadProperties();
+        } catch (error) {
+          notice(error.message, "error");
+          select.value = previousStatus;
+        } finally {
+          select.disabled = false;
+        }
+      });
+      statusAction.appendChild(select);
+      const actions = cell(row, "");
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "button button-secondary";
+      editButton.textContent = "Edit";
+      editButton.addEventListener("click", () => beginEdit(p));
+      actions.appendChild(editButton);
+      body.appendChild(row);
+    });
+  }
+
+  function renderReports() {
+    const count = status => properties.filter(p => p.status === status).length;
+    const total = properties.length;
+    [["reportTotal", total], ["reportPublished", count("PUBLISHED")], ["reportDraft", count("DRAFT")], ["reportArchived", count("ARCHIVED")]].forEach(([id, n]) => {
+      if ($(id)) $(id).textContent = n;
+    });
+    const width = n => `${total ? Math.round(n / total * 100) : 0}%`;
+    if ($("reportTotalBar")) $("reportTotalBar").style.width = total ? "100%" : "0%";
+    if ($("reportPublishedBar")) $("reportPublishedBar").style.width = width(count("PUBLISHED"));
+    if ($("reportDraftBar")) $("reportDraftBar").style.width = width(count("DRAFT"));
+    if ($("reportArchivedBar")) $("reportArchivedBar").style.width = width(count("ARCHIVED"));
+  }
+  function renderPage() {
+    if (currentPage === "dashboard") renderDashboard();
+    if (currentPage === "rooms") renderRooms();
+    if (currentPage === "reports") renderReports();
+  }
+
+  function fillForm(p) {
+    $("title").value = p.title || "";
+    $("propertyType").value = p.propertyType || "";
+    $("nightlyPrice").value = p.nightlyPrice ?? "";
+    $("description").value = p.description || "";
+    $("address").value = p.address || "";
+    $("city").value = p.city || "";
+    $("state").value = p.state || "";
+    $("country").value = p.country || "India";
+    $("postalCode").value = p.postalCode || "";
+    $("maxGuests").value = p.maxGuests ?? 2;
+    $("bedrooms").value = p.bedrooms ?? 1;
+    $("bathrooms").value = p.bathrooms ?? 1;
+    $("initialStatus").value = p.status === "ARCHIVED" ? "DRAFT" : (p.status || "DRAFT");
+    const imageUrls = Array.isArray(p.images) ? p.images.map(image => image.imageUrl) : [];
+    $("imageUrls").value = imageUrls.join("\n");
+  }
+  function beginEdit(p) {
+    $("editingPropertyId").value = p.id;
+    fillForm(p);
+    $("propertyFormTitle").textContent = "Edit Property";
+    $("propertyFormDescription").textContent = "Update the property details below and save your changes.";
+    $("createButton").textContent = "Save changes";
+    $("cancelEditButton").classList.remove("hidden");
+    $("clearFormButton").classList.add("hidden");
+    $("propertyFormPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("title").focus({ preventScroll: true });
+  }
+  function resetPropertyForm() {
+    const form = $("propertyForm");
+    if (!form) return;
+    form.reset();
+    $("editingPropertyId").value = "";
+    $("propertyFormTitle").textContent = "Add New Property";
+    $("propertyFormDescription").textContent = "Save a listing as a draft or publish it immediately.";
+    $("createButton").textContent = "Create property";
+    $("cancelEditButton").classList.add("hidden");
+    $("clearFormButton").classList.remove("hidden");
+    $("country").value = "India";
+    $("maxGuests").value = 2;
+    $("bedrooms").value = 1;
+    $("bathrooms").value = 1;
+    $("initialStatus").value = "DRAFT";
+  }
+  function collectPropertyPayload() {
+    const imageUrls = $("imageUrls").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+    if (imageUrls.length > 10) throw new Error("Please enter no more than 10 image URLs.");
+    for (const url of imageUrls) {
+      let parsed;
+      try { parsed = new URL(url); } catch { throw new Error(`Invalid image URL: ${url}`); }
+      if (parsed.protocol !== "https:") throw new Error("Image URLs must use HTTPS.");
+    }
+    return {
+      title: $("title").value.trim(),
+      propertyType: $("propertyType").value,
+      nightlyPrice: Number($("nightlyPrice").value),
+      description: $("description").value.trim(),
+      address: $("address").value.trim(),
+      city: $("city").value.trim(),
+      state: $("state").value.trim(),
+      country: $("country").value.trim(),
+      postalCode: $("postalCode").value.trim() || null,
+      maxGuests: Number($("maxGuests").value),
+      bedrooms: Number($("bedrooms").value),
+      bathrooms: Number($("bathrooms").value),
+      imageUrls,
+      status: $("initialStatus").value
+    };
+  }
+
+  async function init() {
+    const logout = $("logoutButton");
+    if (logout) logout.addEventListener("click", () => {
+      sessionStorage.removeItem(TOKEN_KEY);
+      location.href = "admin.html";
+    });
+
+    if (currentPage === "login") {
+      const form = $("loginForm");
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const button = $("loginButton");
+        button.disabled = true;
+        button.textContent = "Signing in…";
+        try {
+          const result = await request("/auth/login", { method: "POST", body: JSON.stringify({ email: $("loginEmail").value.trim(), password: $("loginPassword").value }) });
+          if (!result.token) throw new Error("Login response did not include a token.");
+          token = result.token;
+          sessionStorage.setItem(TOKEN_KEY, token);
+          await request("/admin/properties");
+          location.href = "dashboard.html";
+        } catch (error) {
+          notice(error.message, "error");
+        } finally {
+          button.disabled = false;
+          button.textContent = "Sign in to dashboard";
+        }
+      });
+      return;
+    }
+
+    if (!token) { location.replace("admin.html"); return; }
+    try { await loadProperties(); }
+    catch (error) {
+      sessionStorage.removeItem(TOKEN_KEY);
+      notice(error.message, "error");
+      setTimeout(() => location.replace("admin.html"), 700);
+    }
+
+    const refresh = $("refreshButton") || $("reportsRefreshButton");
+    if (refresh) refresh.addEventListener("click", async () => {
+      refresh.disabled = true;
+      try { await loadProperties(); notice("Data refreshed.", "success"); }
+      catch (error) { notice(error.message, "error"); }
+      finally { refresh.disabled = false; }
+    });
+    const add = $("addPropertyButton"), panel = $("propertyFormPanel");
+    if (add && panel) add.addEventListener("click", () => { resetPropertyForm(); panel.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    if ($("cancelEditButton")) $("cancelEditButton").addEventListener("click", resetPropertyForm);
+    const form = $("propertyForm");
+    if (form) {
+      form.addEventListener("reset", () => {
+        // Native form reset is retained for the Add New Property flow.
+      });
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        const button = $("createButton");
+        const editingId = $("editingPropertyId").value;
+        button.disabled = true;
+        button.textContent = editingId ? "Saving changes…" : "Creating property…";
+        try {
+          const payload = collectPropertyPayload();
+          const path = editingId ? `/admin/properties/${encodeURIComponent(editingId)}` : "/admin/properties";
+          const method = editingId ? "PATCH" : "POST";
+          await request(path, { method, body: JSON.stringify(payload) });
+          resetPropertyForm();
+          notice(editingId ? "Property updated successfully." : "Property created successfully.", "success");
+          await loadProperties();
+        } catch (error) {
+          notice(error.message, "error");
+        } finally {
+          button.disabled = false;
+          button.textContent = $("editingPropertyId").value ? "Save changes" : "Create property";
+        }
+      });
+    }
+  }
+  document.addEventListener("DOMContentLoaded", init);
+})();

@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id           String     @id @default(uuid()) @db.Uuid
+  fullName     String     @map("full_name")
+  role         String     @default("OWNER")
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  properties   Property[]
+
+  @@map("owners")
+}
+
+model Property {
+  id            String         @id @default(uuid()) @db.Uuid
+  ownerId       String         @db.Uuid @map("owner_id")
+  title         String
+  description   String         @db.Text
+  propertyType  String         @map("property_type")
+  address       String
+  city          String
+  state         String
+  country       String         @default("India")
+  postalCode    String?        @map("postal_code")
+  nightlyPrice  Decimal        @db.Decimal(10, 2) @map("nightly_price")
+  maxGuests     Int            @map("max_guests")
+  bedrooms      Int            @default(1)
+  bathrooms     Int            @default(1)
+  status        PropertyStatus @default(DRAFT)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  owner         Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images        PropertyImage[]
+
+  @@index([ownerId])
+  @@index([city, status])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid @map("property_id")
+  imageUrl   String   @map("image_url")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+enum PropertyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
