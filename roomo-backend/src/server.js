@@ -9,6 +9,7 @@ const prisma = require("./lib/prisma");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const propertyRoutes = require("./routes/properties");
+const homepageRoutes = require("./routes/homepage");
 const authenticateToken = require("./middleware/auth");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -61,6 +62,7 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
   }
 });
 
+app.use("/api/homepage", homepageRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/admin", adminRoutes);
 
