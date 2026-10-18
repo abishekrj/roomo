@@ -8,7 +8,9 @@ const rateLimit = require("express-rate-limit");
 const prisma = require("./lib/prisma");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
+const adminHomepageRoutes = require("./routes/adminHomepage");
 const propertyRoutes = require("./routes/properties");
+const homepageRoutes = require("./routes/homepage");
 const authenticateToken = require("./middleware/auth");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -61,8 +63,10 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
   }
 });
 
+app.use("/api/homepage", homepageRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/homepage", adminHomepageRoutes);
 
 app.use((error, req, res, next) => {
   console.error("API error:", error.message);
