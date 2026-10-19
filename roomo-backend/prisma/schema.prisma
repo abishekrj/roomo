@@ -97,3 +97,11 @@ model GalleryItem {
   @@index([status, type, sortOrder])
   @@map("gallery_items")
 }
+
+model GalleryConfig {
+  id          Int      @id @default(1)
+  initialized Boolean  @default(false)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("gallery_config")
+}
