@@ -379,7 +379,7 @@ if (document.body.classList.contains("stay-details-page")) {
   })();
 }
 
-// ROOMO guest authentication — email/password and Google Identity Services
+// ROOMO guest authentication — email and password
 (function () {
   "use strict";
 
@@ -394,7 +394,6 @@ if (document.body.classList.contains("stay-details-page")) {
   const form = $("authForm");
   const messageBox = $("message");
   const submitBtn = $("submitBtn");
-  const googleMount = $("googleBtnMount");
   const switchText = $("switchText");
   const passwordInput = $("password");
   const fullNameInput = $("fullName");
@@ -405,8 +404,6 @@ if (document.body.classList.contains("stay-details-page")) {
 
   let mode = body.dataset.authPage;
   let busy = false;
-  let googleClientId = null;
-  let googleReady = false;
 
   function showMessage(message, type = "error") {
     messageBox.textContent = message;
@@ -420,10 +417,6 @@ if (document.body.classList.contains("stay-details-page")) {
     busy = value;
     submitBtn.disabled = value;
     submitBtn.style.opacity = value ? "0.65" : "1";
-    if (googleMount) {
-      googleMount.style.opacity = value ? "0.65" : "1";
-      googleMount.style.pointerEvents = value ? "none" : "auto";
-    }
     submitBtn.textContent = value ? "PLEASE WAIT…" : mode === "signup" ? "CREATE ACCOUNT" : "SIGN IN";
   }
   function setMode(nextMode) {
@@ -506,72 +499,13 @@ if (document.body.classList.contains("stay-details-page")) {
       const data = await sendGuestAuthRequest(mode === "signup" ? "/register" : "/login",
         mode === "signup" ? { fullName: fullNameInput.value.trim(), email, password } : { email, password });
       saveGuestSession(data);
-      showMessage(mode === "signup" ? "Your ROOMO guest account has been created successfully." : "You are signed in successfully.", "success");
+      showMessage(mode === "signup" ? "Your ROOMO account has been created successfully. You are now signed in." : "You are signed in successfully.", "success");
     } catch (error) {
       showMessage(error.message || "Unable to authenticate. Please try again.");
     } finally {
       setBusy(false);
     }
   });
-
-  // Google Identity Services returns an ID credential; the backend verifies it before creating a session.
-  window.handleRoomoGoogleCredential = async function (response) {
-    if (!response?.credential || busy) {
-      showMessage("Google sign-in did not return a valid credential.");
-      return;
-    }
-    setBusy(true);
-    clearMessage();
-    try {
-      const data = await sendGuestAuthRequest("/google", { credential: response.credential });
-      saveGuestSession(data);
-      showMessage("You are signed in with Google successfully.", "success");
-    } catch (error) {
-      showMessage(error.message || "Google sign-in failed. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  async function initializeGoogleSignIn() {
-    if (!googleMount) return;
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/guest-auth/config`, { cache: "no-store" });
-      const config = await response.json();
-      googleClientId = config.googleClientId;
-      if (!googleClientId) {
-        googleMount.innerHTML = '<button class="google-btn" type="button" id="googleUnavailable"><span class="google-g">G</span><span>Continue with Google</span></button>';
-        $("googleUnavailable")?.addEventListener("click", () => showMessage("Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID to the backend environment, then restart the server."));
-        return;
-      }
-      const loadGoogleScript = () => new Promise((resolve, reject) => {
-        if (window.google?.accounts?.id) return resolve();
-        const script = document.createElement("script");
-        script.src = "https://accounts.google.com/gsi/client";
-        script.async = true;
-        script.defer = true;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-      await loadGoogleScript();
-      window.google.accounts.id.initialize({
-        client_id: googleClientId,
-        callback: window.handleRoomoGoogleCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
-      window.google.accounts.id.renderButton(googleMount, {
-        type: "standard", theme: "outline", size: "large", text: mode === "signup" ? "signup_with" : "signin_with",
-        shape: "rectangular", logo_alignment: "left", width: Math.max(240, Math.floor(googleMount.getBoundingClientRect().width || 320))
-      });
-      googleReady = true;
-    } catch (error) {
-      console.error("ROOMO Google sign-in initialization failed.", error);
-      googleMount.innerHTML = '<button class="google-btn" type="button" id="googleUnavailable"><span class="google-g">G</span><span>Continue with Google</span></button>';
-      $("googleUnavailable")?.addEventListener("click", () => showMessage("Google sign-in could not load. Check your connection and Google OAuth configuration."));
-    }
-  }
 
   $("togglePassword")?.addEventListener("click", () => {
     const visible = passwordInput.type === "password";
@@ -585,7 +519,6 @@ if (document.body.classList.contains("stay-details-page")) {
   });
 
   setMode(mode);
-  initializeGoogleSignIn();
 
   window.ROOMO_GUEST_AUTH = {
     getToken() { return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY); },
