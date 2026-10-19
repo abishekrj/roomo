@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authenticateToken, requireAdmin);
 
 const testimonialSchema = z.object({
+  eyebrow: z.string().trim().min(1).max(100),
   title: z.string().trim().min(1).max(160),
   description: z.string().trim().min(1).max(500),
   ratingSummary: z.string().trim().min(1).max(100),
