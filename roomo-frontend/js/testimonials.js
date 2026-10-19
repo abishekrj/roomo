@@ -28,7 +28,7 @@
       const stars=text("div","mb-2 text-warning","★".repeat(Math.max(0,Math.min(5,Number(item.rating)||5))));
       const quote=text("p","small flex-grow-1", "“"+(item.quote||"")+"”");
       const author=text("div","d-flex align-items-center gap-3 pt-3 border-top mt-2");
-      const initials=(item.name||"D").trim().split(/\\s+/).slice(0,2).map(part=>part.charAt(0)).join("").toUpperCase();
+      const initials=(item.name||"D").trim().split(" ").filter(Boolean).slice(0,2).map(part=>part.charAt(0)).join("").toUpperCase();
       const avatar=text("div","rounded-circle d-flex align-items-center justify-content-center text-white fw-bold font-cinzel",initials);
       Object.assign(avatar.style,{width:"44px",height:"44px",flex:"0 0 44px",background:"#1e3a8a"});
       const info=text("div","");
