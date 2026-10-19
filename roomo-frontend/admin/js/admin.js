@@ -5,6 +5,7 @@
   const $ = (id) => document.getElementById(id);
   let token = sessionStorage.getItem(TOKEN_KEY);
   let properties = [];
+  let imageItems = [];
   const currentPage = document.body.dataset.page || "dashboard";
 
   function notice(message, type = "info") {
@@ -34,6 +35,47 @@
       throw new Error(data.message || `Request failed (${response.status}).`);
     }
     return data;
+  }
+
+  function renderPropertyImages() {
+    const manager = $("propertyImageManager");
+    if (!manager) return;
+    manager.replaceChildren();
+    imageItems.forEach((item, index) => {
+      const card = document.createElement("div"); card.className = "property-image-item";
+      const img = document.createElement("img"); img.alt = "Property image " + (index + 1); img.src = item.previewUrl || item.imageUrl;
+      const label = document.createElement("label");
+      const radio = document.createElement("input"); radio.type = "radio"; radio.name = "mainPropertyImage"; radio.checked = index === 0;
+      radio.addEventListener("change", () => { imageItems = [imageItems[index], ...imageItems.filter((_, i) => i !== index)]; renderPropertyImages(); });
+      label.append(radio, document.createTextNode("Main image"));
+      const remove = document.createElement("button"); remove.type = "button"; remove.className = "button button-secondary"; remove.textContent = "Remove";
+      remove.addEventListener("click", () => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); imageItems.splice(index, 1); renderPropertyImages(); });
+      card.append(img, label, remove); manager.appendChild(card);
+    });
+  }
+  function addSelectedImageFiles() {
+    const input = $("propertyImages"); const files = Array.from(input?.files || []); if (!files.length) return;
+    const remaining = 10 - imageItems.length;
+    if (files.length > remaining) notice("A property can have up to 10 images total. You can add " + Math.max(0, remaining) + " more.", "error");
+    files.slice(0, Math.max(0, remaining)).forEach(file => {
+      if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type)) { notice("Use JPG, PNG, WebP, or AVIF images only.", "error"); return; }
+      if (file.size > 8 * 1024 * 1024) { notice(file.name + " is larger than 8 MB.", "error"); return; }
+      imageItems.push({ file: file, previewUrl: URL.createObjectURL(file), imageUrl: "" });
+    });
+    input.value = ""; renderPropertyImages();
+  }
+  async function uploadPendingPropertyImages() {
+    const pending = imageItems.filter(item => item.file); if (!pending.length) return;
+    const form = new FormData(); pending.forEach(item => form.append("images", item.file));
+    const response = await fetch(API + "/admin/property-images/upload", { method: "POST", headers: token ? { Authorization: "Bearer " + token } : {}, body: form });
+    const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Property image upload failed.");
+    let uploadedIndex = 0;
+    imageItems = imageItems.map(item => {
+      if (!item.file) return item;
+      const uploaded = data.images && data.images[uploadedIndex++]; if (!uploaded || !uploaded.imageUrl) throw new Error("The server did not return an image URL.");
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl); return { imageUrl: uploaded.imageUrl };
+    });
+    renderPropertyImages();
   }
 
   function formatPrice(value) {
@@ -167,8 +209,13 @@
     $("bedrooms").value = p.bedrooms ?? 1;
     $("bathrooms").value = p.bathrooms ?? 1;
     $("initialStatus").value = p.status === "ARCHIVED" ? "DRAFT" : (p.status || "DRAFT");
-    const imageUrls = Array.isArray(p.images) ? p.images.map(image => image.imageUrl) : [];
-    $("imageUrls").value = imageUrls.join("\n");
+    imageItems.forEach(item => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); });
+    imageItems = (Array.isArray(p.images) ? [...p.images].sort((a, b) => a.sortOrder - b.sortOrder).map(image => ({ imageUrl: image.imageUrl })) : []);
+    $("imageUrls").value = "";
+    $("propertyImages").value = "";
+    $("isFeatured").checked = Boolean(p.isFeatured);
+    $("featuredSortOrder").value = p.featuredSortOrder ?? 0;
+    renderPropertyImages();
   }
   function beginEdit(p) {
     $("editingPropertyId").value = p.id;
