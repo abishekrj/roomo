@@ -62,8 +62,19 @@ router.get("/", async (req, res, next) => {
       }
       await prisma.galleryConfig.upsert({
         where: { id: 1 },
-        create: { id: 1, initialized: true },
-        update: { initialized: true }
+        create: { id: 1, initialized: true, sampleVideosInitialized: true },
+        update: { initialized: true, sampleVideosInitialized: true }
+      });
+      items = await prisma.galleryItem.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }] });
+    } else if (!config.sampleVideosInitialized) {
+      const sampleVideos = defaults.filter(item => item.type === "VIDEO");
+      for (const sample of sampleVideos) {
+        const existing = await prisma.galleryItem.findFirst({ where: { title: sample.title } });
+        if (!existing) await prisma.galleryItem.create({ data: sample });
+      }
+      await prisma.galleryConfig.update({
+        where: { id: 1 },
+        data: { sampleVideosInitialized: true }
       });
       items = await prisma.galleryItem.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }] });
     }
