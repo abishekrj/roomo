@@ -33,17 +33,22 @@
     if(state.uploadedType && state.uploadedType!==type) { state.uploadedUrl="";state.uploadedType=""; }
     $("mediaPreview").classList.add("hidden");
   }
-  async function uploadFile() {
+  async function uploadSelectedFile() {
     const file=$("mediaFile").files[0], type=$("mediaType").value;
-    if(!file) return notice("Choose a file before uploading.","error");
+    if(!file) throw new Error("Choose an image file before saving, or switch to Direct URL.");
     const max=type==="VIDEO"?100*1024*1024:8*1024*1024;
-    if(file.size>max) return notice("This file is too large. Maximum size is "+(type==="VIDEO"?"100 MB":"8 MB")+".","error");
+    if(file.size>max) throw new Error("This file is too large. Maximum size is "+(type==="VIDEO"?"100 MB":"8 MB")+".");
+    const form=new FormData(); form.append("file",file);
+    const data=await request("/admin/gallery/upload?type="+type.toLowerCase(),{method:"POST",body:form});
+    if(!data.mediaUrl) throw new Error("The upload finished, but the server did not return a media URL. Please try again.");
+    state.uploadedUrl=data.mediaUrl;state.uploadedType=type;$("mediaUrl").value=data.mediaUrl;
+    $("mediaPreview").src=type==="IMAGE"?data.mediaUrl:URL.createObjectURL(file);$("mediaPreview").classList.remove("hidden");
+    return data.mediaUrl;
+  }
+  async function uploadFile() {
     const button=$("uploadMediaButton"); button.disabled=true; button.textContent="Uploading…";
     try {
-      const form=new FormData(); form.append("file",file);
-      const data=await request("/admin/gallery/upload?type="+type.toLowerCase(),{method:"POST",body:form});
-      state.uploadedUrl=data.mediaUrl;state.uploadedType=type;$("mediaUrl").value=data.mediaUrl;
-      $("mediaPreview").src=type==="IMAGE"?data.mediaUrl:URL.createObjectURL(file);$("mediaPreview").classList.remove("hidden");
+      await uploadSelectedFile();
       notice("Upload complete. Save the gallery item to keep it in the library.","success");
     } catch(error) { notice(error.message,"error"); }
     finally { button.disabled=false;button.textContent="Upload selected file"; }
@@ -86,7 +91,14 @@
     event.preventDefault();
     const type=$("mediaType").value, sourceType=$("sourceType").value;
     let mediaUrl=sourceType==="UPLOAD"?(state.uploadedUrl||$("mediaUrl").value.trim()):$("mediaUrl").value.trim();
-    if(sourceType==="UPLOAD" && (!mediaUrl || state.uploadedType!==type)) return notice("Upload a file before saving this item.","error");
+    if(sourceType==="UPLOAD" && (!mediaUrl || state.uploadedType!==type)) {
+      const selectedFile=$("mediaFile").files[0];
+      if(!selectedFile) return notice("Choose an image file first. You can then click Upload selected file or Save gallery item to upload it automatically.","error");
+      const button=$("saveMediaButton"); button.disabled=true; button.textContent="Uploading and saving…";
+      try { mediaUrl=await uploadSelectedFile(); }
+      catch(error) { notice(error.message,"error"); return; }
+      finally { button.disabled=false; button.textContent=$("editingId").value?"Update gallery item":"Save gallery item"; }
+    }
     if(sourceType==="YOUTUBE") { mediaUrl=normalizeYoutube(mediaUrl); if(!/youtube(?:-nocookie)?\.com\/embed\//i.test(mediaUrl)) return notice("Enter a valid YouTube URL.","error"); }
     const payload={title:$("mediaTitle").value.trim(),description:$("mediaDescription").value.trim(),type,sourceType,mediaUrl,thumbnailUrl:$("thumbnailUrl").value.trim()||null,status:$("mediaStatus").value,sortOrder:Number($("sortOrder").value)||0};
     const id=$("editingId").value;
