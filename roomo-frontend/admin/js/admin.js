@@ -243,13 +243,21 @@
     $("bedrooms").value = 1;
     $("bathrooms").value = 1;
     $("initialStatus").value = "DRAFT";
+    imageItems.forEach(item => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); });
+    imageItems = [];
+    if ($("propertyImages")) $("propertyImages").value = "";
+    if ($("imageUrls")) $("imageUrls").value = "";
+    if ($("isFeatured")) $("isFeatured").checked = false;
+    if ($("featuredSortOrder")) $("featuredSortOrder").value = 0;
+    renderPropertyImages();
   }
   function collectPropertyPayload() {
-    const imageUrls = $("imageUrls").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
-    if (imageUrls.length > 10) throw new Error("Please enter no more than 10 image URLs.");
-    for (const url of imageUrls) {
+    const urlImages = $("imageUrls").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+    const imageUrls = [...imageItems.map(item => item.imageUrl).filter(Boolean), ...urlImages];
+    if (imageUrls.length + imageItems.filter(item => item.file).length > 10) throw new Error("Please use no more than 10 images per property.");
+    for (const url of urlImages) {
       let parsed;
-      try { parsed = new URL(url); } catch { throw new Error(`Invalid image URL: ${url}`); }
+      try { parsed = new URL(url); } catch { throw new Error("Invalid image URL: " + url); }
       if (parsed.protocol !== "https:") throw new Error("Image URLs must use HTTPS.");
     }
     return {
@@ -266,6 +274,8 @@
       bedrooms: Number($("bedrooms").value),
       bathrooms: Number($("bathrooms").value),
       imageUrls,
+      isFeatured: $("isFeatured").checked,
+      featuredSortOrder: Number($("featuredSortOrder").value || 0),
       status: $("initialStatus").value
     };
   }
@@ -319,6 +329,7 @@
     const add = $("addPropertyButton"), panel = $("propertyFormPanel");
     if (add && panel) add.addEventListener("click", () => { resetPropertyForm(); panel.scrollIntoView({ behavior: "smooth", block: "start" }); });
     if ($("cancelEditButton")) $("cancelEditButton").addEventListener("click", resetPropertyForm);
+    if ($("propertyImages")) $("propertyImages").addEventListener("change", addSelectedImageFiles);
     const form = $("propertyForm");
     if (form) {
       form.addEventListener("reset", () => {
@@ -331,7 +342,9 @@
         button.disabled = true;
         button.textContent = editingId ? "Saving changes…" : "Creating property…";
         try {
+          await uploadPendingPropertyImages();
           const payload = collectPropertyPayload();
+          payload.imageUrls = [...imageItems.map(item => item.imageUrl).filter(Boolean), ...payload.imageUrls.filter(url => !imageItems.some(item => item.imageUrl === url))];
           const path = editingId ? `/admin/properties/${encodeURIComponent(editingId)}` : "/admin/properties";
           const method = editingId ? "PATCH" : "POST";
           await request(path, { method, body: JSON.stringify(payload) });
