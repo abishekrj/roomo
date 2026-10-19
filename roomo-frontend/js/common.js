@@ -340,7 +340,10 @@ if (document.body.classList.contains("stay-details-page")) {
         price: Number(property.nightlyPrice || 0),
         img: property.images?.[0]?.imageUrl || "",
         images: (property.images || []).map(image => image.imageUrl).filter(Boolean),
-        desc: property.description || ""
+        desc: property.description || "",
+        amenities: Array.isArray(property.amenities) ? property.amenities : [],
+        nearbyLandmarks: Array.isArray(property.nearbyLandmarks) ? property.nearbyLandmarks : [],
+        perks: Array.isArray(property.perks) ? property.perks : []
       } : legacyRoom;
       if (room) {
         stay = {
@@ -348,8 +351,9 @@ if (document.body.classList.contains("stay-details-page")) {
           id: room.id, name: room.name, type: room.type || "Sanctuary stay",
           location: room.location, rating: Number(room.rating || 0), reviews: Number(room.reviews || 0),
           price: Number(room.price || 0), img: room.img, images: room.images || (stay && stay.images) || [], desc: room.desc,
-          amenities: (stay && stay.amenities) || ["wifi", "parking", "hotwater", "quiet"],
-          perks: (stay && stay.perks) || ["Peaceful sanctuary setting", "Convenient sacred-district access"]
+          amenities: Array.isArray(room.amenities) ? room.amenities : ((stay && stay.amenities) || []),
+          nearbyLandmarks: Array.isArray(room.nearbyLandmarks) ? room.nearbyLandmarks : [],
+          perks: Array.isArray(room.perks) ? room.perks : ((stay && stay.perks) || [])
         };
       }
     }
@@ -357,14 +361,16 @@ if (document.body.classList.contains("stay-details-page")) {
   const root = document.getElementById("stayDetails");
   if (stay && root) {
     const amenityLabels = {wifi:"Free Wi-Fi",parking:"Free parking",ac:"Air conditioning",breakfast:"Breakfast included",view:"Arunachala / sacred views",hotwater:"24-hour hot water",private:"Private bathroom",quiet:"Quiet / meditation space",family:"Family-friendly options",accessible:"Accessibility features"};
-    const amenities = stay.amenities.map(key => `<span class="detail-amenity"><i class="bi bi-check-circle-fill"></i>${amenityLabels[key] || key}</span>`).join("");
+    const amenities = (stay.amenities || []).map(key => `<span class="detail-amenity"><i class="bi bi-check-circle-fill"></i>${amenityLabels[key] || key}</span>`).join("");
+    const landmarkLabels = {"annamalaiyar-temple":"Arunachaleswarar / Annamalaiyar Temple","sri-ramanasramam":"Sri Ramanasramam","girivalam-path":"Girivalam path","arunachala-hill":"Arunachala Hill","skandashramam":"Skandashramam","virupaksha-cave":"Virupaksha Cave","sathanur-dam":"Sathanur Dam","central-bus-stand":"Central Bus Stand","railway-station":"Tiruvannamalai Railway Station","yogi-ram-surathkumar-ashram":"Yogi Ramsuratkumar Ashram"};
+    const landmarks = (stay.nearbyLandmarks || []).map(key => `<div><i class="bi bi-geo-alt"></i><span><strong>${landmarkLabels[key] || key}</strong><small>Nearby landmark selected for this property</small></span></div>`).join("");
     const checkin = params.get("checkin") || ""; const checkout = params.get("checkout") || "";
     root.innerHTML = `<div class="detail-crumb"><a href="code.html">Home</a><i class="bi bi-chevron-right"></i><a href="roomo-search-results.html${location.search}">Blessed Stays</a><i class="bi bi-chevron-right"></i><span>${stay.name}</span></div>
       <section class="detail-hero"><div><span class="detail-eyebrow"><i class="bi bi-patch-check-fill"></i> ROOMO Sacred · Curated stay</span><h1>${stay.name}</h1><p><i class="bi bi-geo-alt-fill"></i> ${stay.location}</p><div class="detail-rating"><span>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></span> ${stay.reviews} guest reviews · ${stay.type}</div></div><button class="detail-outline" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back to results</button></section>
       <div class="detail-gallery"><div class="detail-gallery-main"><img id="detailMainImage" src="${(stay.images && stay.images[0]) || stay.img}" alt="${stay.name} accommodation" /></div><div class="detail-gallery-side">${((stay.images && stay.images.length ? stay.images.slice(1,5) : [stay.img]).filter(Boolean).map((image,index)=>'<button class="detail-gallery-thumb" type="button" data-gallery-image="'+String(image).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" aria-label="View property photo '+(index+2)+'"><img src="'+String(image).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="'+stay.name+' photo '+(index+2)+'" /></button>').join(''))}<div class="detail-gallery-note"><i class="bi bi-camera"></i><span>Property photos</span><small>${(stay.images && stay.images.length) || 1} photo(s)</small></div></div></div>
       <div class="detail-columns"><div class="detail-content"><section class="detail-section"><span class="detail-eyebrow">WELCOME TO YOUR SANCTUARY</span><h2>About this stay</h2><p>${stay.desc} Enjoy a thoughtfully located base for your Tiruvannamalai visit, with easy access to sacred landmarks and time to rest between your spiritual explorations.</p><div class="detail-highlights">${stay.perks.map(perk=>`<span><i class="bi bi-check2-circle"></i>${perk}</span>`).join("")}</div></section>
       <section class="detail-section"><span class="detail-eyebrow">COMFORTS & CONVENIENCES</span><h2>Amenities</h2><div class="detail-amenities">${amenities}</div></section>
-      <section class="detail-section"><span class="detail-eyebrow">PLAN YOUR VISIT</span><h2>Location & nearby landmarks</h2><p class="detail-location"><i class="bi bi-geo-alt-fill"></i>${stay.location}</p><div class="landmark-list"><div><i class="bi bi-building"></i><span><strong>Temple & sacred district</strong><small>Travel time varies by route and traffic</small></span></div><div><i class="bi bi-heart"></i><span><strong>Sri Ramanasramam / Girivalam</strong><small>Check the property location before booking</small></span></div></div></section>
+      <section class="detail-section"><span class="detail-eyebrow">PLAN YOUR VISIT</span><h2>Location & nearby landmarks</h2><p class="detail-location"><i class="bi bi-geo-alt-fill"></i>${stay.location}</p><div class="landmark-list">${landmarks || '<p class="detail-muted">Nearby landmarks have not been specified for this property.</p>'}</div></section>
       <section class="detail-section"><span class="detail-eyebrow">GUEST FEEDBACK</span><h2>Guest rating</h2><div class="review-summary"><strong>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></strong><div><b>${stay.rating>=4.7?'Exceptional':stay.rating>=4.5?'Excellent':'Very good'}</b><small>Based on ${stay.reviews} sample guest reviews</small></div></div><p class="detail-muted">Ratings and review counts are demo content for this prototype and are not live review data.</p></section></div>
       <aside class="detail-booking"><div class="booking-label"><i class="bi bi-house-heart"></i> Your sacred stay</div><div class="detail-price">₹${stay.price.toLocaleString('en-IN')} <small>/ night</small></div><p class="detail-muted">Starting price · taxes may apply</p><div class="booking-form"><label>Check-in<input id="detailCheckin" type="date" value="${checkin}" /></label><label>Check-out<input id="detailCheckout" type="date" value="${checkout}" /></label><label>Guests<select id="detailGuests"><option>${params.get("adults")||"2"} adults · ${params.get("children")||"0"} children</option><option>1 adult · 0 children</option><option>2 adults · 0 children</option><option>2 adults · 1 child</option><option>2 adults · 2 children</option><option>4 adults · 0 children</option></select></label><label>Rooms<select id="detailRooms"><option>${params.get("rooms")||"1"} room(s)</option><option>1 room</option><option>2 rooms</option><option>3 rooms</option></select></label></div><button class="detail-book-btn" id="checkAvailability"><i class="bi bi-calendar-check"></i> Check availability</button><p class="booking-note"><i class="bi bi-shield-check"></i> No payment is taken on this demo page.</p><div id="availabilityMessage" class="availability-message" aria-live="polite"></div></aside></div>`;
     root.querySelectorAll("[data-gallery-image]").forEach(button => button.addEventListener("click", () => { const main = document.getElementById("detailMainImage"); if (main) main.src = button.dataset.galleryImage; }));
