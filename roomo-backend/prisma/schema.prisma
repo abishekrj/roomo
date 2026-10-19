@@ -42,6 +42,8 @@ model Property {
   maxGuests     Int            @map("max_guests")
   bedrooms      Int            @default(1)
   bathrooms     Int            @default(1)
+  isFeatured    Boolean        @default(false) @map("is_featured")
+  featuredSortOrder Int        @default(0) @map("featured_sort_order")
   status        PropertyStatus @default(DRAFT)
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
