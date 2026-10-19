@@ -12,6 +12,7 @@ const homepageSchema = z.object({
   heroTitleLine: z.string().trim().min(1).max(120),
   heroTitleAccent: z.string().trim().min(1).max(120),
   heroDescription: z.string().trim().min(10).max(1000),
+  heroImageUrl: z.string().trim().url().max(2000).refine(value => value.startsWith("https://"), "Hero image URL must use HTTPS.").optional(),
   festivalTitle: z.string().trim().min(1).max(160),
   festivalDescription: z.string().trim().min(10).max(1000),
   festivalDate: z.string().trim().min(10).max(50),
