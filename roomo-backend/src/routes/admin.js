@@ -67,6 +67,27 @@ const statusSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
 });
 
+
+// GET /api/admin/registered-users
+// Return guest account details only; never expose password hashes or credentials.
+router.get("/registered-users", async (req, res, next) => {
+  try {
+    const users = await prisma.guestUser.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        authProvider: true,
+        createdAt: true,
+      },
+    });
+    res.json({ users, total: users.length });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/admin/properties
 // List all properties, including drafts and archived listings.
 router.get("/properties", async (req, res, next) => {
