@@ -16,7 +16,7 @@ const homepageDefaults = {
     sanctuaries: [{ label: "Ashrams & Meditation Kutir", url: "index.html#popularStays" }, { label: "Heritage Haveli Courtyards", url: "index.html#popularStays" }, { label: "Temple Gopuram View Suites", url: "index.html#popularStays" }, { label: "Girivalam Pradakshina Inns", url: "index.html#popularStays" }, { label: "Sattvic Homestays", url: "index.html#popularStays" }],
     pilgrimCare: [{ label: "Karthigai Deepam 2026 Passes", url: "index.html#karthigaiPromo" }, { label: "Pournami Girivalam Calendar", url: "index.html#spiritualGuide" }, { label: "Annamalaiyar Darshan Timings", url: "index.html#spiritualGuide" }, { label: "Ashram Taxi & Station Pickups", url: "#" }],
     legal: [{ label: "Pilgrim Code of Conduct", url: "#" }, { label: "Privacy Terms", url: "#" }, { label: "Host an Ashram or Haveli", url: "roomo-signup.html" }]
-  }
+  },
   testimonials: {
     eyebrow: "Heartfelt Devotee Words",
     title: "Words from Fellow Pilgrims",
