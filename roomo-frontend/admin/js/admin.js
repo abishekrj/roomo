@@ -246,8 +246,8 @@
       cell(row, user.email);
       const passwordCell = cell(row, "");
       const passwordStatus = document.createElement("span");
-      passwordStatus.className = "status status-published";
-      passwordStatus.textContent = "Stored securely";
+      passwordStatus.className = "status " + (user.authProvider === "GOOGLE" ? "status-archived" : "status-published");
+      passwordStatus.textContent = user.authProvider === "GOOGLE" ? "Not set (Google sign-in)" : "Stored securely";
       passwordCell.appendChild(passwordStatus);
       cell(row, user.authProvider === "GOOGLE" ? "Google" : "Email & password");
       cell(row, user.createdAt ? new Date(user.createdAt).toLocaleString() : "—");
