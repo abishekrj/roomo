@@ -2,67 +2,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="css/common.css">
-</head><body class="stay-details-page"><header class="heritage-navbar py-2 py-lg-3">
-      <div class="container d-flex align-items-center justify-content-between">
-        <!-- Brand -->
-        <a class="d-flex align-items-center text-decoration-none gap-2" href="code.html">
-          <div class="d-flex flex-column">
-            <div class="d-flex align-items-center gap-1">
-              <span class="brand-logo-text">ROOMO</span>
-              <span class="sacred-stamp ms-1">SACRED</span>
-            </div>
-            <span class="text-muted text-uppercase fw-semibold search-inline-1">Tiruvannamalai Heritage Retreats</span>
-          </div>
-        </a>
-        <!-- Geographic & Verified Pill -->
-        <div class="d-none d-md-flex align-items-center temple-location-badge gap-2">
-          <i class="bi bi-bell-fill search-inline-2"></i>
-          <span class="text-dark">Tiruvannamalai, Tamil Nadu</span>
-          <span class="text-secondary opacity-50">•</span>
-          <span class="fw-bold search-inline-3">
-            <i class="bi bi-shield-check me-1"></i>Girivalam Verified </span>
-        </div>
-        <!-- Right Devotee Actions -->
-        <div class="d-flex align-items-center gap-2">
-          <!-- Tamil / English language toggle -->
-          <div class="dropdown d-none d-sm-inline-block">
-            <button class="btn btn-sm px-2.5 py-1 text-muted border rounded-pill d-inline-flex align-items-center gap-1 search-inline-4" data-bs-toggle="dropdown" type="button" id="langDropdownBtn">
-              <i class="bi bi-translate text-primary"></i>
-              <span id="currentLangText" class="">தமிழ் / ENG</span>
-              <i class="bi bi-chevron-down ms-1 search-inline-5"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 search-inline-6">
-              <li class="">
-                <a class="dropdown-item small py-1.5 fw-semibold" href="#" onclick="event.preventDefault(); document.getElementById('currentLangText').innerText='தமிழ்';">தமிழ்</a>
-              </li>
-              <li class="">
-                <a class="dropdown-item small py-1.5 fw-semibold" href="#" onclick="event.preventDefault(); document.getElementById('currentLangText').innerText='ENG';">ENG</a>
-              </li>
-              <li class="">
-                <a class="dropdown-item small py-1.5 fw-semibold" href="#" onclick="event.preventDefault(); document.getElementById('currentLangText').innerText='తెలుగు';">తెలుగు / Telugu</a>
-              </li>
-            </ul>
-          </div>
-          <!-- Devotee Portal Dropdown -->
-          <div class="dropdown">
-            <button class="btn d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border search-inline-7" data-bs-toggle="dropdown" type="button">
-              <div class="rounded-circle d-flex align-items-center justify-content-center text-white search-inline-8">
-                <i class="bi bi-person-fill search-inline-9"></i>
-              </div>
-              <span class="d-none d-sm-inline fw-semibold small text-dark">Login / Signup</span>
-              <i class="bi bi-chevron-down small text-muted"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border mt-2 rounded-3 search-inline-10">
-              <li><a class="dropdown-item py-2 small fw-semibold text-dark" href="roomo-login.html"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Sign In</a></li>
-              <li><a class="dropdown-item py-2 small fw-semibold text-dark" href="roomo-signup.html"><i class="bi bi-person-plus me-2 text-primary"></i>Create Account / Sign Up</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item py-2 small fw-semibold text-dark" href="roomo-login.html"><i class="bi bi-journal-bookmark me-2 text-primary"></i>My Pilgrimage Bookings</a></li>
-              <li><a class="dropdown-item py-2 small fw-semibold text-dark" href="roomo-login.html"><i class="bi bi-heart me-2 text-danger"></i>Saved Ashrams &amp; Haveli</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </header><main class="page stay-detail-page-wrap"><div id="stayDetails" class="stay-details-container"><div class="detail-loading">Loading stay details…</div></div></main>
+</head><body class="stay-details-page"><div id="roomoHeader"></div><main class="page stay-detail-page-wrap"><div id="stayDetails" class="stay-details-container"><div class="detail-loading">Loading stay details…</div></div></main>
 <div id="roomoFooter"></div>
 <div class="floating-pilgrim-wa">
       <a class="wa-sanctuary-pill" href="https://wa.me/919444000000?text=Namaste%20ROOMO,%20I%20seek%20sanctuary%20booking%20help%20in%20Tiruvannamalai" target="_blank">
@@ -79,4 +19,5 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/common.js"></script>
 <script src="js/footer.js"></script>
+  <script src="js/header.js"></script>
 </body></html>
