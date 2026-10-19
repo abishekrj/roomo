@@ -44,12 +44,17 @@
     const button=event.target.closest("[data-testimonial-scroll]"); if(!button)return;
     const track=el("testimonialTrack"); if(track)track.scrollBy({left:Number(button.dataset.testimonialScroll)*360,behavior:"smooth"});
   });
-  document.addEventListener("DOMContentLoaded",async()=>{
+  async function initTestimonials(){
     const placeholder=el("roomoTestimonials"); if(!placeholder)return;
     try { const response=await fetch(COMPONENT,{cache:"no-cache"}); if(!response.ok)throw new Error("Component load failed"); placeholder.outerHTML=await response.text(); }
     catch(error){console.error("ROOMO testimonials component could not load.",error);return;}
     render(defaults);
     try {const response=await fetch(API,{cache:"no-store"});if(response.ok){const data=await response.json();render(data.content?.testimonials||defaults);}}
     catch(error){console.warn("ROOMO testimonials API unavailable; using default content.",error);}
-  });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTestimonials, { once: true });
+  } else {
+    initTestimonials();
+  }
 })();
