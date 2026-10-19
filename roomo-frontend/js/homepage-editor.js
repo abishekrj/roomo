@@ -10,14 +10,14 @@
     if(description&&data.featuredSectionDescription)description.textContent=data.featuredSectionDescription;
     if(!track)return;
     const properties=Array.isArray(data.featuredProperties)?data.featuredProperties:[];
-    const legacy=Array.isArray(data.featuredRooms)?data.featuredRooms:[];
-    const rooms=properties.length?properties.map(p=>({
+    const rooms=properties.map(p=>({
       id:p.id,name:p.title,type:p.propertyType||"Sanctuary stay",
       location:[p.city,p.state].filter(Boolean).join(", "),
       price:Number(p.nightlyPrice||0),desc:p.description||"",
-      img:p.images?.[0]?.imageUrl||"",rating:Number(p.rating||0),reviews:Number(p.reviews||0)
-    })):legacy.filter(room=>room.featured!==false);
-    rooms.sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0));
+      img:p.images?.[0]?.imageUrl||"",rating:Number(p.rating||0),reviews:Number(p.reviews||0),
+      sortOrder:Number(p.featuredSortOrder||0)
+    }));
+    rooms.sort((a,b)=>a.sortOrder-b.sortOrder);
     track.innerHTML=rooms.map(room=>'<div class="popular-stay-item"><a class="sanctuary-card h-100 d-flex flex-column text-decoration-none" href="roomo-stay-details.html?stay='+encodeURIComponent(room.id)+'" aria-label="View details for '+escapeHtml(room.name)+'"><div class="sanctuary-img-holder"><img alt="'+escapeHtml(room.name)+'" src="'+escapeHtml(room.img||"")+'" loading="lazy"><div class="sanctuary-rating-tag"><i class="bi bi-star-fill text-warning me-1"></i>'+Number(room.rating||0).toFixed(1)+'</div></div><div class="p-3 d-flex flex-column flex-grow-1"><div class="text-uppercase font-cinzel small mb-1 fw-bold">'+escapeHtml(room.type||"Sanctuary stay")+'</div><h5 class="fw-bold text-dark mb-1 fs-6">'+escapeHtml(room.name)+'</h5><div class="text-muted small mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i>'+escapeHtml(room.location)+'</div><p class="text-muted small mb-3">'+escapeHtml(room.desc)+'</p><div class="mt-auto pt-2 border-top d-flex align-items-baseline justify-content-between"><div><span class="price-sacred-blue">₹'+Number(room.price||0).toLocaleString("en-IN")+'</span><span class="text-muted small"> / night</span></div><span class="badge border py-1 px-2 small font-cinzel">View details <i class="bi bi-arrow-right"></i></span></div></div></a></div>').join("");
     if(!rooms.length)track.innerHTML='<p class="text-muted py-4">Featured sanctuaries will appear here soon.</p>';
   }
@@ -25,5 +25,5 @@
     document.querySelectorAll('a[href*="wa.me/"]').forEach(a=>a.href="https://wa.me/"+c.whatsappNumber);
     const target=new Date(c.festivalDate).getTime();if(Number.isFinite(target)){const update=()=>{let s=Math.max(0,Math.floor((target-Date.now())/1000));const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;setText("cdDays",String(d));setText("cdHours",String(h).padStart(2,"0"));setText("cdMins",String(m).padStart(2,"0"));setText("cdSecs",String(s).padStart(2,"0"));};update();if(window.roomoHomepageCountdown)clearInterval(window.roomoHomepageCountdown);window.roomoHomepageCountdown=setInterval(update,1000);}
   }
-  document.addEventListener("DOMContentLoaded",async()=>{try{const r=await fetch(API+"/homepage",{cache:"no-store"});if(r.ok){const data=await r.json();apply(data.content||defaults);return;}}catch(error){console.warn("ROOMO homepage API unavailable; using built-in content.",error);}apply(defaults);});
+  document.addEventListener("DOMContentLoaded",async()=>{try{const r=await fetch(API+"/homepage",{cache:"no-store"});if(r.ok){const data=await r.json();apply(data.content||defaults);return;}}catch(error){console.warn("ROOMO homepage API unavailable; property cards will remain empty.",error);}apply({...defaults,featuredProperties:[]});});
 })();
