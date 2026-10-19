@@ -244,6 +244,9 @@
     $("maxGuests").value = p.maxGuests ?? 2;
     $("bedrooms").value = p.bedrooms ?? 1;
     $("bathrooms").value = p.bathrooms ?? 1;
+    setCheckedValues("amenities", p.amenities);
+    setCheckedValues("nearbyLandmarks", p.nearbyLandmarks);
+    $("perks").value = Array.isArray(p.perks) ? p.perks.join("\n") : "";
     $("initialStatus").value = p.status === "ARCHIVED" ? "DRAFT" : (p.status || "DRAFT");
     imageItems.forEach(item => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); });
     imageItems = (Array.isArray(p.images) ? [...p.images].sort((a, b) => a.sortOrder - b.sortOrder).map(image => ({ imageUrl: image.imageUrl })) : []);
@@ -278,6 +281,9 @@
     $("maxGuests").value = 2;
     $("bedrooms").value = 1;
     $("bathrooms").value = 1;
+    setCheckedValues("amenities", []);
+    setCheckedValues("nearbyLandmarks", []);
+    $("perks").value = "";
     $("initialStatus").value = "DRAFT";
     imageItems.forEach(item => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); });
     imageItems = [];
@@ -287,6 +293,11 @@
     if ($("featuredSortOrder")) $("featuredSortOrder").value = 0;
     renderPropertyImages();
   }
+  function setCheckedValues(name, values) {
+    const selected = new Set(Array.isArray(values) ? values : []);
+    document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = selected.has(input.value); });
+  }
+
   function collectPropertyPayload() {
     const urlImages = $("imageUrls").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
     const imageUrls = [...imageItems.map(item => item.imageUrl).filter(Boolean), ...urlImages];
@@ -309,6 +320,9 @@
       maxGuests: Number($("maxGuests").value),
       bedrooms: Number($("bedrooms").value),
       bathrooms: Number($("bathrooms").value),
+      amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(input => input.value),
+      nearbyLandmarks: Array.from(document.querySelectorAll('input[name="nearbyLandmarks"]:checked')).map(input => input.value),
+      perks: $("perks").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean).slice(0, 8),
       imageUrls,
       isFeatured: $("isFeatured").checked,
       featuredSortOrder: Number($("featuredSortOrder").value || 0),
