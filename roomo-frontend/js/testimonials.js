@@ -3,6 +3,7 @@
   const API = "http://localhost:5001/api/homepage";
   const COMPONENT = "components/testimonials.html";
   const defaults = {
+    eyebrow: "Heartfelt Devotee Words",
     title: "Words from Fellow Pilgrims",
     description: "Authentic experiences shared by devotees who sought blessed shelter through ROOMO.",
     ratingSummary: "4.9 / 5 (1,840+ Pilgrims)",
@@ -17,6 +18,7 @@
   function text(tag, className, value) { const node=document.createElement(tag); if(className) node.className=className; node.textContent=value||""; return node; }
   function render(config) {
     const c={...defaults,...(config||{})};
+    if(el("testimonialEyebrowText")) el("testimonialEyebrowText").textContent=c.eyebrow||defaults.eyebrow;
     if(el("testimonialTitle")) el("testimonialTitle").textContent=c.title||defaults.title;
     if(el("testimonialDescription")) el("testimonialDescription").textContent=c.description||defaults.description;
     if(el("testimonialRatingSummary")) el("testimonialRatingSummary").textContent=c.ratingSummary||defaults.ratingSummary;
