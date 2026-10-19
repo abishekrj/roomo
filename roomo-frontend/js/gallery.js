@@ -19,8 +19,8 @@
     return "";
   }
   function previewUrl(item) {
-    if (item.thumbnailUrl) return item.thumbnailUrl;
     if (item.type === "IMAGE") return item.mediaUrl;
+    if (item.thumbnailUrl) return item.thumbnailUrl;
     if (item.sourceType === "YOUTUBE") {
       const id = youtubeId(item.mediaUrl);
       if (id) return "https://img.youtube.com/vi/" + encodeURIComponent(id) + "/hqdefault.jpg";
