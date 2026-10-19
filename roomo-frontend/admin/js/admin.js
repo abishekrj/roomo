@@ -226,7 +226,7 @@
     body.replaceChildren();
     const query = ($("registeredUsersSearch")?.value || "").trim().toLocaleLowerCase();
     const visibleUsers = registeredUsers.filter(user =>
-      [user.fullName, user.email, user.authProvider].some(value => String(value || "").toLocaleLowerCase().includes(query))
+      [user.fullName, user.email, user.authProvider, user.emailVerified ? "verified" : "pending unverified"].some(value => String(value || "").toLocaleLowerCase().includes(query))
     );
     if ($("registeredUsersCount")) {
       $("registeredUsersCount").textContent = query
@@ -249,7 +249,12 @@
       passwordStatus.className = "status " + (user.authProvider === "GOOGLE" ? "status-archived" : "status-published");
       passwordStatus.textContent = user.authProvider === "GOOGLE" ? "Not set (Google sign-in)" : "Stored securely";
       passwordCell.appendChild(passwordStatus);
-      cell(row, user.authProvider === "GOOGLE" ? "Google" : "Email & password");
+      const verificationCell = cell(row, "");
+      const verificationStatus = document.createElement("span");
+      verificationStatus.className = "status " + (user.emailVerified ? "status-published" : "status-draft");
+      verificationStatus.textContent = user.emailVerified ? "Verified" : "Pending";
+      verificationCell.appendChild(verificationStatus);
+      cell(row, user.authProvider === "GOOGLE" ? "Google" : user.authProvider === "EMAIL_GOOGLE" ? "Email & Google" : "Email & password");
       cell(row, user.createdAt ? new Date(user.createdAt).toLocaleString() : "—");
       body.appendChild(row);
     });
