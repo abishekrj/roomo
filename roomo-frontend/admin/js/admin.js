@@ -132,18 +132,54 @@
     const body = $("propertyTableBody");
     if (!body) return;
     body.replaceChildren();
-    $("emptyState").classList.toggle("hidden", properties.length > 0);
-    properties.forEach(p => {
+    const query = ($("roomsSearch")?.value || "").trim().toLocaleLowerCase();
+    const visibleProperties = properties.filter(p => [p.title, p.city, p.state, p.address, p.propertyType, p.status].some(value => String(value || "").toLocaleLowerCase().includes(query)));
+    const empty = $("emptyState");
+    if (empty) {
+      empty.textContent = properties.length ? "No properties match your search. Clear the search or add a listing." : "No properties yet. Add your first listing above.";
+      empty.classList.toggle("hidden", visibleProperties.length > 0);
+    }
+    if ($("roomsSearchCount")) $("roomsSearchCount").textContent = query ? (visibleProperties.length + " of " + properties.length + " properties found") : (properties.length + " properties");
+    visibleProperties.forEach(p => {
       const row = document.createElement("tr");
       propertyCell(row, p);
       cell(row, formatPrice(p.nightlyPrice));
       cell(row, p.maxGuests);
+      const featuredCell = cell(row, "");
+      const featuredLabel = document.createElement("label");
+      featuredLabel.className = "featured-property-toggle";
+      const featuredToggle = document.createElement("input");
+      featuredToggle.type = "checkbox";
+      featuredToggle.checked = Boolean(p.isFeatured);
+      featuredToggle.setAttribute("aria-label", "Feature " + p.title + " on the homepage");
+      const featuredText = document.createElement("span");
+      featuredText.textContent = p.isFeatured ? "Featured" : "Not featured";
+      featuredToggle.addEventListener("change", async () => {
+        featuredToggle.disabled = true;
+        try {
+          const result = await request("/admin/properties/" + encodeURIComponent(p.id) + "/featured", {
+            method: "PATCH",
+            body: JSON.stringify({ isFeatured: featuredToggle.checked, featuredSortOrder: Number(p.featuredSortOrder || 0) })
+          });
+          p.isFeatured = Boolean(result.property?.isFeatured);
+          p.featuredSortOrder = Number(result.property?.featuredSortOrder || 0);
+          featuredText.textContent = p.isFeatured ? "Featured" : "Not featured";
+          notice(result.message || "Featured selection updated.", "success");
+        } catch (error) {
+          featuredToggle.checked = Boolean(p.isFeatured);
+          notice(error.message, "error");
+        } finally {
+          featuredToggle.disabled = false;
+        }
+      });
+      featuredLabel.append(featuredToggle, featuredText);
+      featuredCell.appendChild(featuredLabel);
       const statusCell = cell(row, "");
       statusCell.appendChild(statusBadge(p.status));
       const statusAction = cell(row, "");
       const select = document.createElement("select");
       select.className = "status-select";
-      select.setAttribute("aria-label", `Change status for ${p.title}`);
+      select.setAttribute("aria-label", "Change status for " + p.title);
       ["DRAFT", "PUBLISHED", "ARCHIVED"].forEach(st => {
         const option = document.createElement("option");
         option.value = st;
@@ -155,7 +191,7 @@
         const previousStatus = p.status;
         select.disabled = true;
         try {
-          await request(`/admin/properties/${encodeURIComponent(p.id)}/status`, { method: "PATCH", body: JSON.stringify({ status: select.value }) });
+          await request("/admin/properties/" + encodeURIComponent(p.id) + "/status", { method: "PATCH", body: JSON.stringify({ status: select.value }) });
           notice("Property status updated successfully.", "success");
           await loadProperties();
         } catch (error) {
@@ -318,6 +354,8 @@
       notice(error.message, "error");
       setTimeout(() => location.replace("admin.html"), 700);
     }
+
+    if ($("roomsSearch")) $("roomsSearch").addEventListener("input", renderRooms);
 
     const refresh = $("refreshButton") || $("reportsRefreshButton");
     if (refresh) refresh.addEventListener("click", async () => {
