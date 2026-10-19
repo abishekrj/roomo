@@ -13,6 +13,8 @@ const adminHomepageRoutes = require("./routes/adminHomepage");
 const adminTestimonialsRoutes = require("./routes/adminTestimonials");
 const propertyRoutes = require("./routes/properties");
 const homepageRoutes = require("./routes/homepage");
+const galleryRoutes = require("./routes/gallery");
+const adminGalleryRoutes = require("./routes/adminGallery");
 const authenticateToken = require("./middleware/auth");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -67,6 +69,8 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
 });
 
 app.use("/api/homepage", homepageRoutes);
+app.use("/api/gallery", galleryRoutes);
+app.use("/api/admin/gallery", adminGalleryRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/homepage", adminHomepageRoutes);
