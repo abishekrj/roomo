@@ -5,6 +5,7 @@
   const $ = (id) => document.getElementById(id);
   let token = sessionStorage.getItem(TOKEN_KEY);
   let properties = [];
+  let registeredUsers = [];
   let imageItems = [];
   const currentPage = document.body.dataset.page || "dashboard";
 
@@ -213,6 +214,47 @@
     });
   }
 
+  async function loadRegisteredUsers() {
+    const result = await request("/admin/registered-users");
+    registeredUsers = Array.isArray(result.users) ? result.users : [];
+    renderRegisteredUsers();
+  }
+
+  function renderRegisteredUsers() {
+    const body = $("registeredUsersTableBody");
+    if (!body) return;
+    body.replaceChildren();
+    const query = ($("registeredUsersSearch")?.value || "").trim().toLocaleLowerCase();
+    const visibleUsers = registeredUsers.filter(user =>
+      [user.fullName, user.email, user.authProvider].some(value => String(value || "").toLocaleLowerCase().includes(query))
+    );
+    if ($("registeredUsersCount")) {
+      $("registeredUsersCount").textContent = query
+        ? visibleUsers.length + " of " + registeredUsers.length + " users"
+        : registeredUsers.length + (registeredUsers.length === 1 ? " registered user" : " registered users");
+    }
+    const empty = $("registeredUsersEmpty");
+    if (empty) {
+      empty.textContent = registeredUsers.length
+        ? "No registered users match your search."
+        : "No guest accounts have been registered yet.";
+      empty.classList.toggle("hidden", visibleUsers.length > 0);
+    }
+    visibleUsers.forEach(user => {
+      const row = document.createElement("tr");
+      cell(row, user.fullName);
+      cell(row, user.email);
+      const passwordCell = cell(row, "");
+      const passwordStatus = document.createElement("span");
+      passwordStatus.className = "status status-published";
+      passwordStatus.textContent = "Stored securely";
+      passwordCell.appendChild(passwordStatus);
+      cell(row, user.authProvider === "GOOGLE" ? "Google" : "Email & password");
+      cell(row, user.createdAt ? new Date(user.createdAt).toLocaleString() : "—");
+      body.appendChild(row);
+    });
+  }
+
   function renderReports() {
     const count = status => properties.filter(p => p.status === status).length;
     const total = properties.length;
@@ -229,6 +271,7 @@
     if (currentPage === "dashboard") renderDashboard();
     if (currentPage === "rooms") renderRooms();
     if (currentPage === "reports") renderReports();
+    if (currentPage === "registered-users") renderRegisteredUsers();
   }
 
   function fillForm(p) {
@@ -362,7 +405,10 @@
     }
 
     if (!token) { location.replace("admin.html"); return; }
-    try { await loadProperties(); }
+    try {
+      if (currentPage === "registered-users") await loadRegisteredUsers();
+      else await loadProperties();
+    }
     catch (error) {
       sessionStorage.removeItem(TOKEN_KEY);
       notice(error.message, "error");
@@ -370,11 +416,16 @@
     }
 
     if ($("roomsSearch")) $("roomsSearch").addEventListener("input", renderRooms);
+    if ($("registeredUsersSearch")) $("registeredUsersSearch").addEventListener("input", renderRegisteredUsers);
 
-    const refresh = $("refreshButton") || $("reportsRefreshButton");
+    const refresh = $("refreshButton") || $("reportsRefreshButton") || $("registeredUsersRefreshButton");
     if (refresh) refresh.addEventListener("click", async () => {
       refresh.disabled = true;
-      try { await loadProperties(); notice("Data refreshed.", "success"); }
+      try {
+        if (currentPage === "registered-users") await loadRegisteredUsers();
+        else await loadProperties();
+        notice("Data refreshed.", "success");
+      }
       catch (error) { notice(error.message, "error"); }
       finally { refresh.disabled = false; }
     });
