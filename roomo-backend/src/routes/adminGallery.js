@@ -55,8 +55,16 @@ const itemSchema = z.object({
 router.get("/", async (req, res, next) => {
   try {
     let items = await prisma.galleryItem.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }] });
-    if (!items.length) {
-      for (const item of defaults) await prisma.galleryItem.create({ data: item });
+    const config = await prisma.galleryConfig.findUnique({ where: { id: 1 } });
+    if (!config?.initialized) {
+      if (!items.length) {
+        for (const item of defaults) await prisma.galleryItem.create({ data: item });
+      }
+      await prisma.galleryConfig.upsert({
+        where: { id: 1 },
+        create: { id: 1, initialized: true },
+        update: { initialized: true }
+      });
       items = await prisma.galleryItem.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }] });
     }
     res.json({ items });
