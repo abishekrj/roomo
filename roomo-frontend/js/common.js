@@ -245,16 +245,18 @@ if (document.body.classList.contains("home-page")) {
       };
 
       function showStayDetails(stayId) {
-        const data = staysData[stayId] || staysData['arunachala-inn'];
-        document.getElementById('detailName').innerText = data.name;
-        document.getElementById('detailLocation').innerText = data.location;
-        document.getElementById('detailRating').innerText = data.rating;
-        document.getElementById('detailPrice').innerText = data.price;
-        document.getElementById('detailFooterPrice').innerText = data.price;
-        document.getElementById('detailImg').src = data.img;
-        document.getElementById('detailProximity').innerText = data.proximity;
-        const modal = new bootstrap.Modal(document.getElementById('propertyDetailsModal'));
-        modal.show();
+        const params = new URLSearchParams();
+        params.set('stay', stayId);
+        const checkin = document.getElementById('checkinPicker')?.value || '';
+        const checkout = document.getElementById('checkoutPicker')?.value || '';
+        if (checkin) params.set('checkin', checkin);
+        if (checkout) params.set('checkout', checkout);
+        if (typeof devoteeState !== 'undefined') {
+          params.set('adults', String(devoteeState.adults || 2));
+          params.set('children', String(devoteeState.children || 0));
+          params.set('rooms', String(devoteeState.rooms || 1));
+        }
+        window.location.href = 'roomo-stay-details.html?' + params.toString();
       }
 
       function bookRoomAlert() {
