@@ -22,7 +22,7 @@ function createToken(owner) {
   return jwt.sign(
     { sub: owner.id },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "12h", issuer: "roomo-api", audience: "roomo-admin" }
   );
 }
 
