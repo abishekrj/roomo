@@ -990,3 +990,9 @@ body.auth-page .mobile-brand { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .roomo-page-loader, .roomo-loader-mark span { transition: none; animation: none; }
 }
+
+
+/* Google Identity Services button on guest authentication pages */
+.google-btn-mount { width: 100%; min-height: 44px; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
+.google-btn-mount > div { max-width: 100%; }
+.google-btn-mount iframe { max-width: 100%; }
