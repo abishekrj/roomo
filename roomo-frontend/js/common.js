@@ -319,8 +319,27 @@ if (typeof syncPrice === "function") window.syncPrice = syncPrice;
 
 // roomo-stay-details.html: render selected property details from shared demo data
 if (document.body.classList.contains("stay-details-page")) {
+  (async () => {
   const params = new URLSearchParams(location.search);
-  const stay = (window.ROOMO_STAYS || []).find(item => item.id === params.get("stay")) || (window.ROOMO_STAYS || [])[0];
+  let stay = (window.ROOMO_STAYS || []).find(item => item.id === params.get("stay")) || (window.ROOMO_STAYS || [])[0];
+  try {
+    const response = await fetch("http://localhost:5001/api/homepage", { cache: "no-store" });
+    if (response.ok) {
+      const payload = await response.json();
+      const content = payload.content || {};
+      const room = (content.featuredRooms || []).find(item => item.id === params.get("stay"));
+      if (room) {
+        stay = {
+          ...(stay || {}),
+          id: room.id, name: room.name, type: room.type || "Sanctuary stay",
+          location: room.location, rating: Number(room.rating || 0), reviews: Number(room.reviews || 0),
+          price: Number(room.price || 0), img: room.img, desc: room.desc,
+          amenities: (stay && stay.amenities) || ["wifi", "parking", "hotwater", "quiet"],
+          perks: (stay && stay.perks) || ["Peaceful sanctuary setting", "Convenient sacred-district access"]
+        };
+      }
+    }
+  } catch (error) { console.warn("Could not load the latest featured stay details.", error); }
   const root = document.getElementById("stayDetails");
   if (stay && root) {
     const amenityLabels = {wifi:"Free Wi-Fi",parking:"Free parking",ac:"Air conditioning",breakfast:"Breakfast included",view:"Arunachala / sacred views",hotwater:"24-hour hot water",private:"Private bathroom",quiet:"Quiet / meditation space",family:"Family-friendly options",accessible:"Accessibility features"};
@@ -336,6 +355,7 @@ if (document.body.classList.contains("stay-details-page")) {
       <aside class="detail-booking"><div class="booking-label"><i class="bi bi-house-heart"></i> Your sacred stay</div><div class="detail-price">₹${stay.price.toLocaleString('en-IN')} <small>/ night</small></div><p class="detail-muted">Starting price · taxes may apply</p><div class="booking-form"><label>Check-in<input id="detailCheckin" type="date" value="${checkin}" /></label><label>Check-out<input id="detailCheckout" type="date" value="${checkout}" /></label><label>Guests<select id="detailGuests"><option>${params.get("adults")||"2"} adults · ${params.get("children")||"0"} children</option><option>1 adult · 0 children</option><option>2 adults · 0 children</option><option>2 adults · 1 child</option><option>2 adults · 2 children</option><option>4 adults · 0 children</option></select></label><label>Rooms<select id="detailRooms"><option>${params.get("rooms")||"1"} room(s)</option><option>1 room</option><option>2 rooms</option><option>3 rooms</option></select></label></div><button class="detail-book-btn" id="checkAvailability"><i class="bi bi-calendar-check"></i> Check availability</button><p class="booking-note"><i class="bi bi-shield-check"></i> No payment is taken on this demo page.</p><div id="availabilityMessage" class="availability-message" aria-live="polite"></div></aside></div>`;
     document.getElementById("checkAvailability").addEventListener("click", () => { const a=document.getElementById("detailCheckin").value,b=document.getElementById("detailCheckout").value; const message=document.getElementById("availabilityMessage"); if(a&&b&&b<=a){message.textContent="Check-out must be after check-in.";return;} message.textContent="This is a demo listing. Live availability and booking will be available once connected to your property inventory."; });
   } else if (root) root.innerHTML = '<div class="detail-not-found"><h1>Stay not found</h1><p>Please return to the listings and choose a stay.</p><a href="roomo-search-results.html">Browse stays</a></div>';
+  })();
 }
 
 // ROOMO authentication — Node.js + Express + PostgreSQL
