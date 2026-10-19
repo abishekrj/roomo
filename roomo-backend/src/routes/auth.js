@@ -96,6 +96,7 @@ router.post("/login", async (req, res, next) => {
       id: owner.id,
       fullName: owner.fullName,
       email: owner.email,
+      role: owner.role,
     };
 
     res.json({
