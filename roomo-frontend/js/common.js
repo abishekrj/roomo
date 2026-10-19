@@ -405,9 +405,29 @@ if (document.body.classList.contains("stay-details-page")) {
   let mode = body.dataset.authPage;
   let busy = false;
 
-  function showMessage(message, type = "error") {
+  function showMessage(message, type = "error", allowResend = false) {
     messageBox.textContent = message;
     messageBox.className = `message show ${type}`;
+    if (allowResend) {
+      const resendButton = document.createElement("button");
+      resendButton.type = "button";
+      resendButton.textContent = "Resend verification email";
+      resendButton.className = "verification-resend-btn";
+      resendButton.style.cssText = "display:block;margin:12px auto 0;padding:9px 14px;border:1px solid currentColor;border-radius:7px;background:transparent;font:inherit;font-weight:700;cursor:pointer";
+      resendButton.addEventListener("click", async () => {
+        const email = $("email")?.value.trim().toLowerCase();
+        if (!email) return showMessage("Enter your email address first.");
+        resendButton.disabled = true;
+        resendButton.textContent = "SENDING…";
+        try {
+          const result = await sendGuestAuthRequest("/resend-verification", { email });
+          showMessage(result.message || "Check your inbox for a new verification link.", "success");
+        } catch (error) {
+          showMessage(error.message || "Unable to resend the verification email.");
+        }
+      });
+      messageBox.appendChild(resendButton);
+    }
   }
   function clearMessage() {
     messageBox.textContent = "";
@@ -459,7 +479,10 @@ if (document.body.classList.contains("stay-details-page")) {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 429) throw new Error("Too many attempts. Please wait a few minutes and try again.");
-      throw new Error(data.message || "Authentication failed. Please try again.");
+      const error = new Error(data.message || "Authentication failed. Please try again.");
+      error.code = data.code || null;
+      error.status = response.status;
+      throw error;
     }
     return data;
   }
@@ -498,10 +521,14 @@ if (document.body.classList.contains("stay-details-page")) {
     try {
       const data = await sendGuestAuthRequest(mode === "signup" ? "/register" : "/login",
         mode === "signup" ? { fullName: fullNameInput.value.trim(), email, password } : { email, password });
+      if (mode === "signup" && data.verificationRequired) {
+        showMessage("Your account has been created. Check your inbox (and spam folder) and click the verification link before signing in.", "success");
+        return;
+      }
       saveGuestSession(data);
       showMessage(mode === "signup" ? "Your ROOMO account has been created successfully. You are now signed in." : "You are signed in successfully.", "success");
     } catch (error) {
-      showMessage(error.message || "Unable to authenticate. Please try again.");
+      showMessage(error.message || "Unable to authenticate. Please try again.", "error", error.code === "EMAIL_NOT_VERIFIED" || error.code === "VERIFICATION_EMAIL_FAILED");
     } finally {
       setBusy(false);
     }
