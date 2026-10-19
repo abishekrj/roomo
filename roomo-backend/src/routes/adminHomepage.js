@@ -28,6 +28,29 @@ const heroUpload = multer({
   }
 });
 router.use(authenticateToken, requireAdmin);
+
+const featuredRoomSchema = z.object({
+  id: z.string().trim().min(1).max(80).regex(/^[a-z0-9-]+$/),
+  name: z.string().trim().min(1).max(160),
+  type: z.string().trim().min(1).max(100),
+  location: z.string().trim().min(1).max(250),
+  rating: z.coerce.number().min(0).max(5).default(0),
+  reviews: z.coerce.number().int().min(0).max(10000000).default(0),
+  price: z.coerce.number().min(0).max(10000000),
+  img: z.string().trim().url().max(2000),
+  desc: z.string().trim().min(1).max(2000),
+  featured: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(10000).default(0)
+});
+const featuredSectionSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().min(1).max(1000),
+  rooms: z.array(featuredRoomSchema).max(30)
+}).superRefine((data, ctx) => {
+  const ids = data.rooms.map(room => room.id);
+  if (new Set(ids).size !== ids.length) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["rooms"], message: "Each room must have a unique ID." });
+});
+
 const homepageSchema = z.object({
   siteTitle: z.string().trim().min(5).max(160),
   heroBadge: z.string().trim().min(1).max(160),
@@ -58,6 +81,39 @@ router.post("/hero-image", heroUpload.single("image"), (req, res) => {
     heroImageUrl: baseUrl + "/uploads/hero/" + req.file.filename
   });
 });
+
+router.get("/featured-rooms", async (req, res, next) => {
+  try {
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const source = row?.draft || row?.published || defaults;
+    res.json({
+      title: source.featuredSectionTitle || defaults.featuredSectionTitle,
+      description: source.featuredSectionDescription || defaults.featuredSectionDescription,
+      rooms: Array.isArray(source.featuredRooms) ? source.featuredRooms : defaults.featuredRooms
+    });
+  } catch (error) { next(error); }
+});
+router.put("/featured-rooms", async (req, res, next) => {
+  try {
+    const parsed = featuredSectionSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Please check the featured room fields.", errors: parsed.error.flatten() });
+    const existing = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const section = {
+      featuredSectionTitle: parsed.data.title,
+      featuredSectionDescription: parsed.data.description,
+      featuredRooms: parsed.data.rooms
+    };
+    const draft = { ...(existing?.draft || defaults), ...section };
+    const published = { ...(existing?.published || defaults), ...section };
+    await prisma.homepageConfig.upsert({
+      where: { id: 1 },
+      create: { id: 1, draft, published, publishedAt: new Date() },
+      update: { draft, published, publishedAt: new Date() }
+    });
+    res.json({ message: "Featured sanctuaries saved and published.", ...parsed.data });
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
@@ -81,10 +137,16 @@ router.post("/publish", async (req, res, next) => {
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
     const parsed = homepageSchema.safeParse({ ...(row?.draft || defaults), testimonials: row?.draft?.testimonials || defaults.testimonials });
     if (!parsed.success) return res.status(400).json({ message: "The saved draft is invalid. Save it again before publishing." });
+    const featured = {
+      featuredSectionTitle: row?.draft?.featuredSectionTitle || row?.published?.featuredSectionTitle || defaults.featuredSectionTitle,
+      featuredSectionDescription: row?.draft?.featuredSectionDescription || row?.published?.featuredSectionDescription || defaults.featuredSectionDescription,
+      featuredRooms: row?.draft?.featuredRooms || row?.published?.featuredRooms || defaults.featuredRooms
+    };
+    const publishedContent = { ...parsed.data, ...featured };
     const updated = await prisma.homepageConfig.upsert({
       where: { id: 1 },
-      create: { id: 1, draft: parsed.data, published: parsed.data, publishedAt: new Date() },
-      update: { published: parsed.data, publishedAt: new Date() }
+      create: { id: 1, draft: { ...parsed.data, ...featured }, published: publishedContent, publishedAt: new Date() },
+      update: { published: publishedContent, publishedAt: new Date() }
     });
     res.json({ message: "Homepage published successfully.", publishedAt: updated.publishedAt });
   } catch (error) { next(error); }
