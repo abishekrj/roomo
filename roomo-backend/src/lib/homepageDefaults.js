@@ -10,6 +10,12 @@ const homepageDefaults = {
   footerDescription: "Stay Blessed, Stay Serene. ROOMO Sacred is your devoted hospitality companion in holy Tiruvannamalai. We hand-vet every retreat to guarantee quietude, sattvic cleanliness, and authentic sacred warmth.",
   contactPhone: "+91 94440 00000",
   whatsappNumber: "919444000000",
-  seoDescription: "Discover peaceful heritage stays, ashrams and temple-view retreats in Tiruvannamalai with ROOMO Sacred."
+  seoDescription: "Discover peaceful heritage stays, ashrams and temple-view retreats in Tiruvannamalai with ROOMO Sacred.",
+  footerLinks: {
+    social: [{ label: "Facebook", url: "#", icon: "bi-facebook" }, { label: "Instagram", url: "#", icon: "bi-instagram" }, { label: "WhatsApp", url: "https://wa.me/919444000000", icon: "bi-whatsapp" }, { label: "YouTube", url: "#", icon: "bi-youtube" }],
+    sanctuaries: [{ label: "Ashrams & Meditation Kutir", url: "index.html#popularStays" }, { label: "Heritage Haveli Courtyards", url: "index.html#popularStays" }, { label: "Temple Gopuram View Suites", url: "index.html#popularStays" }, { label: "Girivalam Pradakshina Inns", url: "index.html#popularStays" }, { label: "Sattvic Homestays", url: "index.html#popularStays" }],
+    pilgrimCare: [{ label: "Karthigai Deepam 2026 Passes", url: "index.html#karthigaiPromo" }, { label: "Pournami Girivalam Calendar", url: "index.html#spiritualGuide" }, { label: "Annamalaiyar Darshan Timings", url: "index.html#spiritualGuide" }, { label: "Ashram Taxi & Station Pickups", url: "#" }],
+    legal: [{ label: "Pilgrim Code of Conduct", url: "#" }, { label: "Privacy Terms", url: "#" }, { label: "Host an Ashram or Haveli", url: "roomo-signup.html" }]
+  }
 };
 module.exports = homepageDefaults;
