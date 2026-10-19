@@ -347,7 +347,7 @@ if (document.body.classList.contains("stay-details-page")) {
           ...(stay || {}),
           id: room.id, name: room.name, type: room.type || "Sanctuary stay",
           location: room.location, rating: Number(room.rating || 0), reviews: Number(room.reviews || 0),
-          price: Number(room.price || 0), img: room.img, desc: room.desc,
+          price: Number(room.price || 0), img: room.img, images: room.images || (stay && stay.images) || [], desc: room.desc,
           amenities: (stay && stay.amenities) || ["wifi", "parking", "hotwater", "quiet"],
           perks: (stay && stay.perks) || ["Peaceful sanctuary setting", "Convenient sacred-district access"]
         };
