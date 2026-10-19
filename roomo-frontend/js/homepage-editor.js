@@ -25,5 +25,7 @@
     document.querySelectorAll('a[href*="wa.me/"]').forEach(a=>a.href="https://wa.me/"+c.whatsappNumber);
     const target=new Date(c.festivalDate).getTime();if(Number.isFinite(target)){const update=()=>{let s=Math.max(0,Math.floor((target-Date.now())/1000));const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;setText("cdDays",String(d));setText("cdHours",String(h).padStart(2,"0"));setText("cdMins",String(m).padStart(2,"0"));setText("cdSecs",String(s).padStart(2,"0"));};update();if(window.roomoHomepageCountdown)clearInterval(window.roomoHomepageCountdown);window.roomoHomepageCountdown=setInterval(update,1000);}
   }
-  document.addEventListener("DOMContentLoaded",async()=>{try{const r=await fetch(API+"/homepage",{cache:"no-store"});if(r.ok){const data=await r.json();apply(data.content||defaults);return;}}catch(error){console.warn("ROOMO homepage API unavailable; property cards will remain empty.",error);}apply({...defaults,featuredProperties:[]});});
+  function hidePageLoader(){const loader=document.getElementById("roomoPageLoader");if(loader)loader.classList.add("is-hidden");}
+  document.addEventListener("DOMContentLoaded",async()=>{try{const r=await fetch(API+"/homepage",{cache:"no-store"});if(r.ok){const data=await r.json();apply(data.content||defaults);hidePageLoader();return;}}catch(error){console.warn("ROOMO homepage API unavailable; property cards will remain empty.",error);}apply({...defaults,featuredProperties:[]});hidePageLoader();});
+  window.addEventListener("pageshow",event=>{if(event.persisted)hidePageLoader();});
 })();
