@@ -2,6 +2,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -20,13 +21,14 @@ if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:5173",
 }));
 
 app.use(express.json({ limit: "20kb" }));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads"), { dotfiles: "deny", index: false, maxAge: "1d" }));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
