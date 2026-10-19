@@ -230,6 +230,27 @@ router.patch("/properties/:id", async (req, res, next) => {
   }
 });
 
+// PATCH /api/admin/properties/:id/featured
+router.patch("/properties/:id/featured", async (req, res, next) => {
+  try {
+    const idResult = z.string().uuid().safeParse(req.params.id);
+    const bodyResult = z.object({
+      isFeatured: z.boolean(),
+      featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0)
+    }).safeParse(req.body);
+    if (!idResult.success) return res.status(400).json({ message: "Invalid property ID." });
+    if (!bodyResult.success) return res.status(400).json({ message: "Choose whether this property should be featured." });
+    const existing = await prisma.property.findUnique({ where: { id: idResult.data }, select: { id: true } });
+    if (!existing) return res.status(404).json({ message: "Property not found." });
+    const property = await prisma.property.update({
+      where: { id: idResult.data },
+      data: { isFeatured: bodyResult.data.isFeatured, featuredSortOrder: bodyResult.data.featuredSortOrder },
+      include: { images: { orderBy: { sortOrder: "asc" } } }
+    });
+    res.json({ message: property.isFeatured ? "Property added to Featured Rooms." : "Property removed from Featured Rooms.", property });
+  } catch (error) { next(error); }
+});
+
 // PATCH /api/admin/properties/:id/status
 // Change a listing's publication status.
 router.patch("/properties/:id/status", async (req, res, next) => {
