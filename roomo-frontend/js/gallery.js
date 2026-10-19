@@ -20,6 +20,7 @@
   }
   function previewUrl(item) {
     if (item.thumbnailUrl) return item.thumbnailUrl;
+    if (item.type === "IMAGE") return item.mediaUrl;
     if (item.sourceType === "YOUTUBE") {
       const id = youtubeId(item.mediaUrl);
       if (id) return "https://img.youtube.com/vi/" + encodeURIComponent(id) + "/hqdefault.jpg";
@@ -43,7 +44,7 @@
       button.type = "button";
       button.className = "gallery-card-button";
       button.setAttribute("aria-label", "Open " + safeText(item.title));
-      button.innerHTML = (thumb ? '<img loading="lazy" alt="' + escapeHtml(item.title) + '" src="' + escapeHtml(thumb) + '">' : '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-white"><i class="bi bi-play-circle" style="font-size:4rem"></i></div>') +
+      button.innerHTML = (thumb ? '<img loading="lazy" alt="' + escapeHtml(item.title) + '" src="' + escapeHtml(thumb) + '">' : (item.type === "VIDEO" ? '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-white"><i class="bi bi-film" style="font-size:4rem"></i></div>' : '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-white"><span class="small">Image preview unavailable</span></div>')) +
         (item.type === "VIDEO" ? '<span class="gallery-card-play"><i class="bi bi-play-circle-fill"></i></span>' : '') +
         '<span class="gallery-card-shade"><span class="badge rounded-pill align-self-start mb-2">' + (item.type === "VIDEO" ? "Video" : "Image") + '</span><strong class="fs-5">' + escapeHtml(item.title) + '</strong><span class="small text-white-50">' + escapeHtml(item.description) + '</span></span>';
       button.addEventListener("click", () => openViewer(index));
