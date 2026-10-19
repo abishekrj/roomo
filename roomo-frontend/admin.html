@@ -162,6 +162,11 @@
 
     textarea { min-height: 110px; resize: vertical; }
 
+    .checkbox-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+    .checkbox-option { display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:9px; background:#fff; color:var(--ink); font-size:13px; line-height:1.45; cursor:pointer; }
+    .checkbox-option input { width:16px; height:16px; flex:0 0 16px; margin-top:2px; accent-color:var(--blue); }
+    .checkbox-option:has(input:checked) { border-color:#9bb8ff; background:#f4f7ff; }
+    @media (max-width:640px) { .checkbox-grid { grid-template-columns:1fr; } }
     .field-help {
       display: block;
       color: var(--muted);
@@ -432,6 +437,45 @@
                 <option value="DRAFT">Save as draft</option>
                 <option value="PUBLISHED">Publish immediately</option>
               </select>
+            </div>
+
+
+            <div class="field full">
+              <label>Amenities</label>
+              <p class="muted small">Select all facilities available at this property.</p>
+              <div class="checkbox-grid" id="amenitiesOptions">
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="wifi"> Free Wi-Fi</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="parking"> Free parking</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="ac"> Air conditioning</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="breakfast"> Breakfast included</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="view"> Arunachala / sacred views</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="hotwater"> 24-hour hot water</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="private"> Private bathroom</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="quiet"> Quiet / meditation space</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="family"> Family-friendly options</label>
+                <label class="checkbox-option"><input type="checkbox" name="amenities" value="accessible"> Accessibility features</label>
+              </div>
+            </div>
+            <div class="field full">
+              <label>Location & nearby landmarks</label>
+              <p class="muted small">Select landmarks guests can conveniently reach. Only select places that accurately reflect this property's location.</p>
+              <div class="checkbox-grid" id="landmarksOptions">
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="annamalaiyar-temple"> Arunachaleswarar / Annamalaiyar Temple</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="sri-ramanasramam"> Sri Ramanasramam</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="girivalam-path"> Girivalam path</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="arunachala-hill"> Arunachala Hill</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="skandashramam"> Skandashramam</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="virupaksha-cave"> Virupaksha Cave</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="sathanur-dam"> Sathanur Dam</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="central-bus-stand"> Central Bus Stand</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="railway-station"> Tiruvannamalai Railway Station</label>
+                <label class="checkbox-option"><input type="checkbox" name="nearbyLandmarks" value="yogi-ram-surathkumar-ashram"> Yogi Ramsuratkumar Ashram</label>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="perks">Stay highlights</label>
+              <textarea id="perks" name="perks" maxlength="800" placeholder="Enter one highlight per line, e.g. Quiet courtyard&#10;Hill-facing terrace&#10;Walking distance to temple"></textarea>
+              <span class="field-help">Optional. Add up to 8 short highlights, one per line.</span>
             </div>
 
             <div class="field full">
@@ -778,6 +822,9 @@
             maxGuests: Number($("maxGuests").value),
             bedrooms: Number($("bedrooms").value),
             bathrooms: Number($("bathrooms").value),
+            amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map((input) => input.value),
+            nearbyLandmarks: Array.from(document.querySelectorAll('input[name="nearbyLandmarks"]:checked')).map((input) => input.value),
+            perks: $("perks").value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean).slice(0, 8),
             imageUrls,
             status: $("initialStatus").value,
           };
