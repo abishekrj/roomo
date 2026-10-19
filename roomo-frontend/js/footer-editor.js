@@ -1,0 +1,97 @@
+(() => {
+  "use strict";
+  const API = "http://localhost:5001/api/homepage";
+  const defaults = {
+    social: [
+      { label: "Facebook", url: "#", icon: "bi-facebook" },
+      { label: "Instagram", url: "#", icon: "bi-instagram" },
+      { label: "WhatsApp", url: "https://wa.me/919444000000", icon: "bi-whatsapp" },
+      { label: "YouTube", url: "#", icon: "bi-youtube" }
+    ],
+    sanctuaries: [
+      { label: "Ashrams & Meditation Kutir", url: "index.html#popularStays" },
+      { label: "Heritage Haveli Courtyards", url: "index.html#popularStays" },
+      { label: "Temple Gopuram View Suites", url: "index.html#popularStays" },
+      { label: "Girivalam Pradakshina Inns", url: "index.html#popularStays" },
+      { label: "Sattvic Homestays", url: "index.html#popularStays" }
+    ],
+    pilgrimCare: [
+      { label: "Karthigai Deepam 2026 Passes", url: "index.html#karthigaiPromo" },
+      { label: "Pournami Girivalam Calendar", url: "index.html#spiritualGuide" },
+      { label: "Annamalaiyar Darshan Timings", url: "index.html#spiritualGuide" },
+      { label: "Ashram Taxi & Station Pickups", url: "#" }
+    ],
+    legal: [
+      { label: "Pilgrim Code of Conduct", url: "#" },
+      { label: "Privacy Terms", url: "#" },
+      { label: "Host an Ashram or Haveli", url: "roomo-signup.html" }
+    ]
+  };
+  const safeUrl = value => {
+    const url = String(value || "#").trim();
+    return /^javascript:/i.test(url) ? "#" : url;
+  };
+  const makeLink = (item, className = "footer-link") => {
+    const a = document.createElement("a");
+    a.className = className;
+    a.href = safeUrl(item.url);
+    a.textContent = item.label || "Link";
+    if (/^https?:\/\//i.test(a.href) && new URL(a.href).origin !== location.origin) {
+      a.rel = "noopener noreferrer";
+    }
+    return a;
+  };
+  const renderList = (ul, items) => {
+    if (!ul || !Array.isArray(items)) return;
+    ul.replaceChildren();
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.appendChild(makeLink(item));
+      ul.appendChild(li);
+    });
+  };
+  function apply(content) {
+    const footer = document.querySelector("footer.temple-granite-footer");
+    if (!footer) return;
+    const links = { ...defaults, ...(content.footerLinks || {}) };
+    const columns = footer.querySelectorAll(".row.g-4.mb-4 > div");
+    if (columns[0]) {
+      const social = columns[0].querySelector(".d-flex.gap-3.fs-5.mt-3");
+      if (social) {
+        social.replaceChildren();
+        links.social.forEach(item => {
+          const a = makeLink(item);
+          a.setAttribute("aria-label", item.label || "Social media");
+          const icon = document.createElement("i");
+          icon.className = "bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg");
+          a.appendChild(icon);
+          social.appendChild(a);
+        });
+      }
+      const description = columns[0].querySelector("p");
+      if (description && content.footerDescription) description.textContent = content.footerDescription;
+    }
+    if (columns[1]) renderList(columns[1].querySelector("ul"), links.sanctuaries);
+    if (columns[2]) renderList(columns[2].querySelector("ul"), links.pilgrimCare);
+    const legal = footer.querySelector(".d-flex.flex-column.flex-md-row.align-items-center.justify-content-between > div");
+    if (legal) {
+      legal.replaceChildren();
+      links.legal.forEach(item => legal.appendChild(makeLink(item)));
+    }
+    footer.querySelectorAll("span").forEach(span => {
+      if (span.textContent.includes("24/7 Helpline:") && content.contactPhone) {
+        span.textContent = "24/7 Helpline: " + content.contactPhone;
+      }
+    });
+  }
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const response = await fetch(API, { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      apply(data.content || {});
+    } catch (error) {
+      console.warn("ROOMO footer links could not be loaded; showing built-in links.", error);
+    }
+  });
+})();
