@@ -4,6 +4,7 @@ const homepageDefaults = {
   heroTitleLine: "Find Sacred Solace at",
   heroTitleAccent: "Holy Arunachala",
   heroDescription: "Hand-curated sanctuary stays, peaceful ashram guest rooms, and heritage havelis situated in revered proximity to Annamalaiyar Temple & Sri Ramanasramam.",
+  heroImageUrl: "https://lh3.googleusercontent.com/aida/AEtjO1WPqpw7U-3cK3DXCWtQksdvMd_FQT7Rln8b36_TSmYoqFe_eoL-rZTeovlHRw4_W7FTImYN5QacCN-1Cz14CYXGLt86TlJglU6w9p0m_aon-hpDBhxdS8xRvjZ_UKVSjjmzDRlYBzMlKmPFnt3Xn6skMZ9EGrQA8ktbnSt1NSIYOsb58ERgJrMAl7HfibYOkZFXHDc94lf5tOduqxrlZW6NqVJjEpshssz6wkLAr39DOdQTOhry7YUfHg",
   festivalTitle: "Karthigai Deepam 🪔",
   festivalDescription: "Behold the sacred Maha Deepam cauldron ignited high atop Arunachala mountain summit. Verified heritage sanctuaries near Eastern Rajagopuram fill months in advance. Secure peaceful stays with complimentary temple shuttle passes.",
   festivalDate: "2026-11-26T18:00:00+05:30",
@@ -16,7 +17,7 @@ const homepageDefaults = {
     sanctuaries: [{ label: "Ashrams & Meditation Kutir", url: "index.html#popularStays" }, { label: "Heritage Haveli Courtyards", url: "index.html#popularStays" }, { label: "Temple Gopuram View Suites", url: "index.html#popularStays" }, { label: "Girivalam Pradakshina Inns", url: "index.html#popularStays" }, { label: "Sattvic Homestays", url: "index.html#popularStays" }],
     pilgrimCare: [{ label: "Karthigai Deepam 2026 Passes", url: "index.html#karthigaiPromo" }, { label: "Pournami Girivalam Calendar", url: "index.html#spiritualGuide" }, { label: "Annamalaiyar Darshan Timings", url: "index.html#spiritualGuide" }, { label: "Ashram Taxi & Station Pickups", url: "#" }],
     legal: [{ label: "Pilgrim Code of Conduct", url: "#" }, { label: "Privacy Terms", url: "#" }, { label: "Host an Ashram or Haveli", url: "roomo-signup.html" }]
-  }
+  },
   testimonials: {
     eyebrow: "Heartfelt Devotee Words",
     title: "Words from Fellow Pilgrims",
