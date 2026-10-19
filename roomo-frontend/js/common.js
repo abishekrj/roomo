@@ -379,362 +379,241 @@ if (document.body.classList.contains("stay-details-page")) {
   })();
 }
 
-// ROOMO authentication — Node.js + Express + PostgreSQL
+// ROOMO guest authentication — email/password and Google Identity Services
 (function () {
   "use strict";
 
   const API_BASE_URL = "http://localhost:5001";
-  const TOKEN_KEY = "roomoToken";
-  const OWNER_KEY = "roomoOwner";
-
-  // Only initialize on the login and signup pages.
+  const TOKEN_KEY = "roomoGuestToken";
+  const USER_KEY = "roomoGuest";
   const body = document.body;
 
-  if (
-    !body.classList.contains("auth-page") ||
-    !["login", "signup"].includes(body.dataset.authPage)
-  ) {
-    return;
-  }
+  if (!body.classList.contains("auth-page") || !["login", "signup"].includes(body.dataset.authPage)) return;
 
   const $ = (id) => document.getElementById(id);
-
   const form = $("authForm");
   const messageBox = $("message");
   const submitBtn = $("submitBtn");
-  const googleBtn = $("googleBtn");
+  const googleMount = $("googleBtnMount");
   const switchText = $("switchText");
   const passwordInput = $("password");
   const fullNameInput = $("fullName");
-
   if (!form || !messageBox || !submitBtn || !passwordInput) {
-    console.error("ROOMO: Required authentication form elements are missing.");
+    console.error("ROOMO: Required guest authentication form elements are missing.");
     return;
   }
 
   let mode = body.dataset.authPage;
   let busy = false;
+  let googleClientId = null;
+  let googleReady = false;
 
   function showMessage(message, type = "error") {
     messageBox.textContent = message;
     messageBox.className = `message show ${type}`;
   }
-
   function clearMessage() {
     messageBox.textContent = "";
     messageBox.className = "message";
   }
-
   function setBusy(value) {
     busy = value;
     submitBtn.disabled = value;
-
-    if (googleBtn) {
-      googleBtn.disabled = value;
-    }
-
     submitBtn.style.opacity = value ? "0.65" : "1";
-
-    if (googleBtn) {
-      googleBtn.style.opacity = value ? "0.65" : "1";
+    if (googleMount) {
+      googleMount.style.opacity = value ? "0.65" : "1";
+      googleMount.style.pointerEvents = value ? "none" : "auto";
     }
-
-    submitBtn.textContent = value
-      ? "PLEASE WAIT…"
-      : mode === "signup"
-        ? "CREATE ACCOUNT"
-        : "SIGN IN";
+    submitBtn.textContent = value ? "PLEASE WAIT…" : mode === "signup" ? "CREATE ACCOUNT" : "SIGN IN";
   }
-
   function setMode(nextMode) {
     mode = nextMode;
     clearMessage();
-
     const isSignup = mode === "signup";
-
-    $("eyebrow").textContent = isSignup
-      ? "BEGIN YOUR JOURNEY"
-      : "WELCOME BACK";
-
-    $("heading").innerHTML = isSignup
-      ? "Create your<br>sanctuary account."
-      : "Sign in to your<br>sanctuary.";
-
+    $("eyebrow").textContent = isSignup ? "BEGIN YOUR JOURNEY" : "WELCOME BACK";
+    $("heading").innerHTML = isSignup ? "Create your<br>sanctuary account." : "Sign in to your<br>sanctuary.";
     $("subheading").textContent = isSignup
-      ? "Save your favourite stays and keep your pilgrimage plans close."
-      : "Continue your pilgrimage journey and manage your sacred stays.";
-
+      ? "Create an account to save your favourite stays and keep your pilgrimage plans close."
+      : "Continue your pilgrimage journey and access your saved stays.";
     $("nameField")?.classList.toggle("hidden", !isSignup);
     $("loginOptions")?.classList.toggle("hidden", isSignup);
-
-    if (fullNameInput) {
-      fullNameInput.required = isSignup;
-    }
-
+    if (fullNameInput) fullNameInput.required = isSignup;
     passwordInput.required = true;
-    passwordInput.minLength = 12;
-    passwordInput.autocomplete = isSignup
-      ? "new-password"
-      : "current-password";
-
+    passwordInput.minLength = isSignup ? 12 : 1;
+    passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
     submitBtn.textContent = isSignup ? "CREATE ACCOUNT" : "SIGN IN";
-
-    if ($("googleLabel")) {
-      $("googleLabel").textContent = isSignup
-        ? "Sign up with Google"
-        : "Continue with Google";
-    }
-
     if (switchText) {
       switchText.innerHTML = isSignup
         ? 'Already have an account? <button type="button" id="switchMode">Sign in</button>'
         : 'New to ROOMO Sacred? <button type="button" id="switchMode">Create an account</button>';
-
       $("switchMode")?.addEventListener("click", () => {
-        window.location.href = isSignup
-          ? "roomo-login.html"
-          : "roomo-signup.html";
+        window.location.href = isSignup ? "roomo-login.html" : "roomo-signup.html";
       });
     }
   }
 
-  // Show/hide password.
-  $("togglePassword")?.addEventListener("click", () => {
-    const visible = passwordInput.type === "password";
-
-    passwordInput.type = visible ? "text" : "password";
-
-    $("togglePassword").innerHTML = visible
-      ? '<i class="bi bi-eye-slash"></i>'
-      : '<i class="bi bi-eye"></i>';
-
-    $("togglePassword").setAttribute(
-      "aria-label",
-      visible ? "Hide password" : "Show password"
-    );
-  });
-
-  // Google authentication has not been implemented in the backend yet.
-  googleBtn?.addEventListener("click", () => {
-    showMessage(
-      "Google sign-in is not available yet. Please continue with your email and password."
-    );
-  });
-
-  // Password reset has not been implemented in the backend yet.
-  $("forgotLink")?.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    showMessage(
-      "Password reset is not available yet. Please contact the ROOMO team for assistance."
-    );
-  });
-
-  async function sendAuthRequest(endpoint, payload) {
+  async function sendGuestAuthRequest(endpoint, payload) {
     let response;
-
     try {
-      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      response = await fetch(`${API_BASE_URL}/api/guest-auth${endpoint}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
     } catch {
-      throw new Error(
-        "Unable to connect to the ROOMO server. Make sure your backend is running on port 5001."
-      );
+      throw new Error("Unable to connect to ROOMO. Make sure the backend is running on port 5001.");
     }
-
     const data = await response.json().catch(() => ({}));
-
     if (!response.ok) {
-      if (response.status === 409) {
-        throw new Error(
-          "An account already exists with this email. Please sign in instead."
-        );
-      }
-
-      if (response.status === 401) {
-        throw new Error("Email or password is incorrect.");
-      }
-
-      if (response.status === 429) {
-        throw new Error(
-          "Too many attempts. Please wait a few minutes and try again."
-        );
-      }
-
-      throw new Error(
-        data.message ||
-        data.error ||
-        "Authentication failed. Please try again."
-      );
+      if (response.status === 429) throw new Error("Too many attempts. Please wait a few minutes and try again.");
+      throw new Error(data.message || "Authentication failed. Please try again.");
     }
-
     return data;
+  }
+
+  function saveGuestSession(data) {
+    if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
+    const remember = $("remember");
+    const storage = mode === "login" && remember && !remember.checked ? sessionStorage : localStorage;
+    storage.setItem(TOKEN_KEY, data.token);
+    storage.setItem(USER_KEY, JSON.stringify(data.user));
+    (storage === sessionStorage ? localStorage : sessionStorage).removeItem(TOKEN_KEY);
+    (storage === sessionStorage ? localStorage : sessionStorage).removeItem(USER_KEY);
   }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-
     if (busy) return;
-
     clearMessage();
-
     const email = $("email")?.value.trim().toLowerCase();
     const password = passwordInput.value;
-
-    if (!email || !password) {
-      showMessage("Please enter your email address and password.");
-      return;
-    }
-
+    if (!email || !password) return showMessage("Please enter your email address and password.");
     if (mode === "signup") {
       const fullName = fullNameInput?.value.trim();
-
       if (!fullName || fullName.length < 2) {
         showMessage("Please enter your full name.");
         fullNameInput?.focus();
         return;
       }
-
       if (password.length < 12) {
-        showMessage("Your password must contain at least 12 characters.");
+        showMessage("Please use a password with at least 12 characters.");
         passwordInput.focus();
         return;
       }
     }
-
     setBusy(true);
-
     try {
-      const endpoint =
-        mode === "signup"
-          ? "/api/auth/register"
-          : "/api/auth/login";
-
-      const payload =
-        mode === "signup"
-          ? {
-              fullName: fullNameInput.value.trim(),
-              email,
-              password
-            }
-          : {
-              email,
-              password
-            };
-
-      const data = await sendAuthRequest(endpoint, payload);
-
-      if (!data.token || !data.owner) {
-        throw new Error(
-          "The server response is missing the login token or owner details."
-        );
-      }
-
-      // Respect the Remember me checkbox on the login page.
-      const remember = $("remember");
-
-      if (mode === "login" && remember && !remember.checked) {
-        sessionStorage.setItem(TOKEN_KEY, data.token);
-        sessionStorage.setItem(OWNER_KEY, JSON.stringify(data.owner));
-
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(OWNER_KEY);
-      } else {
-        localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(OWNER_KEY, JSON.stringify(data.owner));
-
-        sessionStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(OWNER_KEY);
-      }
-
-      showMessage(
-        mode === "signup"
-          ? "Your ROOMO account has been created successfully."
-          : "You are signed in successfully.",
-        "success"
-      );
-
-      // Keep the user on this page so they can see the success message.
-      // Redirect to your owner dashboard when that page is ready.
+      const data = await sendGuestAuthRequest(mode === "signup" ? "/register" : "/login",
+        mode === "signup" ? { fullName: fullNameInput.value.trim(), email, password } : { email, password });
+      saveGuestSession(data);
+      showMessage(mode === "signup" ? "Your ROOMO guest account has been created successfully." : "You are signed in successfully.", "success");
     } catch (error) {
-      showMessage(
-        error.message || "Unable to authenticate. Please try again."
-      );
+      showMessage(error.message || "Unable to authenticate. Please try again.");
     } finally {
       setBusy(false);
     }
   });
 
-  // Initialize the correct form mode for this page.
-  setMode(mode);
+  // Google Identity Services returns an ID credential; the backend verifies it before creating a session.
+  window.handleRoomoGoogleCredential = async function (response) {
+    if (!response?.credential || busy) {
+      showMessage("Google sign-in did not return a valid credential.");
+      return;
+    }
+    setBusy(true);
+    clearMessage();
+    try {
+      const data = await sendGuestAuthRequest("/google", { credential: response.credential });
+      saveGuestSession(data);
+      showMessage("You are signed in with Google successfully.", "success");
+    } catch (error) {
+      showMessage(error.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  // Expose a small helper for future pages to access the current token.
-  window.ROOMO_AUTH = {
-    getToken() {
-      return (
-        sessionStorage.getItem(TOKEN_KEY) ||
-        localStorage.getItem(TOKEN_KEY)
-      );
-    },
-
-    getOwner() {
-      const value =
-        sessionStorage.getItem(OWNER_KEY) ||
-        localStorage.getItem(OWNER_KEY);
-
-      if (!value) return null;
-
-      try {
-        return JSON.parse(value);
-      } catch {
-        return null;
+  async function initializeGoogleSignIn() {
+    if (!googleMount) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/guest-auth/config`, { cache: "no-store" });
+      const config = await response.json();
+      googleClientId = config.googleClientId;
+      if (!googleClientId) {
+        googleMount.innerHTML = '<button class="google-btn" type="button" id="googleUnavailable"><span class="google-g">G</span><span>Continue with Google</span></button>';
+        $("googleUnavailable")?.addEventListener("click", () => showMessage("Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID to the backend environment, then restart the server."));
+        return;
       }
-    },
-
-    async getCurrentOwner() {
-      const token = this.getToken();
-
-      if (!token) return null;
-
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const loadGoogleScript = () => new Promise((resolve, reject) => {
+        if (window.google?.accounts?.id) return resolve();
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
       });
+      await loadGoogleScript();
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: window.handleRoomoGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+      window.google.accounts.id.renderButton(googleMount, {
+        type: "standard", theme: "outline", size: "large", text: mode === "signup" ? "signup_with" : "signin_with",
+        shape: "rectangular", logo_alignment: "left", width: Math.max(240, Math.floor(googleMount.getBoundingClientRect().width || 320))
+      });
+      googleReady = true;
+    } catch (error) {
+      console.error("ROOMO Google sign-in initialization failed.", error);
+      googleMount.innerHTML = '<button class="google-btn" type="button" id="googleUnavailable"><span class="google-g">G</span><span>Continue with Google</span></button>';
+      $("googleUnavailable")?.addEventListener("click", () => showMessage("Google sign-in could not load. Check your connection and Google OAuth configuration."));
+    }
+  }
 
-      if (response.status === 401) {
+  $("togglePassword")?.addEventListener("click", () => {
+    const visible = passwordInput.type === "password";
+    passwordInput.type = visible ? "text" : "password";
+    $("togglePassword").innerHTML = visible ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+    $("togglePassword").setAttribute("aria-label", visible ? "Hide password" : "Show password");
+  });
+  $("forgotLink")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    showMessage("Password reset is not available yet. Please contact the ROOMO team for assistance.");
+  });
+
+  setMode(mode);
+  initializeGoogleSignIn();
+
+  window.ROOMO_GUEST_AUTH = {
+    getToken() { return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY); },
+    getUser() {
+      const value = sessionStorage.getItem(USER_KEY) || localStorage.getItem(USER_KEY);
+      if (!value) return null;
+      try { return JSON.parse(value); } catch { return null; }
+    },
+    async getCurrentUser() {
+      const token = this.getToken();
+      if (!token) return null;
+      const response = await fetch(`${API_BASE_URL}/api/guest-auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) {
         this.logout();
         return null;
       }
-
-      if (!response.ok) {
-        throw new Error("Unable to retrieve your ROOMO account.");
-      }
-
       const data = await response.json();
-
-      if (data.owner) {
-        const storage = sessionStorage.getItem(TOKEN_KEY)
-          ? sessionStorage
-          : localStorage;
-
-        storage.setItem(OWNER_KEY, JSON.stringify(data.owner));
+      if (data.user) {
+        const storage = sessionStorage.getItem(TOKEN_KEY) ? sessionStorage : localStorage;
+        storage.setItem(USER_KEY, JSON.stringify(data.user));
       }
-
-      return data.owner || null;
+      return data.user || null;
     },
-
     logout() {
       sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem(OWNER_KEY);
+      sessionStorage.removeItem(USER_KEY);
       localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(OWNER_KEY);
-
+      localStorage.removeItem(USER_KEY);
       window.location.href = "roomo-login.html";
     }
   };
