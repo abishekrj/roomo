@@ -10,7 +10,8 @@ router.get("/", async (req, res, next) => {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
     });
     const totalItems = await prisma.galleryItem.count();
-    const visibleItems = totalItems === 0 ? defaults : items;
+    const config = await prisma.galleryConfig.findUnique({ where: { id: 1 } });
+    const visibleItems = totalItems === 0 && !config?.initialized ? defaults : items;
     res.set("Cache-Control", "no-store");
     res.json({ items: visibleItems, usingDefaults: totalItems === 0 });
   } catch (error) { next(error); }
