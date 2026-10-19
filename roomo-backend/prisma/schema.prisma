@@ -101,6 +101,7 @@ model GalleryItem {
 model GalleryConfig {
   id          Int      @id @default(1)
   initialized Boolean  @default(false)
+  sampleVideosInitialized Boolean @default(false) @map("sample_videos_initialized")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("gallery_config")
