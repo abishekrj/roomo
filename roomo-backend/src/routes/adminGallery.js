@@ -39,7 +39,7 @@ const itemSchema = z.object({
   description: z.string().trim().max(2000).optional().default(""),
   type: z.enum(["IMAGE", "VIDEO"]),
   sourceType: z.enum(["UPLOAD", "URL", "YOUTUBE"]),
-  mediaUrl: z.string().trim().url().max(3000).refine(value => /^https?:\\/\\//i.test(value), "Use an HTTP or HTTPS media URL."),
+  mediaUrl: z.string().trim().url().max(3000).refine(value => value.startsWith("https://") || value.startsWith("http://"), "Use an HTTP or HTTPS media URL."),
   thumbnailUrl: z.string().trim().url().max(3000).optional().nullable(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
   sortOrder: z.coerce.number().int().min(0).max(10000).optional()
