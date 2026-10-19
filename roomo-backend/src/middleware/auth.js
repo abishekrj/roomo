@@ -14,7 +14,11 @@ function authenticateToken(req, res, next) {
   }
 
   try {
-    req.owner = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role === "GUEST" || decoded.aud === "roomo-guest") {
+      return res.status(403).json({ message: "Guest accounts cannot access owner or admin endpoints." });
+    }
+    req.owner = decoded;
     next();
   } catch {
     return res.status(401).json({
