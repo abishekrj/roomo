@@ -102,9 +102,26 @@ router.put("/featured-rooms", async (req, res, next) => {
   try {
     const parsed = z.object({
       title: z.string().trim().min(1).max(160),
-      description: z.string().trim().min(1).max(1000)
+      description: z.string().trim().min(1).max(1000),
+      propertyIds: z.array(z.string().uuid()).max(100).optional()
+    }).superRefine((data, ctx) => {
+      if (data.propertyIds && new Set(data.propertyIds).size !== data.propertyIds.length) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["propertyIds"], message: "Duplicate featured property IDs are not allowed." });
+      }
     }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Please check the section title and description." });
+    if (parsed.data.propertyIds) {
+      const selected = await prisma.property.findMany({
+        where: { id: { in: parsed.data.propertyIds }, isFeatured: true },
+        select: { id: true }
+      });
+      if (selected.length !== parsed.data.propertyIds.length) {
+        return res.status(400).json({ message: "The featured list changed. Reload Featured Rooms and try again." });
+      }
+      await prisma.$transaction(parsed.data.propertyIds.map((id, index) =>
+        prisma.property.update({ where: { id }, data: { featuredSortOrder: index + 1 } })
+      ));
+    }
     const existing = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
     const section = { featuredSectionTitle: parsed.data.title, featuredSectionDescription: parsed.data.description };
     const draft = { ...(existing?.draft || defaults), ...section };
