@@ -1,5 +1,9 @@
 
 const express = require("express");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateToken = require("../middleware/auth");
@@ -9,6 +13,33 @@ const router = express.Router();
 
 // Every route in this file requires authentication and ADMIN permission.
 router.use(authenticateToken, requireAdmin);
+
+const propertyUploadDir = path.join(__dirname, "../../uploads/properties");
+fs.mkdirSync(propertyUploadDir, { recursive: true });
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const propertyStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, propertyUploadDir),
+  filename: (req, file, cb) => {
+    const extension = ({ "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/avif": ".avif" })[file.mimetype];
+    cb(null, Date.now() + "-" + crypto.randomBytes(8).toString("hex") + extension);
+  }
+});
+const propertyImageUpload = multer({
+  storage: propertyStorage,
+  limits: { fileSize: 8 * 1024 * 1024, files: 10 },
+  fileFilter: (req, file, cb) => {
+    if (!allowedImageTypes.has(file.mimetype)) return cb(new Error("Upload JPG, PNG, WebP, or AVIF images only."));
+    cb(null, true);
+  }
+});
+router.post("/property-images/upload", propertyImageUpload.array("images", 10), (req, res) => {
+  if (!req.files?.length) return res.status(400).json({ message: "Choose at least one image to upload." });
+  const baseUrl = req.protocol + "://" + req.get("host");
+  res.status(201).json({
+    message: "Property images uploaded.",
+    images: req.files.map((file, index) => ({ imageUrl: baseUrl + "/uploads/properties/" + file.filename, originalName: file.originalname, sortOrder: index }))
+  });
+});
 
 const propertySchema = z.object({
   title: z.string().trim().min(5).max(150),
@@ -24,6 +55,8 @@ const propertySchema = z.object({
   bedrooms: z.coerce.number().int().min(0).max(100).default(1),
   bathrooms: z.coerce.number().int().min(1).max(100).default(1),
   imageUrls: z.array(z.string().url().max(2048)).max(10).default([]),
+  isFeatured: z.boolean().default(false),
+  featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0),
   status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
 });
 
@@ -84,6 +117,8 @@ router.post("/properties", async (req, res, next) => {
         maxGuests: data.maxGuests,
         bedrooms: data.bedrooms,
         bathrooms: data.bathrooms,
+        isFeatured: data.isFeatured,
+        featuredSortOrder: data.featuredSortOrder,
         status: data.status,
         images: {
           create: data.imageUrls.map((imageUrl, index) => ({
@@ -158,6 +193,8 @@ router.patch("/properties/:id", async (req, res, next) => {
           maxGuests: data.maxGuests,
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
+          isFeatured: data.isFeatured,
+          featuredSortOrder: data.featuredSortOrder,
           status: data.status
         }
       });
