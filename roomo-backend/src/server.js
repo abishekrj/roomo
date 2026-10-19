@@ -8,6 +8,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const prisma = require("./lib/prisma");
 const authRoutes = require("./routes/auth");
+const guestAuthRoutes = require("./routes/guestAuth");
 const adminRoutes = require("./routes/admin");
 const adminHomepageRoutes = require("./routes/adminHomepage");
 const adminTestimonialsRoutes = require("./routes/adminTestimonials");
@@ -44,6 +45,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/guest-auth", authLimiter, guestAuthRoutes);
 
 app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
   try {
