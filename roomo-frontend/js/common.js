@@ -327,7 +327,20 @@ if (document.body.classList.contains("stay-details-page")) {
     if (response.ok) {
       const payload = await response.json();
       const content = payload.content || {};
-      const room = (content.featuredRooms || []).find(item => item.id === params.get("stay"));
+      const selectedId = params.get("stay");
+      const property = (content.featuredProperties || []).find(item => item.id === selectedId);
+      const legacyRoom = (content.featuredRooms || []).find(item => item.id === selectedId);
+      const room = property ? {
+        id: property.id,
+        name: property.title,
+        type: property.propertyType || "Sanctuary stay",
+        location: [property.address, property.city, property.state].filter(Boolean).join(", "),
+        rating: Number(property.rating || 0),
+        reviews: Number(property.reviews || 0),
+        price: Number(property.nightlyPrice || 0),
+        img: property.images?.[0]?.imageUrl || "",
+        desc: property.description || ""
+      } : legacyRoom;
       if (room) {
         stay = {
           ...(stay || {}),
