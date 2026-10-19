@@ -79,6 +79,7 @@ router.get("/registered-users", async (req, res, next) => {
         fullName: true,
         email: true,
         authProvider: true,
+        emailVerified: true,
         createdAt: true,
       },
     });
