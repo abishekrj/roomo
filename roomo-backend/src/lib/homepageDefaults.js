@@ -18,6 +18,7 @@ const homepageDefaults = {
     legal: [{ label: "Pilgrim Code of Conduct", url: "#" }, { label: "Privacy Terms", url: "#" }, { label: "Host an Ashram or Haveli", url: "roomo-signup.html" }]
   }
   testimonials: {
+    eyebrow: "Heartfelt Devotee Words",
     title: "Words from Fellow Pilgrims",
     description: "Authentic experiences shared by devotees who sought blessed shelter through ROOMO.",
     ratingSummary: "4.9 / 5 (1,840+ Pilgrims)",
