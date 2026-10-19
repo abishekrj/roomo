@@ -18,7 +18,13 @@ const homepageSchema = z.object({
   footerDescription: z.string().trim().min(10).max(500),
   contactPhone: z.string().trim().min(5).max(40),
   whatsappNumber: z.string().trim().regex(/^\d{8,15}$/),
-  seoDescription: z.string().trim().min(10).max(300)
+  seoDescription: z.string().trim().min(10).max(300),
+  footerLinks: z.object({
+    social: z.array(z.object({ label: z.string().trim().min(1).max(80), url: z.string().trim().min(1).max(500), icon: z.string().trim().min(1).max(80) })).max(12),
+    sanctuaries: z.array(z.object({ label: z.string().trim().min(1).max(100), url: z.string().trim().min(1).max(500) })).max(20),
+    pilgrimCare: z.array(z.object({ label: z.string().trim().min(1).max(100), url: z.string().trim().min(1).max(500) })).max(20),
+    legal: z.array(z.object({ label: z.string().trim().min(1).max(100), url: z.string().trim().min(1).max(500) })).max(20)
+  })
 });
 router.get("/", async (req, res, next) => {
   try {
