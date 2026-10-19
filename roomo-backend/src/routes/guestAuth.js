@@ -65,8 +65,13 @@ router.post("/google", async (req, res, next) => {
     if (!process.env.GOOGLE_CLIENT_ID) return res.status(503).json({ message: "Google sign-in is not configured yet. Please use email and password." });
     const parsed = googleSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "A valid Google credential is required." });
-    const ticket = await googleClient.verifyIdToken({ idToken: parsed.data.credential, audience: process.env.GOOGLE_CLIENT_ID });
-    const payload = ticket.getPayload();
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({ idToken: parsed.data.credential, audience: process.env.GOOGLE_CLIENT_ID });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ message: "The Google credential is invalid or expired." });
+    }
     if (!payload || !payload.sub || !payload.email || payload.email_verified !== true) return res.status(401).json({ message: "Google could not verify this account." });
 
     const email = payload.email.toLowerCase();
@@ -85,7 +90,6 @@ router.post("/google", async (req, res, next) => {
     res.json({ message: "Signed in with Google successfully.", user: publicUser(user), token: createGuestToken(user) });
   } catch (error) {
     if (error.code === "P2002") return res.status(409).json({ message: "An account already exists with this email. Please sign in using that account." });
-    if (error.message?.includes("Token used too early") || error.message?.includes("Invalid token")) return res.status(401).json({ message: "The Google credential is invalid or expired." });
     next(error);
   }
 });
