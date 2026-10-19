@@ -38,66 +38,6 @@ if (document.body.classList.contains("home-page")) {
         setInterval(updateTimer, 1000);
       }
       document.addEventListener('DOMContentLoaded', initDeepamCountdown);
-      // Visual Archives Lightbox Prev/Next Data & State
-      const galleryItems = [{
-        url: 'https://lh3.googleusercontent.com/aida/AEtjO1UAv51D6Lb7VwdMeSHlgdNaqiHO4RcD8bemh5LWtx1E8rPNfU_WyhG9LiKaN7dH5a5YZtXpy2L8FAWAx3s_l9_7pv7-jZmvTUaIdQfbGz_Y1vZlKGw0EWJ-ZEYT05rHJs3SRlD_D_AbUmzcaNOcBfAKp-_DtviYAwjR83fQmORL7rc5zL6Klg8l8AfQsvbjV3IUE4PfdOLEFDqsvsuFt4Rru2QGE13HYX2ti3QxdkZIrXD511ueMOclMT4',
-        title: 'Dawn at Arunachala',
-        desc: 'The timeless sacred mountain glowing under morning mist behind ancient temple courtyards.'
-      }, {
-        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXtxCnBzRiU8d5Qigy_OG6WAAzgDWLqUvqg20izQ2cqA7lgJOctKf2KLOe3knicN5-cDtuWa4hmVn-Tw8jrI3dmbFMzpu61c0fqk4x2xBvAk8AzLbPflWc5Ufu4Tnxvlp-FqLCVwySU_X6SuSobKQmr1KgIHHCpppWcWezUk6ZHoFf5RmdR3M1mtDHtLDbvcFtF2V8NxLt3nJiNCb9jGpKl2enX0uyzIYk30cFu4MX5tb4Y5OeOtGC',
-        title: 'Annamalaiyar Temple Towers',
-        desc: 'Magnificent 217-foot Eastern Raja Gopuram illuminated by sacred temple oil lamps at twilight.'
-      }, {
-        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSiGGTCKb1XREVoBDaeBhbo-LKYdSjc6Fc8V0oCKFM0Kg3UuOT7DRl_Bc7M9MVdIHGSJnyM7oL3qaRdu02RxEY9BTEk8XCMac2E3pWMwUI9LHF6mjk1_RfAXzrEAU6t_cw2adckTs2uDdIHTr37FQAJq3pfi0DZOXTD1MPp3XgQZO4D-2iL54siFeyp6P4gdQ8HSYBK6VZ-DgtnvOIe2uPWOWguAd6PfJRluSpq9SMJkQ5HHMIoxtq',
-        title: 'Sri Ramanasramam Hall',
-        desc: 'Tranquil meditation hall where Sri Ramana Maharshi resided in continuous self-inquiry.'
-      }, {
-        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJ3ru1MFLx8fXh0zDW7gWD7RMLKSGXvUrctcltCm9QVI5ua8pmjo5JOGy-l_zUNqLaOuink7ezYaZd-I8qpRTfzn_nkfn7WBZbjt2Vx6TcfmgEh1zTSqN65Co21DVQB6sGM-T2qqLI2D9kDqH8C2QqWevYBJc0KdO93q9cb68SZf4CHicPJJV440iIFp9YgAkGnIN8he_ZVH-uyXlSwJUPqwDbmqBj5t8_5Gz3zuBM40QmjpMqvRHs',
-        title: 'Sacred Waters (Brahma Theertham)',
-        desc: 'Historic sacred water body reflecting ancient stone mandapams and morning Girivalam prayers.'
-      }, {
-        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBhbXOK_PdyukniK0zeTSMc68JxxLC5_9pxdDmm0GxlKxz9NHxuIY4qnupzjaG3Y9aqgWzNwdm_jd_f-CzxFdVYReFnpuOgQ0h_8M_Kn1pi0o88UilLiKYFlsOImdfJY3O3MYPjHX9_lYRAETY0XWnFy5EtwNNIoW0AKJf-caWykUtHB5MqbJarLBR3ROdzn2GtsV6MDF20gGbtbAHn5Id7LMNzEmesrj3vjKAwQ57cFX98lGDuD72L',
-        title: 'Virupaksha & Skandashramam Caves',
-        desc: 'Sacred rock shelter hermitage on holy slopes overlooking the ancient temple town.'
-      }, {
-        url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBo5sFnpPGpdULpDVgHuD2b4arD_ArIMGyprJQwKVSB6CqbIpSVfdv5BDugS3VeyKP6EvrOAy7TdkFfmUAahtpMyZnzrFH7UEqsLy07Ifa2Y3faPjwC5HNAIsKYpOiFmjA8LKTJOZyE441f8ewM3LWr6kFeeuNU8dCRkoAx1tEbJbrdf757CaeawvIK9T4PUtie4sbyBxFjT9eOfuuAQvNM5U3Cuf66vGTmuD219k7fratpIzQ2FyJQ',
-        title: 'Maha Deepam Holy Beacon Fire',
-        desc: 'The colossal flame cauldron ignited atop holy Mount Arunachala summit, illuminating the horizon.'
-      }];
-      let currentGalleryIndex = 0;
-
-      function openLightboxByIndex(index) {
-        currentGalleryIndex = (index + galleryItems.length) % galleryItems.length;
-        renderLightbox();
-        const modalEl = document.getElementById('galleryLightboxModal');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-      }
-
-      function stepGalleryImage(delta) {
-        currentGalleryIndex = (currentGalleryIndex + delta + galleryItems.length) % galleryItems.length;
-        renderLightbox();
-      }
-
-      function renderLightbox() {
-        const item = galleryItems[currentGalleryIndex];
-        const img = document.getElementById('lightboxImg');
-        const title = document.getElementById('lightboxTitle');
-        const desc = document.getElementById('lightboxDesc');
-        const counter = document.getElementById('lightboxCounter');
-        if (img) img.src = item.url;
-        if (title) title.innerText = item.title;
-        if (desc) desc.innerText = item.desc;
-        if (counter) counter.innerText = `Image ${currentGalleryIndex + 1} of ${galleryItems.length}`;
-      }
-      // Keyboard navigation for Lightbox
-      document.addEventListener('keydown', (e) => {
-        const modalEl = document.getElementById('galleryLightboxModal');
-        if (modalEl && modalEl.classList.contains('show')) {
-          if (e.key === 'ArrowLeft') stepGalleryImage(-1);
-          if (e.key === 'ArrowRight') stepGalleryImage(1);
-        }
-      });
 if (typeof initDeepamCountdown === "function") window.initDeepamCountdown = initDeepamCountdown;
 if (typeof updateTimer === "function") window.updateTimer = updateTimer;
 if (typeof openLightboxByIndex === "function") window.openLightboxByIndex = openLightboxByIndex;
@@ -326,28 +266,6 @@ if (document.body.classList.contains("home-page")) {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
       }
-      // 6. Gallery Filter & Lightbox
-      function filterGallery(category, btn) {
-        document.querySelectorAll('.gallery-tab-heritage').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const items = document.querySelectorAll('.gallery-col');
-        items.forEach(item => {
-          if (category === 'all' || item.getAttribute('data-category') === category) {
-            item.style.display = 'block';
-          } else {
-            item.style.display = 'none';
-          }
-        });
-      }
-
-      function viewPhoto(url, title, desc) {
-        document.getElementById('lightboxImg').src = url;
-        document.getElementById('lightboxTitle').innerText = title;
-        document.getElementById('lightboxDesc').innerText = desc;
-        const modal = new bootstrap.Modal(document.getElementById('galleryLightboxModal'));
-        modal.show();
-      }
-
       function doSearch() {
         const dest = document.getElementById('destinationInput').value.trim() || 'Tiruvannamalai';
         const cin = document.getElementById('checkinPicker').value;
