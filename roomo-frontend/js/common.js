@@ -465,6 +465,75 @@ if (document.body.classList.contains("stay-details-page")) {
     }
   }
 
+  async function initializeGoogleSignIn() {
+    const fallback = $("googleSignInFallback");
+    const container = $("googleSignInButton");
+    if (!fallback || !container) return;
+
+    async function setupGoogleButton() {
+      const response = await fetch(`${API_BASE_URL}/api/guest-auth/config`);
+      const config = await response.json().catch(() => ({}));
+      if (!response.ok || !config.googleClientId) {
+        throw new Error("Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID to the backend .env file and restart the API.");
+      }
+      if (!window.google?.accounts?.id) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://accounts.google.com/gsi/client";
+          script.async = true;
+          script.defer = true;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Google sign-in could not load. Check your internet connection and try again."));
+          document.head.appendChild(script);
+        });
+      }
+      container.replaceChildren();
+      window.google.accounts.id.initialize({
+        client_id: config.googleClientId,
+        callback: async (response) => {
+          if (!response.credential) return showMessage("Google did not return a sign-in credential.");
+          if (busy) return;
+          setBusy(true);
+          clearMessage();
+          try {
+            const data = await sendGuestAuthRequest("/google", { credential: response.credential });
+            saveGuestSession(data);
+            showMessage("You are signed in with Google successfully.", "success");
+          } catch (error) {
+            showMessage(error.message || "Google sign-in failed. Please try again.");
+          } finally {
+            setBusy(false);
+          }
+        }
+      });
+      window.google.accounts.id.renderButton(container, {
+        type: "standard", theme: "outline", size: "large",
+        text: mode === "signup" ? "signup_with" : "signin_with",
+        shape: "rectangular", width: Math.min(360, Math.max(240, Math.floor(container.clientWidth || 320)))
+      });
+      fallback.hidden = true;
+    }
+
+    fallback.addEventListener("click", async () => {
+      fallback.disabled = true;
+      fallback.textContent = "Loading Google sign-in…";
+      try {
+        await setupGoogleButton();
+      } catch (error) {
+        showMessage(error.message || "Google sign-in could not be initialized.");
+      } finally {
+        fallback.disabled = false;
+        fallback.textContent = "Continue with Google";
+      }
+    });
+
+    try {
+      await setupGoogleButton();
+    } catch (error) {
+      console.info("ROOMO Google sign-in:", error.message);
+    }
+  }
+
   async function sendGuestAuthRequest(endpoint, payload) {
     let response;
     try {
