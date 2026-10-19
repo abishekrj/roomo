@@ -46,7 +46,7 @@
       button.setAttribute("aria-label", "Open " + safeText(item.title));
       button.innerHTML = (thumb ? '<img loading="lazy" alt="' + escapeHtml(item.title) + '" src="' + escapeHtml(thumb) + '">' : (item.type === "VIDEO" ? '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-white"><i class="bi bi-film" style="font-size:4rem"></i></div>' : '<div class="w-100 h-100 d-flex align-items-center justify-content-center text-white"><span class="small">Image preview unavailable</span></div>')) +
         (item.type === "VIDEO" ? '<span class="gallery-card-play"><i class="bi bi-play-circle-fill"></i></span>' : '') +
-        '<span class="gallery-card-shade"><span class="badge rounded-pill align-self-start mb-2">' + (item.type === "VIDEO" ? "Video" : "Image") + '</span><strong class="fs-5">' + escapeHtml(item.title) + '</strong><span class="small text-white-50">' + escapeHtml(item.description) + '</span></span>';
+        '<span class="gallery-card-shade"><strong class="fs-5">' + escapeHtml(item.title) + '</strong><span class="small text-white-50">' + escapeHtml(item.description) + '</span></span>';
       button.addEventListener("click", () => openViewer(index));
       col.appendChild(button);
       grid.appendChild(col);
@@ -60,18 +60,20 @@
     const media = $("lightboxMedia");
     const title = $("lightboxTitle");
     const desc = $("lightboxDesc");
+    const caption = title && title.closest(".pt-3");
     const counter = $("lightboxCounter");
     if (!media) return;
     if (item.type === "IMAGE") {
       media.innerHTML = '<img alt="' + escapeHtml(item.title) + '" src="' + escapeHtml(item.mediaUrl) + '">';
     } else if (item.sourceType === "YOUTUBE") {
       const id = youtubeId(item.mediaUrl);
-      media.innerHTML = id ? '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0" title="' + escapeHtml(item.title) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="p-4">This YouTube URL is not valid.</p>';
+      media.innerHTML = id ? '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0' + '" title="' + escapeHtml(item.title) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="p-4">This YouTube URL is not valid.</p>';
     } else {
       media.innerHTML = '<video controls autoplay playsinline preload="metadata"><source src="' + escapeHtml(item.mediaUrl) + '">Your browser does not support this video.</video>';
       const video = media.querySelector("video");
       if (video) video.play().catch(() => {});
     }
+    if (caption) caption.hidden = item.type === "VIDEO";
     if (title) title.textContent = item.title || "";
     if (desc) desc.textContent = item.description || "";
     if (counter) counter.textContent = (state.index + 1) + " of " + items.length;
