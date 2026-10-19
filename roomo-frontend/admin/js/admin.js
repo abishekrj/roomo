@@ -29,11 +29,14 @@
     }
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
+      const error = new Error(data.message || `Request failed (${response.status}).`);
+      error.status = response.status;
+      if (response.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
         sessionStorage.removeItem(TOKEN_KEY);
         token = null;
       }
-      throw new Error(data.message || `Request failed (${response.status}).`);
+      throw error;
     }
     return data;
   }
@@ -381,7 +384,9 @@
   async function init() {
     const logout = $("logoutButton");
     if (logout) logout.addEventListener("click", () => {
+      localStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(TOKEN_KEY);
+      token = null;
       location.href = "admin.html";
     });
 
@@ -395,8 +400,12 @@
         try {
           const result = await request("/auth/login", { method: "POST", body: JSON.stringify({ email: $("loginEmail").value.trim(), password: $("loginPassword").value }) });
           if (!result.token) throw new Error("Login response did not include a token.");
+          if (result.owner?.role !== "ADMIN") {
+            throw new Error("This account does not have administrator access. Ask an administrator to set its database role to ADMIN.");
+          }
           token = result.token;
-          sessionStorage.setItem(TOKEN_KEY, token);
+          localStorage.setItem(TOKEN_KEY, token);
+          sessionStorage.removeItem(TOKEN_KEY);
           await request("/admin/properties");
           location.href = "dashboard.html";
         } catch (error) {
@@ -415,9 +424,13 @@
       else await loadProperties();
     }
     catch (error) {
-      sessionStorage.removeItem(TOKEN_KEY);
       notice(error.message, "error");
-      setTimeout(() => location.replace("admin.html"), 700);
+      if (error.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        token = null;
+        setTimeout(() => location.replace("admin.html"), 700);
+      }
     }
 
     if ($("roomsSearch")) $("roomsSearch").addEventListener("input", renderRooms);
