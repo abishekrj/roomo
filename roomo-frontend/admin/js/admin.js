@@ -3,7 +3,7 @@
   const API = "http://localhost:5001/api";
   const TOKEN_KEY = "roomoAdminToken";
   const $ = (id) => document.getElementById(id);
-  let token = sessionStorage.getItem(TOKEN_KEY);
+  let token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   let properties = [];
   let registeredUsers = [];
   let imageItems = [];
