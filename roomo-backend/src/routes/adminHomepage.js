@@ -85,24 +85,28 @@ router.post("/hero-image", heroUpload.single("image"), (req, res) => {
 router.get("/featured-rooms", async (req, res, next) => {
   try {
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const properties = await prisma.property.findMany({
+      where: { isFeatured: true },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
+      orderBy: [{ featuredSortOrder: "asc" }, { createdAt: "desc" }]
+    });
     const source = row?.draft || row?.published || defaults;
     res.json({
       title: source.featuredSectionTitle || defaults.featuredSectionTitle,
       description: source.featuredSectionDescription || defaults.featuredSectionDescription,
-      rooms: Array.isArray(source.featuredRooms) ? source.featuredRooms : defaults.featuredRooms
+      properties
     });
   } catch (error) { next(error); }
 });
 router.put("/featured-rooms", async (req, res, next) => {
   try {
-    const parsed = featuredSectionSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Please check the featured room fields.", errors: parsed.error.flatten() });
+    const parsed = z.object({
+      title: z.string().trim().min(1).max(160),
+      description: z.string().trim().min(1).max(1000)
+    }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Please check the section title and description." });
     const existing = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
-    const section = {
-      featuredSectionTitle: parsed.data.title,
-      featuredSectionDescription: parsed.data.description,
-      featuredRooms: parsed.data.rooms
-    };
+    const section = { featuredSectionTitle: parsed.data.title, featuredSectionDescription: parsed.data.description };
     const draft = { ...(existing?.draft || defaults), ...section };
     const published = { ...(existing?.published || defaults), ...section };
     await prisma.homepageConfig.upsert({
@@ -110,7 +114,12 @@ router.put("/featured-rooms", async (req, res, next) => {
       create: { id: 1, draft, published, publishedAt: new Date() },
       update: { draft, published, publishedAt: new Date() }
     });
-    res.json({ message: "Featured sanctuaries saved and published.", ...parsed.data });
+    const properties = await prisma.property.findMany({
+      where: { isFeatured: true },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
+      orderBy: [{ featuredSortOrder: "asc" }, { createdAt: "desc" }]
+    });
+    res.json({ message: "Featured section content saved and published. Room selection is managed in Rooms Listings.", ...parsed.data, properties });
   } catch (error) { next(error); }
 });
 
