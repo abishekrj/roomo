@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ROOMO Admin | Galleries</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/admin.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+.gallery-admin-tabs{display:flex;gap:8px;margin-bottom:18px}.gallery-admin-tab{border:1px solid var(--border);background:#fff;border-radius:24px;padding:9px 18px;font-weight:700;color:var(--muted)}.gallery-admin-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}.gallery-admin-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.gallery-admin-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;min-width:0}.gallery-admin-thumb{height:165px;background:#102747;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#fff;font-size:42px}.gallery-admin-thumb img{width:100%;height:100%;object-fit:cover}.gallery-admin-card-body{padding:14px}.gallery-admin-card h3{font-size:15px;margin:0 0 6px;overflow-wrap:anywhere}.gallery-admin-card p{font-size:12px;color:var(--muted);min-height:34px;overflow-wrap:anywhere}.gallery-admin-actions{display:flex;gap:7px;flex-wrap:wrap}.gallery-admin-actions button{font-size:12px;padding:7px 10px}.source-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.media-preview{max-width:100%;max-height:180px;object-fit:contain;border:1px solid var(--border);border-radius:9px;margin-top:10px}@media(max-width:1000px){.gallery-admin-list{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.gallery-admin-list,.source-row{grid-template-columns:1fr}}
+</style></head>
+<body data-page="galleries">
+<header class="topbar"><div class="brand">ROOMO<span>PROPERTY MANAGEMENT</span></div><button id="logoutButton" class="button button-secondary" type="button">Sign out</button></header>
+<main class="page"><div class="admin-shell">
+<aside class="admin-sidebar"><div class="sidebar-brand">ROOMO</div><div class="sidebar-subtitle">ADMIN PANEL</div><div class="sidebar-label">WORKSPACE</div><nav class="sidebar-nav" aria-label="Admin navigation">
+<a class="sidebar-link" href="dashboard.html"><span class="sidebar-icon"><i class="bi bi-grid-1x2-fill"></i></span>Dashboard</a>
+<a class="sidebar-link" href="rooms-listings.html"><span class="sidebar-icon"><i class="bi bi-houses-fill"></i></span>Rooms Listings</a>
+<a class="sidebar-link" href="homepage.html"><span class="sidebar-icon"><i class="bi bi-layout-text-window-reverse"></i></span>Homepage Editor</a>
+<a class="sidebar-link" href="testimonials.html"><span class="sidebar-icon"><i class="bi bi-chat-quote-fill"></i></span>Testimonials</a>
+<a class="sidebar-link active" href="galleries.html"><span class="sidebar-icon"><i class="bi bi-images"></i></span>Galleries</a>
+<a class="sidebar-link" href="reports.html"><span class="sidebar-icon"><i class="bi bi-bar-chart-line-fill"></i></span>Reports</a>
+</nav></aside>
+<div class="admin-content"><div id="pageNotice" class="notice" role="status"></div>
+<div class="page-heading"><div><h1>Galleries</h1><p class="muted">Manage the Visual Archives images and videos shown on the public homepage.</p></div><a class="button button-secondary" href="../index.html#sacredGallery" target="_blank" rel="noopener">View Visual Archives ↗</a></div>
+<section class="panel"><h2 id="formHeading">Add gallery media</h2><p class="muted small">Images support device upload or image URL. Videos support device upload, direct video URL, or YouTube URL. Maximum uploaded video size is 100 MB.</p>
+<form id="galleryForm"><input type="hidden" id="editingId" value="">
+<div class="field-grid">
+<div class="field"><label for="mediaType">Media type</label><select id="mediaType" required><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></div>
+<div class="field"><label for="sourceType">Add media using</label><select id="sourceType" required><option value="UPLOAD">Upload from device</option><option value="URL">Direct URL</option><option value="YOUTUBE">YouTube video</option></select></div>
+<div class="field full"><label for="mediaTitle">Title</label><input id="mediaTitle" maxlength="160" required placeholder="e.g. Dawn at Arunachala"></div>
+<div class="field full"><label for="mediaDescription">Description (optional)</label><textarea id="mediaDescription" maxlength="2000" placeholder="A short description for visitors"></textarea></div>
+<div class="field full hidden" id="uploadField"><label for="mediaFile">Choose file</label><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif"><button class="button button-secondary" id="uploadMediaButton" type="button" style="margin-top:10px">Upload selected file</button><span class="field-help" id="uploadHelp">JPG, PNG, WebP or AVIF · maximum 8 MB.</span></div>
+<div class="field full hidden" id="urlField"><label for="mediaUrl" id="mediaUrlLabel">Media URL</label><input id="mediaUrl" type="url" maxlength="3000" placeholder="https://..." ><span class="field-help" id="urlHelp">Paste a publicly accessible HTTPS URL.</span></div>
+<div class="field full hidden" id="thumbnailField"><label for="thumbnailUrl">Video thumbnail URL (optional)</label><input id="thumbnailUrl" type="url" maxlength="3000" placeholder="https://..."><span class="field-help">Used as the video card preview. YouTube videos use their YouTube thumbnail automatically if left blank.</span></div>
+<div class="field"><label for="mediaStatus">Visibility</label><select id="mediaStatus"><option value="DRAFT">Draft — hidden from visitors</option><option value="PUBLISHED">Published — visible on website</option><option value="ARCHIVED">Archived — hidden from visitors</option></select></div>
+<div class="field"><label for="sortOrder">Display order</label><input id="sortOrder" type="number" min="0" max="10000" value="0"></div>
+<div class="field full"><span class="field-help" id="mediaUrlHelp">Upload the file first. The returned media URL will be attached when you save.</span><img id="mediaPreview" class="media-preview hidden" alt="Selected media preview"></div>
+</div>
+<div class="form-actions"><button class="button button-primary" id="saveMediaButton" type="submit">Save gallery item</button><button class="button button-secondary hidden" id="cancelEditButton" type="button">Cancel edit</button></div>
+</form></section>
+<section class="panel"><div class="section-heading"><div><h2>Visual Archives library</h2><p class="muted small">Edit details, publish, archive or remove media items.</p></div><span id="galleryItemCount" class="muted small"></span></div>
+<div class="gallery-admin-tabs" role="tablist"><button type="button" class="gallery-admin-tab active" data-admin-type="IMAGE">Images</button><button type="button" class="gallery-admin-tab" data-admin-type="VIDEO">Videos</button></div>
+<div id="galleryAdminList" class="gallery-admin-list"><p class="muted">Loading gallery…</p></div>
+</section>
+</div></div></main><script src="js/galleries-admin.js" defer></script><script src="js/admin.js" defer></script></body></html>
