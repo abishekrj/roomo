@@ -4,7 +4,6 @@ const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateGuest = require("../middleware/authenticateGuest");
 const authenticateToken = require("../middleware/auth");
-const { sendReservationConfirmation } = require("../services/messaging");
 
 const router = express.Router();
 
@@ -106,7 +105,6 @@ router.post("/", authenticateGuest, async (req, res, next) => {
 
   try {
     const input = parsed.data;
-    if (!req.guest.phoneVerified) return res.status(403).json({ message: "Verify your mobile number before requesting a reservation.", code: "PHONE_NOT_VERIFIED" });
     const checkIn = parseDate(input.checkIn);
     const checkOut = parseDate(input.checkOut);
     if (!checkIn || !checkOut) return res.status(400).json({ message: "Enter valid check-in and check-out dates." });
@@ -205,11 +203,7 @@ router.patch("/owner/:id/decision", authenticateToken, async (req, res, next) =>
         property: { select: { id: true, title: true, city: true, owner: { select: { id: true, fullName: true, phoneNumber: true } } } },
       },
     });
-    if (decision.data.status === "CONFIRMED") {
-      // Notification delivery is best-effort; provider outages must not undo a confirmation.
-      await sendReservationConfirmation(reservation);
-    }
-    res.json({ message: decision.data.status === "CONFIRMED" ? "Reservation confirmed. Notifications were attempted where messaging is configured." : "Reservation request declined.", reservation });
+    res.json({ message: decision.data.status === "CONFIRMED" ? "Reservation confirmed." : "Reservation request declined.", reservation });
   } catch (error) {
     next(error);
   }
