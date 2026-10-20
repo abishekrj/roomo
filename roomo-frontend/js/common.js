@@ -416,8 +416,9 @@ if (document.body.classList.contains("stay-details-page")) {
     const selectedAmenities = new Set((stay.amenities || []).filter(key => typeof key === "string"));
     const popularIds = ["wifi","airport-shuttle","family-rooms","non-smoking-rooms","front-desk-24h","lift","heating","ac"];
     const popularAmenities = popularIds.filter(key => selectedAmenities.has(key));
+    const popularFacilityIcons = {"wifi":"bi-wifi","airport-shuttle":"bi-bus-front","family-rooms":"bi-people","non-smoking-rooms":"bi-ban","front-desk-24h":"bi-clock","lift":"bi-arrow-up-square","heating":"bi-thermometer-half","ac":"bi-snow"};
     const popularFacilities = popularAmenities.length
-      ? '<section class="detail-section"><span class="detail-eyebrow">COMFORTS & CONVENIENCES</span><h2>Most popular facilities</h2><div class="detail-amenities">' + popularAmenities.map(key => '<span class="detail-amenity"><i class="bi bi-check-circle-fill"></i>' + (amenityLabels[key] || key) + '</span>').join("") + '</div></section>'
+      ? '<section class="detail-section detail-popular-section"><h2>Most popular facilities</h2><div class="detail-popular-grid">' + popularAmenities.map(key => '<span class="detail-popular-badge"><i class="bi ' + (popularFacilityIcons[key] || "bi-check2") + '"></i><span>' + (amenityLabels[key] || key) + '</span></span>').join("") + '</div></section>'
       : "";
     const amenitySections = amenityCategories.map(([category, keys]) => {
       const items = keys.filter(key => selectedAmenities.has(key));
