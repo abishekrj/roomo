@@ -77,7 +77,7 @@ Existing Google guests can add/verify a number using `POST /api/mobile-verificat
 
 `POST /api/auth/register` now expects `phoneNumber` in the same E.164 format. It creates the account without issuing a login token and sends the OTP. Verify with `accountType: "OWNER"`, then sign in normally. Add a mobile number to an older signed-in account using `POST /api/mobile-verification/send-current` with its bearer token.
 
-If an existing owner has no phone number, their account is preserved. Add the phone-number field and OTP UI to any owner signup form you use before production rollout.
+If an existing owner has no phone number, their account is preserved. The new frontend page is `roomo-frontend/roomo-owner-auth.html`; the property submission page links to it. Existing owner accounts without a saved phone remain able to sign in and can add a number through the mobile verification flow.
 
 ## 5. Reservation notifications
 
@@ -85,7 +85,7 @@ When an owner confirms a reservation through `PATCH /api/reservations/owner/:id/
 
 ## 6. Commission API (ADMIN only)
 
-All routes below require the existing administrator bearer token:
+Open `roomo-frontend/roomo-admin-commissions.html` from the frontend after signing in with an administrator account. All API routes below require the existing administrator bearer token:
 - `GET /api/admin/commissions` — reservations, owner rates, booking value, commission due/paid totals.
 - `PATCH /api/admin/commissions/owners/:ownerId/rate` with `{"commissionRate":12.5}` — set an owner's percentage (0–50).
 - `PATCH /api/admin/commissions/reservations/:reservationId/payment` with `{"commissionStatus":"PAID","commissionNotes":"Settled by bank transfer"}` — mark a commission paid; `DUE` and `WAIVED` are also supported.
