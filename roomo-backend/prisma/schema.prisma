@@ -20,6 +20,10 @@ model Owner {
   role         String     @default("OWNER")
   email        String     @unique
   passwordHash String     @map("password_hash")
+  phoneNumber  String?    @unique @map("phone_number")
+  phoneVerified Boolean  @default(false) @map("phone_verified")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  commissionRate Decimal @default(10.00) @db.Decimal(5, 2) @map("commission_rate")
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
   properties   Property[]
@@ -31,6 +35,9 @@ model GuestUser {
   id           String   @id @default(uuid()) @db.Uuid
   fullName     String   @map("full_name")
   email        String   @unique
+  phoneNumber  String?  @unique @map("phone_number")
+  phoneVerified Boolean @default(false) @map("phone_verified")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
   passwordHash String?  @map("password_hash")
   googleId     String?  @unique @map("google_id")
   authProvider String   @default("EMAIL") @map("auth_provider")
@@ -151,6 +158,12 @@ model Reservation {
   nights          Int
   nightlyPrice    Decimal           @db.Decimal(10, 2) @map("nightly_price")
   totalAmount     Decimal           @db.Decimal(12, 2) @map("total_amount")
+  commissionRateSnapshot Decimal    @default(10.00) @db.Decimal(5, 2) @map("commission_rate_snapshot")
+  commissionAmount Decimal          @default(0.00) @db.Decimal(12, 2) @map("commission_amount")
+  ownerPayoutAmount Decimal         @default(0.00) @db.Decimal(12, 2) @map("owner_payout_amount")
+  commissionStatus String           @default("DUE") @map("commission_status")
+  commissionPaidAt DateTime?        @map("commission_paid_at")
+  commissionNotes String?           @db.Text @map("commission_notes")
   status          ReservationStatus @default(REQUESTED)
   specialRequests String?           @db.VarChar(1000) @map("special_requests")
   cancelledAt     DateTime?         @map("cancelled_at")
@@ -158,8 +171,46 @@ model Reservation {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   guest           GuestUser         @relation(fields: [guestId], references: [id], onDelete: Restrict)
   property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  notifications   NotificationLog[]
 
   @@index([propertyId, checkIn, checkOut, status])
   @@index([guestId, createdAt])
   @@map("reservations")
+}
+
+
+model MobileOtp {
+  id          String   @id @default(uuid()) @db.Uuid
+  accountType String   @map("account_type")
+  accountId   String   @db.Uuid @map("account_id")
+  phoneNumber String   @map("phone_number")
+  otpHash     String   @map("otp_hash")
+  expiresAt   DateTime @map("expires_at")
+  attempts    Int      @default(0)
+  consumedAt  DateTime? @map("consumed_at")
+  lastSentAt  DateTime @default(now()) @map("last_sent_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([accountType, accountId, createdAt])
+  @@index([phoneNumber, createdAt])
+  @@map("mobile_otps")
+}
+
+model NotificationLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  reservationId     String   @db.Uuid @map("reservation_id")
+  channel           String
+  recipientType     String   @map("recipient_type")
+  recipientPhone    String   @map("recipient_phone")
+  messageType       String   @map("message_type")
+  status            String   @default("PENDING")
+  providerMessageId String?  @map("provider_message_id")
+  errorMessage      String?  @db.Text @map("error_message")
+  sentAt            DateTime? @map("sent_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  reservation       Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId, createdAt])
+  @@index([status, createdAt])
+  @@map("notification_logs")
 }
