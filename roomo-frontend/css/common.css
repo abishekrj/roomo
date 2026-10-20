@@ -729,7 +729,7 @@ body.auth-page .mobile-brand { display: none; }
 .home-inline-56 {letter-spacing: 1px;}
 .home-inline-57 {color: #cbd5e1 !important;}
 .home-inline-58 {color: var(--sacred-yellow-bright);}
-.home-inline-59 {background: radial-gradient(circle at right top, rgb(11, 26, 48) 0%, rgb(3, 8, 18) 100%); box-shadow: rgba(0, 0, 0, 0.7) 0px 12px 36px -8px, rgba(234, 179, 8, 0.15) 0px 0px 20px; border: 1.5px solid rgba(250, 204, 21, 0.6) !important;}
+.home-inline-59 {background: #183B56; box-shadow: rgba(0, 0, 0, 0.7) 0px 12px 36px -8px, rgba(234, 179, 8, 0.15) 0px 0px 20px; border: 1.5px solid rgb(31 125 203) !important;}
 .home-inline-60 {border-color: rgba(255,255,255,0.12) !important;}
 .home-inline-61 {font-size: 0.65rem;}
 .home-inline-62 {background: #0b192c; border-color: rgba(250, 204, 21, 0.45) !important;}
@@ -1100,7 +1100,7 @@ body.home-page { background-color: #F6F4EF; }
 .btn-sacred-primary:hover { background:#1D4E89 !important; }
 .karthigai-heritage-card { background:#183B56 !important; }
 .karthigai-heritage-card::after { display:none !important; }
-.brass-btn { background:#E7C879 !important; border-color:#D6A84F; color:#183B56; }
+.brass-btn { background:#ffc107 !important; border-color:#D6A84F; color:#183B56; }
 .brass-btn:hover { background:#D6A84F !important; color:#102A43; }
 .temple-granite-footer { background:#102A43 !important; }
 .section, section[id] { background-color:transparent; }
