@@ -1124,3 +1124,44 @@ body.home-page { background-color: #F6F4EF; }
 @media(max-width:1100px){.detail-popular-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.detail-popular-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.detail-popular-badge{padding:10px;font-size:12px;min-height:44px;gap:7px}}
 @media(max-width:380px){.detail-popular-grid{grid-template-columns:1fr}}
+
+
+/* Complete facilities listing grouped under the single Most popular facilities section. */
+.detail-popular-section > h2 { font-weight: 800; margin-bottom: 20px; }
+.detail-popular-section > .detail-popular-grid { margin-bottom: 26px; }
+.detail-amenity-category { margin-top: 24px; }
+.detail-amenity-category h3 {
+  margin: 0 0 13px;
+  color: #202b33;
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.detail-amenities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px 24px;
+}
+.detail-amenity {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #344454;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+.detail-amenity > i {
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+  color: #218653;
+  font-size: 15px;
+}
+.detail-amenity > span { min-width: 0; }
+.amenity-category h3 { font-weight: 800; }
+@media(max-width:560px) {
+  .detail-amenities { grid-template-columns: 1fr; gap: 11px; }
+  .detail-amenity-category { margin-top: 21px; }
+  .detail-amenity-category h3 { font-size: 15px; }
+}
