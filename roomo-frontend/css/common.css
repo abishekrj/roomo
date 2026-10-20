@@ -996,3 +996,36 @@ body.auth-page .mobile-brand { display: none; }
 .google-btn-mount { width: 100%; min-height: 44px; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
 .google-btn-mount > div { max-width: 100%; }
 .google-btn-mount iframe { max-width: 100%; }
+
+
+/* Booking-style stay availability search */
+.booking-form label { min-width: 0; }
+.booking-form input[type="date"] { min-height: 42px; }
+.booking-form select { min-height: 42px; }
+.booking-form .booking-room-field { grid-column: 1 / -1; }
+.availability-message.is-error { color: #b42318; }
+.availability-results { margin-top: 34px; padding: 28px; border: 1px solid #dfe6ee; border-radius: 16px; background: #fff; scroll-margin-top: 24px; }
+.availability-results[hidden] { display: none; }
+.availability-results-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.availability-results-head h2 { margin: 8px 0; color: #173f6b; font-size: clamp(21px, 3vw, 28px); font-family: 'Manrope', sans-serif; font-weight: 800; }
+.availability-results-head p { margin: 0; color: #5d6c7c; font-size: 13px; }
+.availability-search-check { flex-shrink: 0; padding: 8px 12px; border-radius: 8px; background: #e9f7ef; color: #17663b; font-size: 12px; font-weight: 800; }
+.availability-option { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 16px; align-items: start; padding: 22px 0; border-top: 1px solid #e8edf2; border-bottom: 1px solid #e8edf2; }
+.availability-option-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 10px; background: #edf5ff; color: #2167a8; font-size: 22px; }
+.availability-option-copy h3 { margin: 0 0 7px; color: #173f6b; font-size: 17px; font-weight: 800; }
+.availability-option-copy p { margin: 0 0 8px; color: #526171; font-size: 13px; }
+.availability-option-copy small { display: block; color: #7b6a45; font-size: 12px; line-height: 1.6; }
+.availability-option-price { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.availability-option-price strong { color: #173f6b; font-size: 23px; }
+.availability-option-price span { color: #536477; font-size: 12px; }
+.availability-option-price small { max-width: 220px; color: #7a8490; font-size: 10px; line-height: 1.5; }
+.availability-honesty { display: flex; align-items: flex-start; gap: 10px; margin-top: 18px; padding: 14px; border-radius: 10px; background: #f5f8fc; color: #4e5d6e; font-size: 12px; line-height: 1.65; }
+.availability-honesty > i { color: #2469a8; font-size: 17px; }
+.availability-honesty strong { color: #173f6b; }
+@media(max-width:560px) {
+  .availability-results { padding: 18px; }
+  .availability-results-head { flex-direction: column; }
+  .availability-option { grid-template-columns: 38px minmax(0, 1fr); gap: 12px; }
+  .availability-option-icon { width: 38px; height: 38px; }
+  .availability-option-price { grid-column: 2; align-items: flex-start; text-align: left; }
+}
