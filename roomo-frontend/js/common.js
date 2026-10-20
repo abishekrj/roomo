@@ -51,34 +51,195 @@ if (typeof renderLightbox === "function") window.renderLightbox = renderLightbox
 if (document.body.classList.contains("home-page")) {
 (function() {
 // 1. Initialise manual dates
+      const roomoCalendarState = { month: null, choosingCheckout: false };
+
       document.addEventListener('DOMContentLoaded', () => {
         const today = new Date();
         const dIn = new Date(today);
         dIn.setDate(today.getDate() + 3);
         const dOut = new Date(today);
         dOut.setDate(today.getDate() + 4);
-        const fmt = d => d.toISOString().split('T')[0];
+        const fmt = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
         const cin = document.getElementById('checkinPicker');
         const cout = document.getElementById('checkoutPicker');
-        cin.min = fmt(today);
-        cout.min = fmt(today);
-        cin.value = fmt(dIn);
-        cout.value = fmt(dOut);
+        if (cin && cout) {
+          cin.min = fmt(today);
+          cout.min = fmt(today);
+          cin.value = fmt(dIn);
+          cout.value = fmt(dOut);
+          roomoCalendarState.month = new Date(dIn.getFullYear(), dIn.getMonth(), 1);
+          syncRoomoDateDisplay();
+          initRoomoRangeCalendar();
+        }
         initDropdownInteractivity();
         updateStepperButtons();
       });
 
+      function parseRoomoDate(value) {
+        if (!value) return null;
+        const parts = value.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+
+      function formatRoomoDate(value, options) {
+        const date = parseRoomoDate(value);
+        return date ? date.toLocaleDateString('en-IN', options || { day: 'numeric', month: 'short', year: 'numeric' }) : 'Select date';
+      }
+
+      function syncRoomoDateDisplay() {
+        const cin = document.getElementById('checkinPicker');
+        const cout = document.getElementById('checkoutPicker');
+        const cinDisplay = document.getElementById('checkinDateDisplay');
+        const coutDisplay = document.getElementById('checkoutDateDisplay');
+        if (cinDisplay && cin) cinDisplay.textContent = formatRoomoDate(cin.value);
+        if (coutDisplay && cout) coutDisplay.textContent = formatRoomoDate(cout.value);
+        const selection = document.getElementById('roomoCalendarSelection');
+        const hint = document.getElementById('roomoCalendarHint');
+        const done = document.getElementById('roomoCalendarDone');
+        if (selection && cin && cout) {
+          selection.textContent = cin.value && cout.value
+            ? formatRoomoDate(cin.value, { day: 'numeric', month: 'short' }) + ' — ' + formatRoomoDate(cout.value, { day: 'numeric', month: 'short', year: 'numeric' })
+            : cin.value ? formatRoomoDate(cin.value, { day: 'numeric', month: 'short' }) + ' — Choose check-out' : 'Choose check-in date';
+        }
+        if (hint && cin && cout) hint.textContent = roomoCalendarState.choosingCheckout ? 'Now choose your check-out date' : 'Choose your check-in, then your check-out';
+        if (done) done.disabled = !(cin && cout && cin.value && cout.value && cout.value > cin.value);
+      }
+
+      function renderRoomoRangeCalendar() {
+        const grid = document.getElementById('roomoCalendarDays');
+        const monthLabel = document.getElementById('roomoCalendarMonth');
+        const cin = document.getElementById('checkinPicker');
+        const cout = document.getElementById('checkoutPicker');
+        if (!grid || !monthLabel || !roomoCalendarState.month || !cin || !cout) return;
+        const month = roomoCalendarState.month;
+        const year = month.getFullYear();
+        const monthIndex = month.getMonth();
+        monthLabel.textContent = month.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        grid.innerHTML = '';
+        const firstWeekday = new Date(year, monthIndex, 1).getDay();
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+        const minKey = cin.min || todayKey;
+        for (let i = 0; i < firstWeekday; i++) {
+          const blank = document.createElement('span');
+          blank.className = 'roomo-calendar-empty';
+          blank.setAttribute('aria-hidden', 'true');
+          grid.appendChild(blank);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = new Date(year, monthIndex, day);
+          const key = [year, String(monthIndex + 1).padStart(2, '0'), String(day).padStart(2, '0')].join('-');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'roomo-calendar-day';
+          button.textContent = String(day);
+          button.dataset.date = key;
+          button.setAttribute('aria-label', date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }));
+          if (key < minKey) { button.disabled = true; button.classList.add('is-disabled'); }
+          if (key === todayKey) button.classList.add('is-today');
+          if (cin.value && key === cin.value) button.classList.add('is-checkin');
+          if (cout.value && key === cout.value) button.classList.add('is-checkout');
+          if (cin.value && cout.value && key > cin.value && key < cout.value) button.classList.add('is-in-range');
+          if (roomoCalendarState.choosingCheckout && cin.value && key <= cin.value) {
+            button.classList.add('is-disabled');
+            button.disabled = true;
+          }
+          button.addEventListener('click', () => selectRoomoCalendarDate(key));
+          grid.appendChild(button);
+        }
+        const prev = document.getElementById('roomoCalendarPrev');
+        if (prev) prev.disabled = year < today.getFullYear() || (year === today.getFullYear() && monthIndex <= today.getMonth());
+        syncRoomoDateDisplay();
+      }
+
+      function selectRoomoCalendarDate(key) {
+        const cin = document.getElementById('checkinPicker');
+        const cout = document.getElementById('checkoutPicker');
+        if (!cin || !cout) return;
+        if (!roomoCalendarState.choosingCheckout) {
+          cin.value = key;
+          cout.value = '';
+          cout.min = key;
+          roomoCalendarState.choosingCheckout = true;
+        } else if (key > cin.value) {
+          cout.value = key;
+          roomoCalendarState.choosingCheckout = false;
+        } else {
+          cin.value = key;
+          cout.value = '';
+          cout.min = key;
+          roomoCalendarState.choosingCheckout = true;
+        }
+        onDateChanged();
+        renderRoomoRangeCalendar();
+      }
+
+      function openRoomoRangeCalendar(which) {
+        const calendar = document.getElementById('roomoRangeCalendar');
+        const cin = document.getElementById('checkinPicker');
+        const cout = document.getElementById('checkoutPicker');
+        if (!calendar || !cin || !cout) return;
+        const clickedCheckout = which === 'checkout';
+        roomoCalendarState.choosingCheckout = Boolean(clickedCheckout && cin.value);
+        const focusDate = clickedCheckout && cout.value ? parseRoomoDate(cout.value) : parseRoomoDate(cin.value);
+        roomoCalendarState.month = focusDate ? new Date(focusDate.getFullYear(), focusDate.getMonth(), 1) : new Date();
+        calendar.hidden = false;
+        document.getElementById('checkinDateTrigger')?.setAttribute('aria-expanded', 'true');
+        document.getElementById('checkoutDateTrigger')?.setAttribute('aria-expanded', 'true');
+        renderRoomoRangeCalendar();
+      }
+
+      function closeRoomoRangeCalendar() {
+        const calendar = document.getElementById('roomoRangeCalendar');
+        if (calendar) calendar.hidden = true;
+        document.getElementById('checkinDateTrigger')?.setAttribute('aria-expanded', 'false');
+        document.getElementById('checkoutDateTrigger')?.setAttribute('aria-expanded', 'false');
+        roomoCalendarState.choosingCheckout = false;
+        syncRoomoDateDisplay();
+      }
+
+      function initRoomoRangeCalendar() {
+        const calendar = document.getElementById('roomoRangeCalendar');
+        if (!calendar || calendar.dataset.ready) return;
+        calendar.dataset.ready = 'true';
+        document.getElementById('checkinDateTrigger')?.addEventListener('click', () => openRoomoRangeCalendar('checkin'));
+        document.getElementById('checkoutDateTrigger')?.addEventListener('click', () => openRoomoRangeCalendar('checkout'));
+        document.getElementById('roomoCalendarClose')?.addEventListener('click', closeRoomoRangeCalendar);
+        document.getElementById('roomoCalendarDone')?.addEventListener('click', closeRoomoRangeCalendar);
+        document.getElementById('roomoCalendarPrev')?.addEventListener('click', () => {
+          if (!roomoCalendarState.month) return;
+          roomoCalendarState.month = new Date(roomoCalendarState.month.getFullYear(), roomoCalendarState.month.getMonth() - 1, 1);
+          renderRoomoRangeCalendar();
+        });
+        document.getElementById('roomoCalendarNext')?.addEventListener('click', () => {
+          if (!roomoCalendarState.month) return;
+          roomoCalendarState.month = new Date(roomoCalendarState.month.getFullYear(), roomoCalendarState.month.getMonth() + 1, 1);
+          renderRoomoRangeCalendar();
+        });
+        document.addEventListener('click', event => {
+          if (!calendar.hidden && !calendar.parentElement.contains(event.target)) closeRoomoRangeCalendar();
+        });
+        document.addEventListener('keydown', event => {
+          if (event.key === 'Escape' && !calendar.hidden) closeRoomoRangeCalendar();
+        });
+        renderRoomoRangeCalendar();
+      }
+
       function onDateChanged() {
         const cin = document.getElementById('checkinPicker');
         const cout = document.getElementById('checkoutPicker');
-        if (cin.value) {
+        if (cin && cout && cin.value) {
           cout.min = cin.value;
           if (cout.value && cout.value <= cin.value) {
-            const nextDay = new Date(cin.value);
+            const nextDay = parseRoomoDate(cin.value);
             nextDay.setDate(nextDay.getDate() + 1);
-            cout.value = nextDay.toISOString().split('T')[0];
+            cout.value = [nextDay.getFullYear(), String(nextDay.getMonth() + 1).padStart(2, '0'), String(nextDay.getDate()).padStart(2, '0')].join('-');
           }
         }
+        syncRoomoDateDisplay();
+        renderRoomoRangeCalendar();
       }
       // 2. Guests & Rooms State with strict constraints
       const devoteeState = {
