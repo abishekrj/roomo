@@ -565,6 +565,19 @@ processPendingFavorite();
         bathrooms: Number(property.bathrooms || 1)
       };
     });
+    // Make the default price range include every published property, even if its
+    // nightly rate is above the original demo cap of ₹5,000.
+    const highestPublishedPrice = Math.max(5000, ...liveStays.map(stay => stay.price));
+    const defaultPriceCeiling = Math.ceil(highestPublishedPrice / 500) * 500;
+    const maxPriceInput = document.getElementById("maxPrice");
+    const maxPriceRange = document.getElementById("maxRange");
+    if (maxPriceInput && maxPriceRange) {
+      maxPriceInput.max = String(defaultPriceCeiling);
+      maxPriceInput.value = String(defaultPriceCeiling);
+      maxPriceRange.max = String(defaultPriceCeiling);
+      maxPriceRange.value = String(defaultPriceCeiling);
+      syncPrice();
+    }
     // Prefer real published inventory over static sample cards when available.
     stays.splice(0, stays.length, ...liveStays);
     render();
