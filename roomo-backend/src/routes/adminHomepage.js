@@ -65,7 +65,7 @@ const homepageSchema = z.object({
   contactPhone: z.string().trim().min(5).max(40),
   whatsappNumber: z.string().trim().regex(/^\d{8,15}$/),
   seoDescription: z.string().trim().min(10).max(300),
-  contentOverrides: z.record(z.string().trim().min(1).max(240), z.object({ text: z.string().max(5000).optional(), href: z.string().max(2000).optional(), src: z.string().max(2000).optional(), alt: z.string().max(500).optional(), hidden: z.boolean().optional() }).strict()).optional(),
+
   testimonials: z.object({ eyebrow: z.string().trim().min(1).max(100), title: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(500), ratingSummary: z.string().trim().min(1).max(100), items: z.array(z.object({ id: z.string().trim().min(1).max(80), quote: z.string().trim().min(1).max(2000), name: z.string().trim().min(1).max(120), location: z.string().trim().max(120), rating: z.number().int().min(1).max(5), hidden: z.boolean() })).max(50) }).optional(),
   footerLinks: z.object({
     social: z.array(z.object({ label: z.string().trim().min(1).max(80), url: z.string().trim().min(1).max(500), icon: z.string().trim().min(1).max(80) })).max(12),
