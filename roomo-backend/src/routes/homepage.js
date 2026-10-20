@@ -85,7 +85,7 @@ function similarDestinations(name, places) {
     const similarity = 1 - distance / Math.max(normalized.length, candidate.length, 1);
     const sameWords = normalized.split(" ").sort().join(" ") === candidate.split(" ").sort().join(" ");
     return { place, similarity, distance, sameWords };
-  }).filter(item => item.normalized !== normalized && (item.sameWords || (Math.max(normalized.length, normalizeDestinationName(item.place.name).length) >= 5 && (item.distance <= 2 || item.similarity >= 0.78))))
+  }).filter(item => normalizeDestinationName(item.place.name) !== normalized && (item.sameWords || (Math.max(normalized.length, normalizeDestinationName(item.place.name).length) >= 5 && (item.distance <= 2 || item.similarity >= 0.78))))
     .sort((a, b) => b.similarity - a.similarity).slice(0, 5).map(item => item.place);
 }
 router.post("/destination-suggestions", async (req, res, next) => {
