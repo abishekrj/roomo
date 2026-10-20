@@ -1564,3 +1564,16 @@ body h1,body h2,body h3,body h4,body h5,body h6,
 body [role="heading"],
 body h1 *,body h2 *,body h3 *,body h4 *,body h5 *,body h6 *,
 body [role="heading"] *{font-weight:600!important}
+
+
+/* Search hero and search details: ensure accessible contrast on the dark blue background. */
+body.search-page .hero{background:linear-gradient(115deg,#003580 0%,#0F2C59 100%);color:#fff}
+body.search-page .hero h1{color:#fff!important}
+body.search-page .hero p{color:#EAF3FF!important}
+body.search-page .hero .chips .chip{color:#F8FBFF!important;border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.10)}
+body.search-page .hero .chips .chip i{color:#FEBA02!important}
+body.search-page .hero .gold-btn{background:#FEBA02!important;color:#003580!important}
+body.search-page .hero .gold-btn:hover{background:#ffd15c!important;color:#003580!important}
+body.search-page .listing .heart.active{background:#fff!important;color:#e11d48!important}
+body.search-page .listing .heart:focus-visible{outline:3px solid #009FE3;outline-offset:3px}
+body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
