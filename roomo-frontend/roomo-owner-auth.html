@@ -110,6 +110,12 @@
         }
       } catch (error) {
         showMessage(error.message || "Unable to continue.", true);
+        if (mode === "login" && error.code === "PHONE_NOT_VERIFIED") {
+          $("ownerPhoneWrap").classList.remove("owner-auth-hidden");
+          $("ownerPhone").required = true;
+          $("ownerOtpArea").classList.remove("owner-auth-hidden");
+          showMessage("Enter the mobile number already linked to this owner account, then use Resend code.", true);
+        }
         if (mode === "signup" && error.code === "MOBILE_OTP_FAILED") {
           phoneNumber = $("ownerPhone").value.trim();
           $("ownerOtpArea").classList.remove("owner-auth-hidden");
@@ -130,6 +136,8 @@
       finally { button.disabled = false; }
     });
     $("ownerResendOtp").addEventListener("click", async () => {
+      phoneNumber = $("ownerPhone").value.trim() || phoneNumber;
+      if (!phoneNumber) return showMessage("Enter the mobile number linked to your account.", true);
       try {
         const result = await post("/mobile-verification/send", { accountType: "OWNER", phoneNumber });
         showMessage(result.message || "If the account exists, a code has been sent.");
