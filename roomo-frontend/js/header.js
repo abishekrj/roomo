@@ -29,6 +29,88 @@
     }
   }
 
+  const GUEST_API_BASE_URL = "http://localhost:5001";
+  const GUEST_TOKEN_KEY = "roomoGuestToken";
+  const GUEST_USER_KEY = "roomoGuest";
+
+  function getGuestSession() {
+    const token = sessionStorage.getItem(GUEST_TOKEN_KEY) || localStorage.getItem(GUEST_TOKEN_KEY);
+    const storedUser = sessionStorage.getItem(GUEST_USER_KEY) || localStorage.getItem(GUEST_USER_KEY);
+    let user = null;
+    try { user = storedUser ? JSON.parse(storedUser) : null; } catch { user = null; }
+    return { token, user };
+  }
+
+  function setReturnToOnAuthLinks() {
+    const returnTo = window.location.pathname + window.location.search + window.location.hash;
+    document.querySelectorAll("[data-roomo-auth-link]").forEach(link => {
+      const href = link.getAttribute("href") || "";
+      if (href === "roomo-login.html" || href === "roomo-signup.html") {
+        const target = new URL(href, window.location.href);
+        target.searchParams.set("returnTo", returnTo);
+        link.href = target.pathname.split("/").pop() + target.search;
+      }
+    });
+  }
+
+  async function initGuestAccountMenu() {
+    const toggleName = document.getElementById("roomoAccountName");
+    const logoutButton = document.getElementById("roomoLogoutButton");
+    const menu = document.getElementById("roomoAccountDropdown");
+    if (!toggleName || !menu) return;
+
+    const guestOnlyItems = menu.querySelectorAll("[data-guest-only]");
+    const authenticatedItems = menu.querySelectorAll("[data-guest-authenticated]");
+    const showLoggedOut = () => {
+      toggleName.textContent = "Login / Signup";
+      guestOnlyItems.forEach(item => { item.hidden = false; });
+      authenticatedItems.forEach(item => { item.hidden = true; });
+      setReturnToOnAuthLinks();
+    };
+    const showLoggedIn = user => {
+      const fullName = String(user?.fullName || "").trim();
+      toggleName.textContent = fullName || "My Account";
+      guestOnlyItems.forEach(item => { item.hidden = true; });
+      authenticatedItems.forEach(item => { item.hidden = false; });
+    };
+
+    const session = getGuestSession();
+    if (!session.token) {
+      showLoggedOut();
+    } else {
+      try {
+        const response = await fetch(GUEST_API_BASE_URL + "/api/guest-auth/me", {
+          headers: { Authorization: "Bearer " + session.token },
+          cache: "no-store"
+        });
+        if (!response.ok) throw new Error("Guest session expired.");
+        const data = await response.json();
+        if (!data.user) throw new Error("Guest profile was not returned.");
+        const storage = sessionStorage.getItem(GUEST_TOKEN_KEY) ? sessionStorage : localStorage;
+        storage.setItem(GUEST_USER_KEY, JSON.stringify(data.user));
+        showLoggedIn(data.user);
+      } catch (error) {
+        sessionStorage.removeItem(GUEST_TOKEN_KEY);
+        sessionStorage.removeItem(GUEST_USER_KEY);
+        localStorage.removeItem(GUEST_TOKEN_KEY);
+        localStorage.removeItem(GUEST_USER_KEY);
+        showLoggedOut();
+      }
+    }
+
+    if (logoutButton) {
+      logoutButton.addEventListener("click", () => {
+        sessionStorage.removeItem(GUEST_TOKEN_KEY);
+        sessionStorage.removeItem(GUEST_USER_KEY);
+        localStorage.removeItem(GUEST_TOKEN_KEY);
+        localStorage.removeItem(GUEST_USER_KEY);
+        showLoggedOut();
+        // Stay on the page the guest was viewing when they logged out.
+        window.location.reload();
+      });
+    }
+  }
+
   function selectRoomoLanguage(language) {
     const label = document.getElementById("currentLangText");
     const labels = { en: "ENG", ta: "தமிழ்", te: "తెలుగు" };
@@ -61,6 +143,8 @@
       if (!response.ok) throw new Error("Header component returned HTTP " + response.status);
       placeholder.outerHTML = await response.text();
       initRoomoGoogleTranslate();
+      setReturnToOnAuthLinks();
+      await initGuestAccountMenu();
 
       document.querySelectorAll("[data-roomo-language]").forEach(button => {
         button.addEventListener("click", () => selectRoomoLanguage(button.dataset.roomoLanguage));
