@@ -46,8 +46,8 @@ async function getAvailability(client, input) {
   const checkIn = parseDate(input.checkIn);
   const checkOut = parseDate(input.checkOut);
   if (!checkIn || !checkOut) return { error: "Enter valid check-in and check-out dates." };
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  const todayIndia = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  const today = parseDate(todayIndia);
   if (checkIn < today) return { error: "Check-in cannot be in the past." };
   if (checkOut <= checkIn) return { error: "Check-out must be after check-in." };
 
@@ -224,7 +224,8 @@ router.patch("/:id/cancel", authenticateGuest, async (req, res, next) => {
     const existing = await prisma.reservation.findFirst({ where: { id: id.data, guestId: req.guest.id } });
     if (!existing) return res.status(404).json({ message: "Reservation not found." });
     if (existing.status === "CANCELLED") return res.status(409).json({ message: "This reservation is already cancelled." });
-    if (existing.checkIn <= new Date(new Date().toISOString().slice(0, 10) + "T00:00:00.000Z")) {
+    const todayIndia = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    if (existing.checkIn <= new Date(todayIndia + "T00:00:00.000Z")) {
       return res.status(400).json({ message: "Reservations cannot be cancelled on or after check-in. Please contact ROOMO support." });
     }
     const reservation = await prisma.reservation.update({
