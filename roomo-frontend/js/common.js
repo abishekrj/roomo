@@ -527,9 +527,20 @@ if (document.body.classList.contains("stay-details-page")) {
 
     fallback.addEventListener("click", async () => {
       fallback.disabled = true;
-      fallback.textContent = "Loading Google sign-in…";
+      fallback.textContent = "Opening Google sign-in…";
+      clearMessage();
       try {
         await setupGoogleButton();
+
+        // The fallback is a real action: initialize Google and request its
+        // sign-in prompt, rather than only rendering a separate button.
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed?.() || notification.isSkippedMoment?.()) {
+            showMessage(
+              "Google sign-in was blocked or dismissed by the browser. Use the official Google button shown above, check your browser's pop-up/privacy settings, and try again."
+            );
+          }
+        });
       } catch (error) {
         showMessage(error.message || "Google sign-in could not be initialized.");
       } finally {
