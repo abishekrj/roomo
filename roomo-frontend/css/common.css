@@ -1664,3 +1664,53 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .pournami-slide{height:64px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}.pournami-slide-eyebrow{font-size:.61rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sacred-yellow-bright);font-family:Cinzel,serif;line-height:1.2}.pournami-slide strong{display:block;color:#fff;font-size:.93rem;line-height:1.25;font-weight:700}.pournami-slide>span:last-child{color:rgba(255,255,255,.82);font-size:.75rem;line-height:1.25}.pournami-slide-indicator{flex:0 0 auto;align-self:flex-end;color:rgba(255,255,255,.64);font-size:.62rem;font-variant-numeric:tabular-nums}
 @media(max-width:575.98px){.pournami-banner-capsule{gap:10px;padding:10px 12px;min-height:86px}.pournami-capsule-icon{flex-basis:38px;width:38px;height:38px}.pournami-slide strong{font-size:.85rem}.pournami-slide>span:last-child{font-size:.7rem}.pournami-slide-indicator{display:none}}
 @media(prefers-reduced-motion:reduce){.pournami-vertical-track{transition:none}}
+
+
+/* Stay details: compact three-column facility lists starting with Parking. */
+.stay-details-page .detail-popular-section > h2 {
+  margin-bottom: 12px;
+}
+.stay-details-page .detail-popular-section > .detail-popular-grid {
+  margin-bottom: 18px;
+}
+.stay-details-page .detail-amenity-category {
+  margin-top: 16px;
+}
+.stay-details-page .detail-amenity-category h3 {
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+.stay-details-page .detail-amenities {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 6px;
+}
+.stay-details-page .detail-amenity {
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.stay-details-page .detail-amenity > i {
+  margin-top: 1px;
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .stay-details-page .detail-amenities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+    row-gap: 6px;
+  }
+}
+@media (max-width: 560px) {
+  .stay-details-page .detail-amenities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 10px;
+  }
+  .stay-details-page .detail-amenity-category {
+    margin-top: 14px;
+  }
+  .stay-details-page .detail-amenity {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+}
