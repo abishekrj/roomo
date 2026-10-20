@@ -71,4 +71,21 @@ router.patch("/reservations/:id/payment", async (req, res, next) => {
   }
 });
 
+
+router.get("/notifications", async (req, res, next) => {
+  try {
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+    const notifications = await prisma.notificationLog.findMany({
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, reservationId: true, channel: true, recipientType: true,
+        recipientPhone: true, messageType: true, status: true,
+        providerMessageId: true, errorMessage: true, sentAt: true, createdAt: true,
+      },
+    });
+    res.json({ notifications });
+  } catch (error) { next(error); }
+});
+
 module.exports = router;
