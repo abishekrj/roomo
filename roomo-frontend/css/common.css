@@ -1260,3 +1260,50 @@ body {
 @media(prefers-reduced-motion:reduce) {
   .destination-feedback { transition: none; transform: none; }
 }
+
+
+/* ROOMO single-view date-range picker */
+.roomo-date-range-wrap { position: relative; z-index: 12; }
+.roomo-date-range-field { display: flex; align-items: center; gap: 0; min-width: 0; }
+.roomo-date-endpoint { display: flex; flex: 1 1 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; min-width: 0; padding: 2px 9px; border: 0; background: transparent; color: var(--text-dark, #202b33); text-align: left; cursor: pointer; }
+.roomo-date-endpoint:focus-visible { outline: 2px solid #2563a6; outline-offset: 3px; }
+.roomo-date-endpoint-label { display: flex; align-items: center; gap: 6px; color: #59666f; font-size: 10px; font-weight: 800; letter-spacing: .045em; white-space: nowrap; }
+.roomo-date-endpoint-label i { color: #2563a6; font-size: 13px; }
+.roomo-date-endpoint strong { display: block; max-width: 100%; color: #183b56; font-size: 14px; font-weight: 800; line-height: 1.35; white-space: nowrap; }
+.roomo-date-range-divider { align-self: stretch; width: 1px; min-height: 40px; background: #e4e0d7; }
+.roomo-date-range-wrap input[hidden] { display: none !important; }
+.roomo-range-calendar[hidden] { display: none !important; }
+.roomo-range-calendar { position: absolute; top: calc(100% + 10px); left: 0; z-index: 1200; width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid #dce5ec; border-radius: 14px !important; background: #fff; box-shadow: 0 22px 55px rgba(16, 42, 67, .22); color: #202b33; }
+.roomo-range-calendar-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.roomo-range-eyebrow { color: #b8893b; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.roomo-range-calendar-top h3 { margin: 4px 0 4px; color: #183b56; font-size: 19px; font-weight: 800; }
+.roomo-range-calendar-top p { margin: 0; color: #647382; font-size: 11px; line-height: 1.5; }
+.roomo-calendar-close { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border: 1px solid #e0e7ed; background: #f8fafc; color: #526171; }
+.roomo-calendar-monthbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.roomo-calendar-monthbar strong { color: #183b56; font-size: 14px; font-weight: 800; }
+.roomo-calendar-monthbar button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #e1e7ec; background: #fff; color: #2563a6; }
+.roomo-calendar-monthbar button:disabled { opacity: .35; cursor: not-allowed; }
+.roomo-calendar-weekdays, .roomo-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.roomo-calendar-weekdays { margin-bottom: 6px; }
+.roomo-calendar-weekdays span { padding: 5px 0; color: #7b8792; font-size: 10px; font-weight: 800; text-align: center; }
+.roomo-calendar-days { min-height: 210px; }
+.roomo-calendar-empty { min-height: 36px; }
+.roomo-calendar-day { position: relative; display: grid; place-items: center; min-width: 0; min-height: 36px; padding: 0; border: 0; border-radius: 7px !important; background: #fff; color: #2d3d4c; font-size: 12px; font-weight: 600; cursor: pointer; }
+.roomo-calendar-day:hover:not(:disabled) { background: #eaf2f8; color: #1d4e89; }
+.roomo-calendar-day.is-today { box-shadow: inset 0 0 0 1px #8bb2d4; }
+.roomo-calendar-day.is-in-range { border-radius: 0 !important; background: #eaf2f8; color: #1d4e89; }
+.roomo-calendar-day.is-checkin, .roomo-calendar-day.is-checkout { border-radius: 7px !important; background: #2563a6; color: #fff; font-weight: 800; }
+.roomo-calendar-day.is-disabled, .roomo-calendar-day:disabled { background: transparent; color: #c3cbd2; cursor: not-allowed; }
+.roomo-calendar-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e8edf1; }
+.roomo-calendar-selection { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.roomo-calendar-selection span { color: #7b8792; font-size: 10px; }
+.roomo-calendar-selection strong { color: #183b56; font-size: 12px; line-height: 1.4; }
+.roomo-calendar-done { flex: 0 0 auto; padding: 9px 16px; border: 0; border-radius: 7px !important; background: #2563a6; color: #fff; font-size: 12px; font-weight: 800; }
+.roomo-calendar-done:disabled { background: #dce4eb; color: #7b8792; cursor: not-allowed; }
+@media(max-width: 575px) {
+  .roomo-date-range-field { padding: 12px !important; }
+  .roomo-date-endpoint { padding: 2px 5px; gap: 6px; }
+  .roomo-date-endpoint-label { font-size: 9px; letter-spacing: .01em; }
+  .roomo-date-endpoint strong { font-size: 12px; }
+  .roomo-range-calendar { left: 50%; transform: translateX(-50%); padding: 17px; }
+}
