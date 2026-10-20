@@ -637,6 +637,8 @@ if (document.body.classList.contains("stay-details-page")) {
   });
 
   setMode(mode);
+  // Wire up the Google button on both login and signup pages.
+  initializeGoogleSignIn();
 
   window.ROOMO_GUEST_AUTH = {
     getToken() { return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY); },
