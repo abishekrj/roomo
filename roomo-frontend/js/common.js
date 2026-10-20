@@ -328,7 +328,18 @@ if (document.body.classList.contains("stay-details-page")) {
       const payload = await response.json();
       const content = payload.content || {};
       const selectedId = params.get("stay");
-      const property = (content.featuredProperties || []).find(item => item.id === selectedId);
+      let property = (content.featuredProperties || []).find(item => item.id === selectedId);
+      if (!property && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(selectedId || ""))) {
+        try {
+          const detailResponse = await fetch("http://localhost:5001/api/properties/" + encodeURIComponent(selectedId), { cache: "no-store" });
+          if (detailResponse.ok) {
+            const detailPayload = await detailResponse.json();
+            property = detailPayload.property || null;
+          }
+        } catch (detailError) {
+          console.warn("Could not load published property details.", detailError);
+        }
+      }
       const legacyRoom = (content.featuredRooms || []).find(item => item.id === selectedId);
       const room = property ? {
         id: property.id,
