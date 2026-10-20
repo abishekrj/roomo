@@ -1165,3 +1165,22 @@ body.home-page { background-color: #F6F4EF; }
   .detail-amenity-category { margin-top: 21px; }
   .detail-amenity-category h3 { font-size: 15px; }
 }
+
+
+/* Keep Google Translate active while hiding its injected top banner and page offset. */
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-te-spinner-pos,
+body > .skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+html,
+body {
+  top: 0 !important;
+}
+body {
+  position: relative !important;
+}
