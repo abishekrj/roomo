@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateGuest = require("../middleware/authenticateGuest");
+const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -148,6 +149,55 @@ router.post("/", authenticateGuest, async (req, res, next) => {
   } catch (error) {
     if (error.code === "P2034") return res.status(409).json({ message: "Another booking was being processed for those dates. Please check availability and try again." });
     if (error.code === "P2002") return res.status(409).json({ message: "Please retry your reservation." });
+    next(error);
+  }
+});
+
+// GET /api/reservations/owner — reservations for properties owned by the signed-in owner.
+router.get("/owner", authenticateToken, async (req, res, next) => {
+  try {
+    const reservations = await prisma.reservation.findMany({
+      where: { property: { ownerId: req.owner.sub } },
+      include: {
+        guest: { select: { id: true, fullName: true, email: true } },
+        property: { select: { id: true, title: true, city: true, address: true } },
+      },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    });
+    res.json({ reservations });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PATCH /api/reservations/owner/:id/decision — owner confirms or declines a pending request.
+router.patch("/owner/:id/decision", authenticateToken, async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const decision = z.object({ status: z.enum(["CONFIRMED", "CANCELLED"]) }).safeParse(req.body);
+  if (!id.success || !decision.success) {
+    return res.status(400).json({ message: "Choose CONFIRMED or CANCELLED for a valid reservation." });
+  }
+  try {
+    const existing = await prisma.reservation.findFirst({
+      where: { id: id.data, property: { ownerId: req.owner.sub } },
+    });
+    if (!existing) return res.status(404).json({ message: "Reservation not found for one of your properties." });
+    if (existing.status !== "REQUESTED") {
+      return res.status(409).json({ message: "Only pending reservation requests can be confirmed or declined." });
+    }
+    const reservation = await prisma.reservation.update({
+      where: { id: existing.id },
+      data: {
+        status: decision.data.status,
+        ...(decision.data.status === "CANCELLED" ? { cancelledAt: new Date() } : {}),
+      },
+      include: {
+        guest: { select: { id: true, fullName: true, email: true } },
+        property: { select: { id: true, title: true, city: true } },
+      },
+    });
+    res.json({ message: decision.data.status === "CONFIRMED" ? "Reservation confirmed." : "Reservation request declined.", reservation });
+  } catch (error) {
     next(error);
   }
 });
