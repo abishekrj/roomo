@@ -1198,3 +1198,21 @@ body {
 .destination-suggestion-option:hover, .destination-suggestion-option:focus-visible {
   outline: none; background: #eaf2f8; color: #1d4e89;
 }
+
+
+/* Anchor the destination suggestions directly to the destination search field. */
+#destinationInput {
+  position: relative;
+}
+.heritage-input-box:has(#destinationInput) {
+  position: relative;
+}
+.heritage-input-box:has(#destinationInput) .destination-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
