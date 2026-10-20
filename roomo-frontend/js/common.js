@@ -506,12 +506,23 @@ if (document.body.classList.contains("stay-details-page")) {
           }
         }
       });
+      // Keep the visible fallback in place until Google has actually rendered
+      // its button. renderButton() can return before its iframe is ready.
+      const hideFallbackWhenReady = () => {
+        if (container.querySelector("iframe")) {
+          fallback.hidden = true;
+          observer.disconnect();
+        }
+      };
+      const observer = new MutationObserver(hideFallbackWhenReady);
+      observer.observe(container, { childList: true, subtree: true });
+
       window.google.accounts.id.renderButton(container, {
         type: "standard", theme: "outline", size: "large",
         text: mode === "signup" ? "signup_with" : "signin_with",
         shape: "rectangular", width: Math.min(360, Math.max(240, Math.floor(container.clientWidth || 320)))
       });
-      fallback.hidden = true;
+      hideFallbackWhenReady();
     }
 
     fallback.addEventListener("click", async () => {
