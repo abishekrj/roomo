@@ -332,7 +332,16 @@
     $("maxGuests").value = 2;
     $("bedrooms").value = 1;
     $("bathrooms").value = 1;
-    setCheckedValues("amenities", []);
+    setCheckedValues("amenities", [
+      "wifi",
+      "airport-shuttle",
+      "family-rooms",
+      "non-smoking-rooms",
+      "front-desk-24h",
+      "lift",
+      "heating",
+      "ac"
+    ]);
     setCheckedValues("nearbyLandmarks", []);
     $("perks").value = "";
     $("initialStatus").value = "PUBLISHED";
