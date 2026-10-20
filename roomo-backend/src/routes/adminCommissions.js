@@ -98,6 +98,7 @@ router.get("/notifications", async (req, res, next) => {
         id: true, reservationId: true, channel: true, recipientType: true,
         recipientPhone: true, messageType: true, status: true,
         providerMessageId: true, errorMessage: true, sentAt: true, createdAt: true,
+        reservation: { select: { reservationCode: true } },
       },
     });
     res.json({ notifications });
