@@ -37,16 +37,11 @@
       <form id="ownerAuthForm">
         <div id="ownerNameWrap"><label for="ownerFullName">Full name</label><input id="ownerFullName" autocomplete="name" minlength="2" maxlength="100" required placeholder="Your full name"></div>
         <label for="ownerEmail">Email address</label><input id="ownerEmail" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
-        <div id="ownerPhoneWrap"><label for="ownerPhone">Mobile number with country code</label><input id="ownerPhone" type="tel" autocomplete="tel" inputmode="tel" pattern="\+[1-9][0-9]{7,14}" placeholder="+919876543210" title="Use international format, e.g. +919876543210" required><small class="text-muted">We send a one-time verification code by SMS and WhatsApp.</small></div>
+        <div id="ownerPhoneWrap"><label for="ownerPhone">Mobile number (optional)</label><input id="ownerPhone" type="tel" autocomplete="tel" inputmode="tel" pattern="\+[1-9][0-9]{7,14}" placeholder="+919876543210" title="If provided, use international format, e.g. +919876543210"></div>
         <label for="ownerPassword">Password</label><input id="ownerPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required placeholder="At least 12 characters">
         <button class="owner-auth-btn" id="ownerSubmit" type="submit">CREATE OWNER ACCOUNT</button>
       </form>
       <div id="ownerAuthMessage" class="owner-auth-message owner-auth-hidden" role="status" aria-live="polite"></div>
-      <div id="ownerOtpArea" class="owner-auth-hidden">
-        <label for="ownerOtp">6-digit verification code</label><input id="ownerOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter code">
-        <button type="button" class="owner-auth-btn" id="ownerVerifyOtp">VERIFY MOBILE</button>
-        <button type="button" id="ownerResendOtp" style="display:block;margin:12px auto 0;border:0;background:none;color:#1769aa;text-decoration:underline;font-weight:700">Resend code</button>
-      </div>
       <div class="owner-auth-switch" id="ownerSwitchText">Already registered? <button type="button" id="ownerSwitch">Sign in</button></div>
     </section>
   </main>
@@ -59,7 +54,6 @@
     const API = "http://localhost:5001/api";
     const $ = id => document.getElementById(id);
     let mode = "signup";
-    let phoneNumber = "";
     const form = $("ownerAuthForm");
     const message = $("ownerAuthMessage");
     const submit = $("ownerSubmit");
@@ -73,20 +67,31 @@
       $("ownerNameWrap").classList.toggle("owner-auth-hidden", mode !== "signup");
       $("ownerPhoneWrap").classList.toggle("owner-auth-hidden", mode !== "signup");
       $("ownerFullName").required = mode === "signup";
-      $("ownerPhone").required = mode === "signup";
+      $("ownerPhone").required = false;
       $("ownerPassword").minLength = mode === "signup" ? 12 : 1;
       $("ownerPassword").autocomplete = mode === "signup" ? "new-password" : "current-password";
       $("ownerEyebrow").textContent = mode === "signup" ? "PROPERTY PARTNER" : "WELCOME BACK";
       $("ownerHeading").textContent = mode === "signup" ? "Create your owner account" : "Sign in to ROOMO";
-      $("ownerSubheading").textContent = mode === "signup" ? "Verify your mobile number to protect your owner account." : "Manage your property and reservation requests.";
+      $("ownerSubheading").textContent = mode === "signup" ? "Create an account to post and manage your property." : "Manage your property and reservation requests.";
       submit.textContent = mode === "signup" ? "CREATE OWNER ACCOUNT" : "SIGN IN";
       $("ownerSwitchText").innerHTML = mode === "signup" ? 'Already registered? <button type="button" id="ownerSwitch">Sign in</button>' : 'New to ROOMO? <button type="button" id="ownerSwitch">Create an account</button>';
-      $("ownerSwitch").addEventListener("click", () => { message.classList.add("owner-auth-hidden"); $("ownerOtpArea").classList.add("owner-auth-hidden"); setMode(mode === "signup" ? "login" : "signup"); });
+      $("ownerSwitch").addEventListener("click", () => {
+        message.classList.add("owner-auth-hidden");
+        setMode(mode === "signup" ? "login" : "signup");
+      });
     }
-    async function post(url, body, token) {
-      const response = await fetch(API + url, { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) }, body: JSON.stringify(body) });
+    async function post(url, body) {
+      const response = await fetch(API + url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) { const error = new Error(data.message || "Request failed."); error.code = data.code; throw error; }
+      if (!response.ok) {
+        const error = new Error(data.message || "Request failed.");
+        error.code = data.code;
+        throw error;
+      }
       return data;
     }
     form.addEventListener("submit", async event => {
@@ -97,11 +102,16 @@
         const email = $("ownerEmail").value.trim().toLowerCase();
         const password = $("ownerPassword").value;
         if (mode === "signup") {
-          phoneNumber = $("ownerPhone").value.trim();
-          const result = await post("/auth/register", { fullName: $("ownerFullName").value.trim(), email, phoneNumber, password });
-          showMessage(result.message || "Account created. Enter the verification code.");
-          $("ownerOtpArea").classList.remove("owner-auth-hidden");
-          $("ownerOtp").focus();
+          const phoneNumber = $("ownerPhone").value.trim();
+          const body = {
+            fullName: $("ownerFullName").value.trim(),
+            email,
+            password,
+            ...(phoneNumber ? { phoneNumber } : {})
+          };
+          const result = await post("/auth/register", body);
+          setMode("login");
+          showMessage(result.message || "Owner account created successfully. You can now sign in.");
         } else {
           const result = await post("/auth/login", { email, password });
           localStorage.setItem("roomoToken", result.token);
@@ -110,38 +120,9 @@
         }
       } catch (error) {
         showMessage(error.message || "Unable to continue.", true);
-        if (mode === "login" && error.code === "PHONE_NOT_VERIFIED") {
-          $("ownerPhoneWrap").classList.remove("owner-auth-hidden");
-          $("ownerPhone").required = true;
-          $("ownerOtpArea").classList.remove("owner-auth-hidden");
-          showMessage("Enter the mobile number already linked to this owner account, then use Resend code.", true);
-        }
-        if (mode === "signup" && error.code === "MOBILE_OTP_FAILED") {
-          phoneNumber = $("ownerPhone").value.trim();
-          $("ownerOtpArea").classList.remove("owner-auth-hidden");
-        }
       } finally {
         submit.disabled = false;
       }
-    });
-    $("ownerVerifyOtp").addEventListener("click", async () => {
-      const button = $("ownerVerifyOtp");
-      button.disabled = true;
-      try {
-        const result = await post("/mobile-verification/verify", { accountType: "OWNER", phoneNumber, code: $("ownerOtp").value.trim() });
-        showMessage(result.message + " You can now sign in.");
-        $("ownerOtpArea").classList.add("owner-auth-hidden");
-        setMode("login");
-      } catch (error) { showMessage(error.message || "Verification failed.", true); }
-      finally { button.disabled = false; }
-    });
-    $("ownerResendOtp").addEventListener("click", async () => {
-      phoneNumber = $("ownerPhone").value.trim() || phoneNumber;
-      if (!phoneNumber) return showMessage("Enter the mobile number linked to your account.", true);
-      try {
-        const result = await post("/mobile-verification/send", { accountType: "OWNER", phoneNumber });
-        showMessage(result.message || "If the account exists, a code has been sent.");
-      } catch (error) { showMessage(error.message || "Could not resend code.", true); }
     });
     setMode("signup");
   })();
