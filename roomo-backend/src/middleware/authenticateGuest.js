@@ -23,7 +23,7 @@ async function authenticateGuest(req, res, next) {
   try {
     const guest = await prisma.guestUser.findUnique({
       where: { id: decoded.sub },
-      select: { id: true, fullName: true, email: true, emailVerified: true },
+      select: { id: true, fullName: true, email: true, emailVerified: true, phoneNumber: true, phoneVerified: true },
     });
     if (!guest) return res.status(401).json({ message: "Guest account not found. Please sign in again." });
     if (!guest.emailVerified) return res.status(403).json({ message: "Verify your email before making a reservation.", code: "EMAIL_NOT_VERIFIED" });
