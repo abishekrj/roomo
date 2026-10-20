@@ -349,6 +349,13 @@
     document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = selected.has(input.value); });
   }
 
+  // The same popular facility can appear in the badge selector and its detailed category.
+  document.addEventListener("change", event => {
+    const input = event.target;
+    if (!input.matches('input[name="amenities"]')) return;
+    document.querySelectorAll('input[name="amenities"][value="' + CSS.escape(input.value) + '"]').forEach(other => { if (other !== input) other.checked = input.checked; });
+  });
+
   function collectPropertyPayload() {
     const urlImages = $("imageUrls").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
     const imageUrls = [...imageItems.map(item => item.imageUrl).filter(Boolean), ...urlImages];
