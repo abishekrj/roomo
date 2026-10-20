@@ -188,6 +188,91 @@ router.delete("/destinations/:id", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+
+function normalizeDestinationName(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("en").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+}
+function destinationDistance(a, b) {
+  const left = normalizeDestinationName(a), right = normalizeDestinationName(b);
+  const row = Array.from({ length: right.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= left.length; i++) {
+    let previous = row[0]; row[0] = i;
+    for (let j = 1; j <= right.length; j++) {
+      const old = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, previous + (left[i - 1] === right[j - 1] ? 0 : 1));
+      previous = old;
+    }
+  }
+  return row[right.length];
+}
+function findSimilarDestination(name, places) {
+  const normalized = normalizeDestinationName(name);
+  return places.map(place => {
+    const candidate = normalizeDestinationName(place.name);
+    const distance = destinationDistance(normalized, candidate);
+    const similarity = 1 - distance / Math.max(normalized.length, candidate.length, 1);
+    const sameWords = normalized.split(" ").sort().join(" ") === candidate.split(" ").sort().join(" ");
+    return { place, distance, similarity, sameWords };
+  }).find(item => item.sameWords || (Math.max(normalized.length, normalizeDestinationName(item.place.name).length) >= 5 && (item.distance <= 2 || item.similarity >= 0.78)))?.place || null;
+}
+async function readDestinationConfig() {
+  const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+  const draft = { ...(row?.draft || defaults) };
+  const published = { ...(row?.published || defaults) };
+  const places = draft.destinationPlaces || published.destinationPlaces || defaultDestinationPlaces;
+  const pending = draft.pendingDestinationSuggestions || published.pendingDestinationSuggestions || [];
+  return { row, draft, published, places, pending };
+}
+async function saveDestinationSuggestions(config, pending, places = config.places) {
+  config.draft.destinationPlaces = places;
+  config.published.destinationPlaces = places;
+  config.draft.pendingDestinationSuggestions = pending;
+  config.published.pendingDestinationSuggestions = pending;
+  return prisma.homepageConfig.upsert({
+    where: { id: 1 },
+    create: { id: 1, draft: config.draft, published: config.published, publishedAt: new Date() },
+    update: { draft: config.draft, published: config.published, publishedAt: config.row?.publishedAt || new Date() }
+  });
+}
+router.get("/destination-suggestions", async (req, res, next) => {
+  try {
+    const config = await readDestinationConfig();
+    res.json({ suggestions: config.pending.filter(item => item.status === "PENDING") });
+  } catch (error) { next(error); }
+});
+router.put("/destination-suggestions/:id", async (req, res, next) => {
+  try {
+    const parsed = z.object({
+      action: z.enum(["approve", "reject"]),
+      name: z.string().trim().min(2).max(100).optional()
+    }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Choose approve or reject and check the destination name." });
+    const config = await readDestinationConfig();
+    const index = config.pending.findIndex(item => item.id === req.params.id && item.status === "PENDING");
+    if (index < 0) return res.status(404).json({ message: "Pending suggestion not found. Refresh the page." });
+    const suggestion = config.pending[index];
+    if (parsed.data.action === "reject") {
+      config.pending[index] = { ...suggestion, status: "REJECTED", reviewedAt: new Date().toISOString() };
+      await saveDestinationSuggestions(config, config.pending);
+      return res.json({ message: "Destination suggestion rejected.", suggestions: config.pending.filter(item => item.status === "PENDING"), places: config.places });
+    }
+    const name = (parsed.data.name || suggestion.name).replace(/\s+/g, " ");
+    const normalized = normalizeDestinationName(name);
+    const exact = config.places.find(place => normalizeDestinationName(place.name) === normalized);
+    if (exact) return res.status(409).json({ message: 'A destination named "' + exact.name + '" already exists. Edit the suggested name or reject it.', matches: [exact] });
+    const similar = findSimilarDestination(name, config.places);
+    if (similar) return res.status(409).json({ message: 'This looks similar to "' + similar.name + '". Edit the name to the canonical spelling or reject the suggestion.', matches: [similar] });
+    const base = destinationSlug(name);
+    let id = base, suffix = 2;
+    while (config.places.some(place => place.id === id)) id = base + "-" + suffix++;
+    config.places.push({ id, name });
+    config.pending[index] = { ...suggestion, name, status: "APPROVED", reviewedAt: new Date().toISOString(), destinationId: id };
+    await saveDestinationSuggestions(config, config.pending, config.places);
+    res.json({ message: "Destination approved and added to the homepage dropdown.", suggestions: config.pending.filter(item => item.status === "PENDING"), places: config.places });
+  } catch (error) { next(error); }
+});
+
 router.post("/hero-image", heroUpload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
   const baseUrl = req.protocol + "://" + req.get("host");
