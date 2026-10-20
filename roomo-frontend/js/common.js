@@ -683,6 +683,9 @@ if (document.body.classList.contains("my-bookings-page")) {
       ? "Create an account to save your favourite stays and keep your pilgrimage plans close."
       : "Continue your pilgrimage journey and access your saved stays.";
     $("nameField")?.classList.toggle("hidden", !isSignup);
+    $("phoneField")?.classList.toggle("hidden", !isSignup);
+    const phoneInput = $("phoneNumber");
+    if (phoneInput) phoneInput.required = isSignup;
     $("loginOptions")?.classList.toggle("hidden", isSignup);
     if (fullNameInput) fullNameInput.required = isSignup;
     passwordInput.required = true;
@@ -838,6 +841,85 @@ if (document.body.classList.contains("my-bookings-page")) {
     window.location.replace("index.html");
   }
 
+  function showMobileOtpPrompt(phoneNumber, accountType = "GUEST") {
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = "display:grid;gap:10px;margin-top:14px;text-align:left";
+    const label = document.createElement("label");
+    label.textContent = "6-digit mobile verification code";
+    label.htmlFor = "mobileOtpCode";
+    label.style.cssText = "font-weight:700;font-size:13px";
+    const input = document.createElement("input");
+    input.id = "mobileOtpCode";
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.autocomplete = "one-time-code";
+    input.maxLength = 6;
+    input.pattern = "[0-9]{6}";
+    input.placeholder = "Enter the code";
+    input.style.cssText = "width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit";
+    const verify = document.createElement("button");
+    verify.type = "button";
+    verify.textContent = "VERIFY MOBILE";
+    verify.className = "primary-btn";
+    verify.style.cssText = "width:100%;margin-top:2px";
+    const status = document.createElement("p");
+    status.style.cssText = "margin:0;font-size:13px";
+    status.setAttribute("role", "status");
+    verify.addEventListener("click", async () => {
+      const code = input.value.trim();
+      if (!/^[0-9]{6}$/.test(code)) {
+        status.textContent = "Enter the six-digit code.";
+        return;
+      }
+      verify.disabled = true;
+      verify.textContent = "VERIFYING…";
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mobile-verification/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accountType, phoneNumber, code })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || "Mobile verification failed.");
+        status.textContent = result.message || "Mobile number verified. Continue with email verification.";
+        status.style.color = "#177245";
+        verify.textContent = "MOBILE VERIFIED";
+        input.disabled = true;
+        verify.disabled = true;
+      } catch (error) {
+        status.textContent = error.message || "Unable to verify this code.";
+        status.style.color = "#b42318";
+        verify.disabled = false;
+        verify.textContent = "VERIFY MOBILE";
+      }
+    });
+    const resend = document.createElement("button");
+    resend.type = "button";
+    resend.textContent = "Resend code";
+    resend.style.cssText = "border:0;background:transparent;text-decoration:underline;font:inherit;font-size:13px;cursor:pointer";
+    resend.addEventListener("click", async () => {
+      resend.disabled = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/mobile-verification/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accountType, phoneNumber })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || "Could not resend the code.");
+        status.textContent = result.message || "If the account exists, a new code has been sent.";
+        status.style.color = "#177245";
+      } catch (error) {
+        status.textContent = error.message || "Could not resend the code.";
+        status.style.color = "#b42318";
+      } finally {
+        resend.disabled = false;
+      }
+    });
+    wrapper.append(label, input, verify, resend, status);
+    messageBox.appendChild(wrapper);
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (busy) return;
@@ -860,16 +942,21 @@ if (document.body.classList.contains("my-bookings-page")) {
     }
     setBusy(true);
     try {
+      const phoneNumber = $("phoneNumber")?.value.trim();
       const data = await sendGuestAuthRequest(mode === "signup" ? "/register" : "/login",
-        mode === "signup" ? { fullName: fullNameInput.value.trim(), email, password } : { email, password });
+        mode === "signup" ? { fullName: fullNameInput.value.trim(), email, phoneNumber, password } : { email, password });
       if (mode === "signup" && data.verificationRequired) {
-        showMessage("Your account has been created. Check your inbox (and spam folder) and click the verification link before signing in.", "success");
+        showMessage("Your account has been created. Verify your mobile number below, then check your inbox for the email verification link.", "success");
+        showMobileOtpPrompt(phoneNumber, "GUEST");
         return;
       }
       saveGuestSession(data);
       showMessage(mode === "signup" ? "Your ROOMO account has been created successfully. You are now signed in." : "You are signed in successfully.", "success");
     } catch (error) {
       showMessage(error.message || "Unable to authenticate. Please try again.", "error", error.code === "EMAIL_NOT_VERIFIED" || error.code === "VERIFICATION_EMAIL_FAILED");
+      if (mode === "signup" && error.code === "VERIFICATION_EMAIL_FAILED") {
+        showMobileOtpPrompt($("phoneNumber")?.value.trim(), "GUEST");
+      }
     } finally {
       setBusy(false);
     }
