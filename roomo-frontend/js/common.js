@@ -1019,7 +1019,7 @@ if (document.body.classList.contains("my-bookings-page")) {
       showMessage(mode === "signup" ? "Your ROOMO account has been created successfully. You are now signed in." : "You are signed in successfully.", "success");
     } catch (error) {
       showMessage(error.message || "Unable to authenticate. Please try again.", "error", error.code === "EMAIL_NOT_VERIFIED" || error.code === "VERIFICATION_EMAIL_FAILED");
-      if (mode === "signup" && error.code === "VERIFICATION_EMAIL_FAILED") {
+      if (mode === "signup" && (error.code === "VERIFICATION_EMAIL_FAILED" || error.code === "MOBILE_OTP_FAILED")) {
         showMobileOtpPrompt($("phoneNumber")?.value.trim(), "GUEST");
       }
     } finally {
