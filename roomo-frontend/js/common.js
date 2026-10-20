@@ -193,10 +193,16 @@ if (document.body.classList.contains("home-page")) {
 
       function closeRoomoRangeCalendar() {
         const calendar = document.getElementById('roomoRangeCalendar');
+        const cin = document.getElementById('checkinPicker');
+        const cout = document.getElementById('checkoutPicker');
+        // Keep the calendar open while the guest is midway through choosing a date range.
+        if (roomoCalendarState.choosingCheckout || !cin?.value || !cout?.value || cout.value <= cin.value) {
+          syncRoomoDateDisplay();
+          return;
+        }
         if (calendar) calendar.hidden = true;
         document.getElementById('checkinDateTrigger')?.setAttribute('aria-expanded', 'false');
         document.getElementById('checkoutDateTrigger')?.setAttribute('aria-expanded', 'false');
-        roomoCalendarState.choosingCheckout = false;
         syncRoomoDateDisplay();
       }
 
@@ -219,10 +225,13 @@ if (document.body.classList.contains("home-page")) {
           renderRoomoRangeCalendar();
         });
         document.addEventListener('click', event => {
-          if (!calendar.hidden && !calendar.parentElement.contains(event.target)) closeRoomoRangeCalendar();
+          if (!calendar.hidden && !calendar.parentElement.contains(event.target)) {
+            // Ignore outside clicks until both dates have been chosen.
+            if (!roomoCalendarState.choosingCheckout) closeRoomoRangeCalendar();
+          }
         });
         document.addEventListener('keydown', event => {
-          if (event.key === 'Escape' && !calendar.hidden) closeRoomoRangeCalendar();
+          if (event.key === 'Escape' && !calendar.hidden && !roomoCalendarState.choosingCheckout) closeRoomoRangeCalendar();
         });
         renderRoomoRangeCalendar();
       }
