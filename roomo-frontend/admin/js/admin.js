@@ -335,7 +335,7 @@
     setCheckedValues("amenities", []);
     setCheckedValues("nearbyLandmarks", []);
     $("perks").value = "";
-    $("initialStatus").value = "DRAFT";
+    $("initialStatus").value = "PUBLISHED";
     imageItems.forEach(item => { if (item.previewUrl && item.file) URL.revokeObjectURL(item.previewUrl); });
     imageItems = [];
     if ($("propertyImages")) $("propertyImages").value = "";
