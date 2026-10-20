@@ -98,7 +98,7 @@ async function sendReservationConfirmation(reservation) {
         });
         await prisma.notificationLog.update({
           where: { id: log.id },
-          data: { status: "SENT", providerMessageId: result.id, sentAt: new Date() },
+          data: { status: String(result.status || "submitted").toUpperCase(), providerMessageId: result.id, sentAt: new Date() },
         });
       } catch (error) {
         console.error(`ROOMO reservation ${channel} notification failed:`, error.message);
