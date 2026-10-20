@@ -43,9 +43,29 @@
     const findSimilar=query=>places.map(place=>{const d=distance(query,place.name),a=normalize(query),b=normalize(place.name);return {place,d,similarity:1-d/Math.max(a.length,b.length,1),sameWords:a.split(" ").sort().join(" ")===b.split(" ").sort().join(" ")};})
       .filter(item=>item.sameWords||(Math.max(normalize(query).length,normalize(item.place.name).length)>=5&&(item.d<=2||item.similarity>=.78)))
       .sort((a,b)=>b.similarity-a.similarity).slice(0,5).map(item=>item.place);
-    let status=document.getElementById("destinationSuggestionStatus");
-    if(!status){status=document.createElement("p");status.id="destinationSuggestionStatus";status.className="small mt-2 mb-0";status.setAttribute("role","status");status.setAttribute("aria-live","polite");list.insertAdjacentElement("afterend",status);}
-    const showStatus=(message,isError=false)=>{status.textContent=message;status.style.color=isError?"#b42318":"#2563a6";};
+    const status=document.getElementById("destinationSuggestionNotice");
+    let statusTimer=null;
+    const showStatus=(message,isError=false)=>{
+      if(!status)return;
+      if(statusTimer)clearTimeout(statusTimer);
+      status.textContent="";
+      const icon=document.createElement("i");
+      icon.className=isError?"bi bi-exclamation-circle-fill":"bi bi-check-circle-fill";
+      icon.setAttribute("aria-hidden","true");
+      const text=document.createElement("span");
+      text.textContent=message;
+      status.append(icon,text);
+      status.classList.remove("is-success","is-error","is-visible","is-hiding");
+      status.classList.add(isError?"is-error":"is-success","is-visible");
+      status.hidden=false;
+      if(!isError){
+        statusTimer=setTimeout(()=>{
+          status.classList.remove("is-visible");
+          status.classList.add("is-hiding");
+          setTimeout(()=>{status.hidden=true;status.classList.remove("is-hiding");},260);
+        },4500);
+      }
+    };
     const sendSuggestion=async name=>{
       const button=list.querySelector("[data-suggest-new]");
       if(button)button.disabled=true;
