@@ -81,7 +81,7 @@
   $("saveRate").addEventListener("click",async()=>{const ownerId=$("ownerSelect").value;const rate=Number($("ownerRate").value);if(!ownerId)return showMessage("Select an owner first.",true);if(!Number.isFinite(rate)||rate<0||rate>50)return showMessage("Enter a rate from 0 to 50 percent.",true);$("saveRate").disabled=true;try{await request("/admin/commissions/owners/"+encodeURIComponent(ownerId)+"/rate",{method:"PATCH",body:JSON.stringify({commissionRate:rate})});showMessage("Owner rate updated. Existing reservations are unchanged.");await load()}catch(e){showMessage(e.message,true)}finally{$("saveRate").disabled=false}});
   async function loadNotifications(){
     const data=await request("/admin/commissions/notifications?limit=50");const body=$("notificationRows");body.replaceChildren();
-    for(const item of data.notifications||[]){const tr=document.createElement("tr");cell(tr,new Date(item.createdAt).toLocaleString());cell(tr,item.reservationId);cell(tr,item.recipientType+" · "+item.recipientPhone);cell(tr,item.channel);cell(tr,item.messageType);cell(tr,item.status);cell(tr,item.errorMessage||item.providerMessageId||"—");body.appendChild(tr)}
+    for(const item of data.notifications||[]){const tr=document.createElement("tr");cell(tr,new Date(item.createdAt).toLocaleString());cell(tr,item.reservation?.reservationCode||item.reservationId);cell(tr,item.recipientType+" · "+item.recipientPhone);cell(tr,item.channel);cell(tr,item.messageType);cell(tr,item.status);cell(tr,item.errorMessage||item.providerMessageId||"—");body.appendChild(tr)}
     if(!data.notifications?.length)body.innerHTML='<tr><td colspan="7">No notifications logged yet.</td></tr>';
   }
   async function load(){
