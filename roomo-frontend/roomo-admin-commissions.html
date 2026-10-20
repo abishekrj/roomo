@@ -10,9 +10,9 @@
 </style>
 </head>
 <body>
-<header><a href="index.html">ROOMO <span style="font-size:11px">SACRED</span></a><div><strong>Admin tools</strong><div class="small">Commission ledger · SMS / WhatsApp delivery log</div></div></header>
+<header><a href="index.html">ROOMO <span style="font-size:11px">SACRED</span></a><div><strong>Admin tools</strong><div class="small">Commission ledger · historical notification log</div></div></header>
 <main>
-  <div><h1>Commission management</h1><p class="muted">Review reservation values, owner-specific rates, commission due, settlement status, and notification delivery. This ledger records manual settlements; it does not collect or transfer money.</p></div>
+  <div><h1>Commission management</h1><p class="muted">Review reservation values, owner-specific rates, commission due, and settlement status. This ledger records manual settlements; it does not collect or transfer money.</p></div>
   <div id="pageMessage" class="message">Loading commission records…</div>
   <section class="stats">
     <div class="stat"><span>Booking value</span><strong id="bookingValue">₹0</strong></div>
@@ -29,7 +29,7 @@
     <div class="table-wrap"><table><thead><tr><th>Reference / Dates</th><th>Property / Owner</th><th>Guest</th><th>Booking total</th><th>Saved rate</th><th>Commission</th><th>Owner payout</th><th>Settlement</th><th>Notes</th><th>Save</th></tr></thead><tbody id="reservationRows"><tr><td colspan="10">Loading…</td></tr></tbody></table></div>
   </section>
   <section class="panel">
-    <h2>SMS and WhatsApp delivery history</h2>
+    <h2>Historical notification log</h2><p class="muted">New SMS and WhatsApp messages are currently disabled.</p>
     <div class="table-wrap"><table><thead><tr><th>Created</th><th>Reservation</th><th>Recipient</th><th>Channel</th><th>Message</th><th>Status</th><th>Provider detail</th></tr></thead><tbody id="notificationRows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
   </section>
 </main>
