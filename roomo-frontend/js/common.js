@@ -865,7 +865,7 @@ if (document.body.classList.contains("my-bookings-page")) {
     clearMessage();
     const isSignup = mode === "signup";
     $("eyebrow").textContent = isSignup ? "BEGIN YOUR JOURNEY" : "WELCOME BACK";
-    $("heading").innerHTML = isSignup ? "Create your<br>sanctuary account." : "Sign in to your<br>sanctuary.";
+    $("heading").innerHTML = isSignup ? "Create your account." : "Welcome back! Sign in";
     $("subheading").textContent = isSignup
       ? "Create an account to save your favourite stays and keep your pilgrimage plans close."
       : "Continue your pilgrimage journey and access your saved stays.";
