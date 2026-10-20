@@ -1597,6 +1597,14 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 @media(max-width:520px){.my-bookings-page .favorite-stays-grid{grid-template-columns:1fr}.my-bookings-page .favorite-stay-link img{height:190px}}
 
 
+
+/* Listing page search editor is collapsed until requested. */
+.search-page .listing-edit-search[hidden] { display: none !important; }
+.search-page.is-editing-search .hero h1,
+.search-page.is-editing-search .hero > div > p { display: none !important; }
+.search-page.is-editing-search .hero { align-items: flex-start; }
+.search-page .listing-edit-search { scroll-margin-top: 24px; }
+
 /* Search page: embedded, reusable homepage search component and favourite feedback. */
 .search-page .listing-edit-search{margin:18px 0 26px;padding:clamp(18px,3vw,30px);border:1px solid #d9e2ec;border-radius:20px;background:#f8fbff;box-shadow:0 12px 32px rgba(0,53,128,.07)}
 .search-page .listing-edit-search-heading{margin:0 0 18px}
