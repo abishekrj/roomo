@@ -7,6 +7,17 @@ const requireAdmin = require("../middleware/requireAdmin");
 const router = express.Router();
 router.use(authenticateToken, requireAdmin);
 
+router.get("/owners", async (_req, res, next) => {
+  try {
+    const owners = await prisma.owner.findMany({
+      where: { role: "OWNER" },
+      select: { id: true, fullName: true, email: true, phoneNumber: true, phoneVerified: true, commissionRate: true },
+      orderBy: { fullName: "asc" },
+    });
+    return res.json({ owners });
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (_req, res, next) => {
   try {
     const reservations = await prisma.reservation.findMany({
