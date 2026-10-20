@@ -517,6 +517,7 @@ loadFavorites();
     // Prefer real published inventory over static sample cards when available.
     stays.splice(0, stays.length, ...liveStays);
     render();
+    loadFavorites();
   } catch (error) {
     console.info("ROOMO: Published listings are unavailable; showing sample listings.", error);
   }
@@ -766,6 +767,58 @@ if (document.body.classList.contains("my-bookings-page")) {
         return '<article class="booking-card" data-reservation-id="' + escapeHTML(item.id) + '"><img class="booking-card-image" src="' + escapeHTML(image || "https://placehold.co/240x240/eaf1f8/45617c?text=ROOMO") + '" alt="' + escapeHTML(property.title || "ROOMO stay") + '"><div><h2>' + escapeHTML(property.title || "Your stay") + '</h2><p><i class="bi bi-geo-alt"></i> ' + escapeHTML([property.city, property.address].filter(Boolean).join(", ")) + '</p><p><i class="bi bi-calendar3"></i> ' + escapeHTML(formatDate(item.checkIn)) + ' – ' + escapeHTML(formatDate(item.checkOut)) + ' · ' + escapeHTML(item.nights) + ' night(s)</p><p><i class="bi bi-people"></i> ' + escapeHTML(item.adults) + ' adults · ' + escapeHTML(item.children) + ' children · ' + escapeHTML(item.roomCount) + ' room(s)</p><p class="booking-reference">Reference: ' + escapeHTML(item.reservationCode) + '</p><span class="booking-status ' + escapeHTML(status) + '">' + escapeHTML(status === "requested" ? "Pending confirmation" : status) + '</span>' + (canCancel ? '<div><button type="button" class="booking-cancel" data-cancel-reservation="' + escapeHTML(item.id) + '">Cancel reservation</button></div>' : '') + '</div><div class="booking-card-total">' + money(item.totalAmount) + '<p>estimated total</p></div></article>';
       }).join("") + '</div>';
     }
+    const favoritesList = document.getElementById("myFavoritesList");
+    const favoritesMessage = document.getElementById("myFavoritesMessage");
+    let savedFavorites = [];
+    function renderFavorites() {
+      if (!savedFavorites.length) {
+        favoritesList.innerHTML = '<div class="booking-empty favorites-empty"><i class="bi bi-heart"></i><h3>No favourite stays saved yet</h3><p>Tap the heart on any stay in the listings and it will appear here.</p><a class="detail-book-btn reservation-view-btn" href="roomo-search-results.html">Browse stays</a></div>';
+        return;
+      }
+      favoritesList.innerHTML = '<div class="favorite-stays-grid">' + savedFavorites.map(item => {
+        const stay = item.propertySnapshot || {};
+        const id = encodeURIComponent(item.propertyId);
+        const image = escapeHTML(stay.img || "https://placehold.co/480x320/eaf1f8/45617c?text=ROOMO");
+        return '<article class="favorite-stay-card"><a class="favorite-stay-link" href="roomo-stay-details.html?stay=' + id + '"><img src="' + image + '" alt="' + escapeHTML(stay.name || "ROOMO stay") + '"><div class="favorite-stay-content"><h3>' + escapeHTML(stay.name || "Saved stay") + '</h3><p>' + escapeHTML(stay.location || stay.type || "ROOMO Sacred stay") + '</p><strong>' + money(stay.price) + ' <span>/ night</span></strong></div></a><button type="button" class="booking-cancel favorite-remove-btn" data-remove-favorite="' + escapeHTML(item.propertyId) + '"><i class="bi bi-heartbreak"></i> Remove favourite</button></article>';
+      }).join("") + '</div>';
+    }
+    async function loadMyFavorites() {
+      try {
+        const response = await fetch("http://localhost:5001/api/favorites", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          sessionStorage.removeItem("roomoGuestToken"); localStorage.removeItem("roomoGuestToken");
+          location.replace("roomo-login.html?returnTo=" + encodeURIComponent(location.pathname + location.search));
+          return;
+        }
+        if (!response.ok) throw new Error(data.message || "Could not load your favourite stays.");
+        savedFavorites = data.favorites || [];
+        renderFavorites();
+        favoritesMessage.textContent = "";
+      } catch (error) {
+        favoritesMessage.textContent = error.message || "Could not load your favourite stays.";
+      }
+    }
+    favoritesList.addEventListener("click", async event => {
+      const button = event.target.closest("[data-remove-favorite]");
+      if (!button) return;
+      button.disabled = true;
+      button.textContent = "Removing…";
+      try {
+        const response = await fetch("http://localhost:5001/api/favorites/" + encodeURIComponent(button.dataset.removeFavorite), {
+          method: "DELETE", headers: { Authorization: "Bearer " + token }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Could not remove this favourite.");
+        savedFavorites = savedFavorites.filter(item => item.propertyId !== button.dataset.removeFavorite);
+        renderFavorites();
+        favoritesMessage.textContent = data.message || "Favourite removed.";
+      } catch (error) {
+        favoritesMessage.textContent = error.message || "Could not remove this favourite.";
+        button.disabled = false;
+        button.textContent = "Remove favourite";
+      }
+    });
     async function load() {
       try {
         const response = await fetch("http://localhost:5001/api/reservations/mine", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
@@ -802,7 +855,7 @@ if (document.body.classList.contains("my-bookings-page")) {
         button.textContent = "Cancel reservation";
       }
     });
-    await load();
+    await Promise.all([load(), loadMyFavorites()]);
   })();
 }
 
