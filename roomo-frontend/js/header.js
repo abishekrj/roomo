@@ -5,7 +5,7 @@
     if (window.google && window.google.translate && window.google.translate.TranslateElement) {
       new window.google.translate.TranslateElement({
         pageLanguage: "en",
-        includedLanguages: "en,ta,te",
+        includedLanguages: "en,ta,te,kn",
         autoDisplay: false
       }, "google_translate_element");
       return;
@@ -14,7 +14,7 @@
     window.googleTranslateElementInit = function () {
       new window.google.translate.TranslateElement({
         pageLanguage: "en",
-        includedLanguages: "en,ta,te",
+        includedLanguages: "en,ta,te,kn",
         autoDisplay: false
       }, "google_translate_element");
     };
@@ -113,7 +113,7 @@
 
   function selectRoomoLanguage(language) {
     const label = document.getElementById("currentLangText");
-    const labels = { en: "ENG", ta: "தமிழ்", te: "తెలుగు" };
+    const labels = { en: "ENG", ta: "Tamil", te: "Telugu", kn: "Kannada" };
     if (label) label.textContent = labels[language] || "ENG";
 
     const applyTranslation = () => {
