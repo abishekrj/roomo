@@ -1555,3 +1555,13 @@ button,input,select,textarea{font:inherit}
  .home-page .sanctuary-card,.home-page .sanctuary-img-holder img,.search-page .listing,.auth-page .primary-btn{transition:none!important}
  .home-page .sanctuary-card:hover,.search-page .listing:hover,.auth-page .primary-btn:hover{transform:none}
 }
+
+
+/* ROOMO typography standard: Poppins everywhere; headings 600, all other text 400 */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+html,body,body *:not(.bi):not([class*="bi-"]){font-family:'Poppins',sans-serif!important}
+body,body *{font-weight:400!important}
+body h1,body h2,body h3,body h4,body h5,body h6,
+body [role="heading"],
+body h1 *,body h2 *,body h3 *,body h4 *,body h5 *,body h6 *,
+body [role="heading"] *{font-weight:600!important}
