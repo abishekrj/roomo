@@ -1181,3 +1181,20 @@ html,
 body {
   top: 0 !important;
 }
+
+
+/* Homepage destination autocomplete: show up to five suggestions in a scrollable list. */
+.destination-suggestions {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 1080;
+  max-height: 220px; overflow-y: auto; overscroll-behavior: contain; padding: 6px;
+  border: 1px solid #d8e1e9; border-radius: 8px; background: #fff;
+  box-shadow: 0 14px 30px rgba(24, 59, 86, .18);
+}
+.destination-suggestions[hidden] { display: none !important; }
+.destination-suggestion-option {
+  display: block; width: 100%; padding: 11px 12px; border: 0; border-radius: 6px;
+  background: #fff; color: #202b33; text-align: left; font: inherit; font-size: 13px; cursor: pointer;
+}
+.destination-suggestion-option:hover, .destination-suggestion-option:focus-visible {
+  outline: none; background: #eaf2f8; color: #1d4e89;
+}
