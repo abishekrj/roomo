@@ -1307,3 +1307,9 @@ body {
   .roomo-date-endpoint strong { font-size: 12px; }
   .roomo-range-calendar { left: 0; width: 100%; transform: none; padding: 17px; }
 }
+
+
+/* Slightly emphasize the festival countdown label. */
+.beacon-countdown-label {
+  font-size: 1.08em;
+}
