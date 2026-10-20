@@ -74,6 +74,120 @@ const homepageSchema = z.object({
     legal: z.array(z.object({ label: z.string().trim().min(1).max(100), url: z.string().trim().min(1).max(500) })).max(20)
   })
 });
+
+const defaultDestinationPlaces = [
+  {
+    "id": "annamalaiyar-temple",
+    "name": "Annamalaiyar Temple"
+  },
+  {
+    "id": "sri-ramanasramam",
+    "name": "Sri Ramanasramam"
+  },
+  {
+    "id": "girivalam-path",
+    "name": "Girivalam Path"
+  },
+  {
+    "id": "arunachala-hill",
+    "name": "Arunachala Hill"
+  },
+  {
+    "id": "skandashramam",
+    "name": "Skandashramam"
+  },
+  {
+    "id": "virupaksha-cave",
+    "name": "Virupaksha Cave"
+  },
+  {
+    "id": "seshadri-swamigal-ashram",
+    "name": "Seshadri Swamigal Ashram"
+  },
+  {
+    "id": "yogi-ramsuratkumar-ashram",
+    "name": "Yogi Ramsuratkumar Ashram"
+  },
+  {
+    "id": "adi-annamalai-temple",
+    "name": "Adi Annamalai Temple"
+  },
+  {
+    "id": "central-bus-stand",
+    "name": "Tiruvannamalai Central Bus Stand"
+  },
+  {
+    "id": "railway-station",
+    "name": "Tiruvannamalai Railway Station"
+  }
+];
+const destinationSchema = z.object({
+  name: z.string().trim().min(2).max(100)
+});
+function destinationSlug(value) {
+  return value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70) || "destination";
+}
+async function saveDestinationPlaces(places) {
+  const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+  const draft = { ...(row?.draft || defaults), destinationPlaces: places };
+  const published = { ...(row?.published || defaults), destinationPlaces: places };
+  return prisma.homepageConfig.upsert({
+    where: { id: 1 },
+    create: { id: 1, draft, published, publishedAt: new Date() },
+    update: { draft, published, publishedAt: row?.publishedAt || new Date() }
+  });
+}
+router.get("/destinations", async (req, res, next) => {
+  try {
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    res.json({ places: row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces });
+  } catch (error) { next(error); }
+});
+router.post("/destinations", async (req, res, next) => {
+  try {
+    const parsed = destinationSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Enter a destination name between 2 and 100 characters." });
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const places = [...(row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces)];
+    if (places.some(place => place.name.toLocaleLowerCase() === parsed.data.name.toLocaleLowerCase())) {
+      return res.status(409).json({ message: "That destination already exists." });
+    }
+    const base = destinationSlug(parsed.data.name);
+    let id = base, suffix = 2;
+    while (places.some(place => place.id === id)) id = base + "-" + suffix++;
+    places.push({ id, name: parsed.data.name });
+    await saveDestinationPlaces(places);
+    res.status(201).json({ message: "Destination added and made available on the homepage.", places });
+  } catch (error) { next(error); }
+});
+router.put("/destinations/:id", async (req, res, next) => {
+  try {
+    const parsed = destinationSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Enter a destination name between 2 and 100 characters." });
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const places = [...(row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces)];
+    const index = places.findIndex(place => place.id === req.params.id);
+    if (index < 0) return res.status(404).json({ message: "Destination not found. Reload the list and try again." });
+    if (places.some((place, i) => i !== index && place.name.toLocaleLowerCase() === parsed.data.name.toLocaleLowerCase())) {
+      return res.status(409).json({ message: "That destination already exists." });
+    }
+    places[index] = { ...places[index], name: parsed.data.name };
+    await saveDestinationPlaces(places);
+    res.json({ message: "Destination updated on the homepage.", places });
+  } catch (error) { next(error); }
+});
+router.delete("/destinations/:id", async (req, res, next) => {
+  try {
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const places = [...(row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces)];
+    const nextPlaces = places.filter(place => place.id !== req.params.id);
+    if (nextPlaces.length === places.length) return res.status(404).json({ message: "Destination not found. Reload the list and try again." });
+    await saveDestinationPlaces(nextPlaces);
+    res.json({ message: "Destination deleted from the homepage dropdown.", places: nextPlaces });
+  } catch (error) { next(error); }
+});
+
 router.post("/hero-image", heroUpload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
   const baseUrl = req.protocol + "://" + req.get("host");
@@ -169,7 +283,8 @@ router.post("/publish", async (req, res, next) => {
       featuredSectionDescription: row?.draft?.featuredSectionDescription || row?.published?.featuredSectionDescription || defaults.featuredSectionDescription,
       featuredRooms: row?.draft?.featuredRooms || row?.published?.featuredRooms || defaults.featuredRooms
     };
-    const publishedContent = { ...parsed.data, ...featured };
+    const destinationPlaces = row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces;
+    const publishedContent = { ...parsed.data, ...featured, destinationPlaces };
     const updated = await prisma.homepageConfig.upsert({
       where: { id: 1 },
       create: { id: 1, draft: { ...parsed.data, ...featured }, published: publishedContent, publishedAt: new Date() },
