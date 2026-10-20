@@ -1107,3 +1107,132 @@ body.home-page { background-color: #F6F4EF; }
 #popularStays, #spiritualGuide { background-color:#F6F4EF; }
 #karthigaiPromo { background-color:#EAF2F8; }
 .sanctuary-card, .heritage-input-box, .stone-pill-badge { background-color:#FFFFFF; }
+
+
+/* ROOMO approved brand palette — use no additional accent colors */
+:root {
+  --navy-deep: #003580;
+  --navy-midnight: #003580;
+  --navy-card: #003580;
+  --navy-primary: #003580;
+  --sacred-blue: #009fe3;
+  --sacred-blue-hover: #003580;
+  --sacred-blue-subtle: #ffffff;
+  --sacred-blue-border: #009fe3;
+  --sacred-yellow: #feba02;
+  --sacred-gold: #feba02;
+  --sacred-yellow-bright: #feba02;
+  --sacred-yellow-light: #ffffff;
+  --sacred-yellow-subtle: #ffffff;
+  --bg-light: #ffffff;
+  --card-white: #ffffff;
+  --border-subtle: #003580;
+  --text-dark: #333333;
+  --text-muted: #333333;
+}
+
+/* Neutral surfaces and readable body copy */
+html, body, body.home-page {
+  background-color: #ffffff !important;
+  color: #333333;
+}
+body, p, li, label, input, select, textarea, small, .text-muted,
+.text-secondary, .form-text, .form-label {
+  color: #333333;
+}
+h1, h2, h3, h4, h5, h6, strong, b, .fw-bold, .fw-semibold {
+  color: #333333;
+}
+a, .link-primary { color: #003580; }
+a:hover, .link-primary:hover { color: #009fe3; }
+
+/* Remove gradients and decorative color effects site-wide */
+*, *::before, *::after {
+  background-image: none !important;
+  text-shadow: none;
+}
+.hero-heritage-wrapper,
+#popularStays,
+#spiritualGuide,
+#karthigaiPromo,
+section[id],
+.section {
+  background-color: #ffffff !important;
+}
+.heritage-navbar, .monolithic-search-engine, .sanctuary-card,
+.heritage-input-box, .stone-pill-badge, .dropdown-devotee-panel,
+.dropdown-menu, .card, .modal-content, .accordion-item,
+.booking-card, .property-card, .auth-card, .form-control {
+  background-color: #ffffff !important;
+  border-color: #003580 !important;
+}
+.temple-granite-footer,
+.karthigai-heritage-card,
+.pournami-banner-capsule,
+.dark-section, .bg-dark, .navbar-dark {
+  background-color: #003580 !important;
+  color: #ffffff !important;
+}
+.temple-granite-footer *, .karthigai-heritage-card *,
+.pournami-banner-capsule *, .dark-section *, .bg-dark *, .navbar-dark * {
+  color: #ffffff !important;
+}
+.roomo-brand-logo-footer { filter: brightness(0) invert(1); }
+
+/* Primary actions */
+button, .btn, .btn-primary, .btn-sacred-primary,
+button[type="submit"], input[type="submit"],
+.reservation-submit-btn, .booking-submit-btn {
+  background-color: #009fe3 !important;
+  background-image: none !important;
+  border-color: #009fe3 !important;
+  color: #ffffff !important;
+}
+button:hover, .btn:hover, .btn-primary:hover, .btn-sacred-primary:hover,
+button[type="submit"]:hover, input[type="submit"]:hover,
+.reservation-submit-btn:hover, .booking-submit-btn:hover {
+  background-color: #003580 !important;
+  border-color: #003580 !important;
+  color: #ffffff !important;
+}
+
+/* Secondary actions */
+.btn-secondary, .brass-btn, .btn-warning, .btn-outline-warning,
+.secondary-button, [data-button-style="secondary"] {
+  background-color: #feba02 !important;
+  background-image: none !important;
+  border-color: #feba02 !important;
+  color: #333333 !important;
+}
+.btn-secondary:hover, .brass-btn:hover, .btn-warning:hover,
+.btn-outline-warning:hover, .secondary-button:hover,
+[data-button-style="secondary"]:hover {
+  background-color: #feba02 !important;
+  border-color: #feba02 !important;
+  color: #333333 !important;
+}
+
+/* Brand links, tabs, form focus and badges */
+.stay-category-pill-btn.active,
+.stay-category-pill-btn:hover,
+.stepper-btn:hover:not(:disabled) {
+  background-color: #009fe3 !important;
+  border-color: #009fe3 !important;
+  color: #ffffff !important;
+}
+input:focus, select:focus, textarea:focus, .form-control:focus {
+  border-color: #009fe3 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0,159,227,.2) !important;
+}
+.temple-location-badge, .sacred-stamp, .stone-etched-orb {
+  background-color: #feba02 !important;
+  border-color: #feba02 !important;
+  color: #333333 !important;
+}
+.sanctuary-rating-tag, .booking-status {
+  background-color: #feba02 !important;
+  border-color: #feba02 !important;
+  color: #333333 !important;
+}
+
+/* Keep logos and photography unchanged; only UI colors are standardized */
