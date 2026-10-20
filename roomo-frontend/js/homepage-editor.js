@@ -20,7 +20,23 @@
     rooms.sort((a,b)=>a.sortOrder-b.sortOrder);
     track.innerHTML=rooms.map(room=>'<div class="popular-stay-item"><a class="sanctuary-card h-100 d-flex flex-column text-decoration-none" href="roomo-stay-details.html?stay='+encodeURIComponent(room.id)+'" aria-label="View details for '+escapeHtml(room.name)+'"><div class="sanctuary-img-holder"><img alt="'+escapeHtml(room.name)+'" src="'+escapeHtml(room.img||"")+'" loading="lazy"><div class="sanctuary-rating-tag"><i class="bi bi-star-fill text-warning me-1"></i>'+Number(room.rating||0).toFixed(1)+'</div></div><div class="p-3 d-flex flex-column flex-grow-1"><div class="text-uppercase font-cinzel small mb-1 fw-bold">'+escapeHtml(room.type||"Sanctuary stay")+'</div><h5 class="fw-bold text-dark mb-1 fs-6">'+escapeHtml(room.name)+'</h5><div class="text-muted small mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i>'+escapeHtml(room.location)+'</div><p class="text-muted small mb-3">'+escapeHtml(room.desc)+'</p><div class="mt-auto pt-2 border-top d-flex align-items-baseline justify-content-between"><div><span class="price-sacred-blue">₹'+Number(room.price||0).toLocaleString("en-IN")+'</span><span class="text-muted small"> / night</span></div><span class="badge border py-1 px-2 small font-cinzel">View details <i class="bi bi-arrow-right"></i></span></div></div></a></div>').join("");
     const controls=document.getElementById("featuredStayControls");
-    if(controls)controls.classList.toggle("d-none",rooms.length<5);
+    const updateControlsVisibility=()=>{
+      if(!controls)return;
+      const mobile=window.matchMedia("(max-width: 767.98px)").matches;
+      controls.classList.toggle("d-none",rooms.length <= (mobile ? 1 : 3));
+    };
+    updateControlsVisibility();
+    if(!window.roomoFeaturedControlsResizeBound){
+      window.addEventListener("resize",()=>{
+        const currentControls=document.getElementById("featuredStayControls");
+        const currentTrack=document.getElementById("stayTrack");
+        if(!currentControls||!currentTrack)return;
+        const count=currentTrack.querySelectorAll(".popular-stay-item").length;
+        const mobile=window.matchMedia("(max-width: 767.98px)").matches;
+        currentControls.classList.toggle("d-none",count <= (mobile ? 1 : 3));
+      });
+      window.roomoFeaturedControlsResizeBound=true;
+    }
     if(!rooms.length)track.innerHTML='<p class="text-muted py-4">Featured sanctuaries will appear here soon.</p>';
   }
   function applyContentOverrides(overrides){if(!overrides||typeof overrides!=="object")return;Object.entries(overrides).forEach(([selector,settings])=>{if(!settings||typeof settings!=="object")return;try{document.querySelectorAll(selector).forEach(el=>{if(typeof settings.text==="string")el.textContent=settings.text;if(typeof settings.href==="string"&&"href" in el)el.setAttribute("href",settings.href);if(typeof settings.src==="string"&&"src" in el)el.setAttribute("src",settings.src);if(typeof settings.alt==="string"&&"alt" in el)el.setAttribute("alt",settings.alt);if(typeof settings.hidden==="boolean")el.hidden=settings.hidden;});}catch(error){console.warn("Invalid ROOMO homepage selector:",selector);}});}
