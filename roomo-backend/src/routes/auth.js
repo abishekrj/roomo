@@ -11,7 +11,7 @@ const router = express.Router();
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(254),
-  phoneNumber: z.string().trim().regex(/^\\+[1-9]\\d{7,14}$/),
+  phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/),
   password: z.string().min(12).max(72),
 });
 
