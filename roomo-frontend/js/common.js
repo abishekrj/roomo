@@ -393,7 +393,7 @@ if (document.body.classList.contains("stay-details-page")) {
       }
     };
     checkinInput.addEventListener("change", updateCheckoutMinimum);
-    document.getElementById("checkAvailability").addEventListener("click", () => {
+    async function runAvailabilitySearch() {
       const arrival = checkinInput.value;
       const departure = checkoutInput.value;
       const guestAdults = Number(document.getElementById("detailAdults").value);
@@ -416,8 +416,11 @@ if (document.body.classList.contains("stay-details-page")) {
         availabilityMessage.classList.add("is-error");
         return;
       }
-      const nights = Math.round((new Date(departure + "T12:00:00") - new Date(arrival + "T12:00:00")) / 86400000);
-      const total = nights * Number(stay.price || 0) * roomCount;
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(stay.id))) {
+        availabilityMessage.textContent = "Live availability is available for published properties. This sample stay does not have a live property record yet.";
+        availabilityMessage.classList.add("is-error");
+        return;
+      }
       const query = new URLSearchParams(location.search);
       query.set("stay", stay.id);
       query.set("checkin", arrival);
@@ -426,11 +429,68 @@ if (document.body.classList.contains("stay-details-page")) {
       query.set("children", String(guestChildren));
       query.set("rooms", String(roomCount));
       history.replaceState(null, "", location.pathname + "?" + query.toString());
-      availabilityMessage.textContent = "Your search details are ready.";
-      availabilityResults.innerHTML = `<div class="availability-results-head"><div><span class="detail-eyebrow">YOUR SEARCH</span><h2>Availability for your stay</h2><p>${arrival} → ${departure} · ${nights} night${nights === 1 ? "" : "s"} · ${guestAdults} adult${guestAdults === 1 ? "" : "s"} · ${guestChildren} child${guestChildren === 1 ? "" : "ren"} · ${roomCount} room${roomCount === 1 ? "" : "s"}</p></div><span class="availability-search-check"><i class="bi bi-calendar-check"></i> Search updated</span></div><article class="availability-option"><div class="availability-option-icon"><i class="bi bi-house-door"></i></div><div class="availability-option-copy"><h3>${stay.name}</h3><p>${Number(stay.bedrooms || 1)} bedroom(s) · up to ${Number(stay.maxGuests || guestAdults + guestChildren)} guests · ${Number(stay.bathrooms || 1)} bathroom(s)</p><small>Estimated price only. Room-level inventory and live availability have not been connected yet.</small></div><div class="availability-option-price"><strong>₹${total.toLocaleString("en-IN")}</strong><span>estimated total</span><small>₹${Number(stay.price || 0).toLocaleString("en-IN")} × ${nights} night(s) × ${roomCount} room(s)</small></div></article><div class="availability-honesty"><i class="bi bi-info-circle"></i><span><strong>Availability isn't confirmed yet.</strong> Your dates and guest details are saved in this page. ROOMO needs a property availability calendar before it can confirm vacant rooms or accept a booking.</span></div>`;
-      availabilityResults.hidden = false;
-      availabilityResults.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+      const button = document.getElementById("checkAvailability");
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Checking…';
+      availabilityMessage.textContent = "Checking the property's reservation calendar…";
+      try {
+        const params = new URLSearchParams({ propertyId: stay.id, checkIn: arrival, checkOut: departure, adults: String(guestAdults), children: String(guestChildren), rooms: String(roomCount) });
+        const response = await fetch("http://localhost:5001/api/reservations/availability?" + params.toString(), { cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Unable to check availability right now.");
+        const money = value => "₹" + Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+        const available = Boolean(data.available);
+        availabilityMessage.textContent = available ? "Availability checked successfully." : "There are not enough units available for those dates.";
+        availabilityResults.innerHTML = '<div class="availability-results-head"><div><span class="detail-eyebrow">YOUR SEARCH</span><h2>Availability for your stay</h2><p>' + arrival + ' → ' + departure + ' · ' + data.nights + ' night' + (data.nights === 1 ? '' : 's') + ' · ' + guestAdults + ' adult' + (guestAdults === 1 ? '' : 's') + ' · ' + guestChildren + ' children · ' + roomCount + ' room' + (roomCount === 1 ? '' : 's') + '</p></div><span class="availability-search-check ' + (available ? '' : 'is-unavailable') + '"><i class="bi ' + (available ? 'bi-check-circle-fill' : 'bi-x-circle-fill') + '"></i> ' + (available ? 'Available' : 'Unavailable') + '</span></div><article class="availability-option"><div class="availability-option-icon"><i class="bi bi-house-door"></i></div><div class="availability-option-copy"><h3>' + data.property.title + '</h3><p>' + data.property.city + ' · ' + data.availableUnits + ' unit(s) currently available</p><small>' + (available ? 'Your selected dates fit the current reservation inventory.' : 'Try fewer rooms or different dates.') + '</small></div><div class="availability-option-price"><strong>' + money(data.totalAmount) + '</strong><span>estimated total</span><small>' + money(data.nightlyPrice) + ' × ' + data.nights + ' night(s) × ' + roomCount + ' room(s)</small></div></article>' + (available ? '<div class="availability-honesty"><i class="bi bi-info-circle"></i><span>Availability is based on current reservations. Your booking is not held until you submit a reservation request.</span></div><label class="reservation-request-label" for="reservationSpecialRequests">Special requests (optional)</label><textarea id="reservationSpecialRequests" maxlength="1000" rows="3" placeholder="Arrival time, accessibility needs, or other requests"></textarea><button type="button" class="detail-book-btn reservation-submit-btn" id="createReservation"><i class="bi bi-calendar2-check"></i> Request reservation</button><div id="reservationSubmitMessage" class="availability-message" aria-live="polite"></div>' : '<div class="availability-honesty"><i class="bi bi-info-circle"></i><span>Those dates do not have enough units for your request. Update the dates or reduce the number of rooms.</span></div>');
+        availabilityResults.hidden = false;
+        availabilityResults.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (available) {
+          document.getElementById("createReservation").addEventListener("click", async () => {
+            const submit = document.getElementById("createReservation");
+            const status = document.getElementById("reservationSubmitMessage");
+            const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+            if (!token) {
+              const returnTo = location.pathname + location.search + location.hash;
+              location.href = "roomo-login.html?returnTo=" + encodeURIComponent(returnTo);
+              return;
+            }
+            submit.disabled = true;
+            submit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Submitting…';
+            status.classList.remove("is-error");
+            try {
+              const bookingResponse = await fetch("http://localhost:5001/api/reservations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ propertyId: stay.id, checkIn: arrival, checkOut: departure, adults: guestAdults, children: guestChildren, rooms: roomCount, specialRequests: document.getElementById("reservationSpecialRequests")?.value || "" })
+              });
+              const bookingData = await bookingResponse.json().catch(() => ({}));
+              if (bookingResponse.status === 401) {
+                location.href = "roomo-login.html?returnTo=" + encodeURIComponent(location.pathname + location.search + location.hash);
+                return;
+              }
+              if (!bookingResponse.ok) {
+                if (bookingResponse.status === 409) status.classList.add("is-error");
+                throw new Error(bookingData.message || "Could not create your reservation.");
+              }
+              const reservation = bookingData.reservation;
+              availabilityResults.innerHTML = '<div class="availability-results-head"><div><span class="detail-eyebrow">RESERVATION REQUESTED</span><h2>Your stay request has been received</h2><p>' + arrival + ' → ' + departure + ' · ' + data.nights + ' night(s)</p></div><span class="availability-search-check">Pending confirmation</span></div><div class="reservation-confirmation"><i class="bi bi-check-circle-fill"></i><div><strong>Reservation reference: ' + reservation.reservationCode + '</strong><p>' + reservation.property.title + ' · ' + money(reservation.totalAmount) + ' estimated total</p><p>The property must confirm this request. No payment has been collected.</p></div></div><a class="detail-book-btn reservation-view-btn" href="roomo-my-bookings.html">View my reservations</a>';
+            } catch (error) {
+              status.textContent = error.message || "Could not create your reservation.";
+              status.classList.add("is-error");
+              submit.disabled = false;
+              submit.innerHTML = '<i class="bi bi-calendar2-check"></i> Try reservation again';
+            }
+          });
+        }
+      } catch (error) {
+        availabilityMessage.textContent = error.message || "Unable to check availability right now.";
+        availabilityMessage.classList.add("is-error");
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-search"></i> Check availability';
+      }
+    }
+    document.getElementById("checkAvailability").addEventListener("click", runAvailabilitySearch);
   } else if (root) root.innerHTML = '<div class="detail-not-found"><h1>Stay not found</h1><p>Please return to the listings and choose a stay.</p><a href="roomo-search-results.html">Browse stays</a></div>';
   })();
 }
