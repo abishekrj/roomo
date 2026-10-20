@@ -364,7 +364,13 @@ if (document.body.classList.contains("stay-details-page")) {
     const amenities = (stay.amenities || []).map(key => `<span class="detail-amenity"><i class="bi bi-check-circle-fill"></i>${amenityLabels[key] || key}</span>`).join("");
     const landmarkLabels = {"annamalaiyar-temple":"Arunachaleswarar / Annamalaiyar Temple","sri-ramanasramam":"Sri Ramanasramam","girivalam-path":"Girivalam path","arunachala-hill":"Arunachala Hill","skandashramam":"Skandashramam","virupaksha-cave":"Virupaksha Cave","sathanur-dam":"Sathanur Dam","central-bus-stand":"Central Bus Stand","railway-station":"Tiruvannamalai Railway Station","yogi-ram-surathkumar-ashram":"Yogi Ramsuratkumar Ashram"};
     const landmarks = (stay.nearbyLandmarks || []).map(key => `<div><i class="bi bi-geo-alt"></i><span><strong>${landmarkLabels[key] || key}</strong><small>Nearby landmark selected for this property</small></span></div>`).join("");
-    const checkin = params.get("checkin") || ""; const checkout = params.get("checkout") || "";
+    const dateValue = (offset) => { const date = new Date(); date.setHours(12, 0, 0, 0); date.setDate(date.getDate() + offset); return date.toISOString().slice(0, 10); };
+    const today = dateValue(0);
+    const checkin = params.get("checkin") || dateValue(3);
+    const checkout = params.get("checkout") || dateValue(4);
+    const adults = Math.min(16, Math.max(1, Number(params.get("adults") || 2)));
+    const children = Math.min(10, Math.max(0, Number(params.get("children") || 0)));
+    const rooms = Math.min(8, Math.max(1, Number(params.get("rooms") || 1)));
     root.innerHTML = `<div class="detail-crumb"><a href="code.html">Home</a><i class="bi bi-chevron-right"></i><a href="roomo-search-results.html${location.search}">Blessed Stays</a><i class="bi bi-chevron-right"></i><span>${stay.name}</span></div>
       <section class="detail-hero"><div><span class="detail-eyebrow"><i class="bi bi-patch-check-fill"></i> ROOMO Sacred · Curated stay</span><h1>${stay.name}</h1><p><i class="bi bi-geo-alt-fill"></i> ${stay.location}</p><div class="detail-rating"><span>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></span> ${stay.reviews} guest reviews · ${stay.type}</div></div><button class="detail-outline" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back to results</button></section>
       <div class="detail-gallery"><div class="detail-gallery-main">${((stay.images || []).filter(Boolean)[0]) ? '<img id="detailMainImage" src="' + String((stay.images || []).filter(Boolean)[0]).replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '" alt="' + stay.name + ' accommodation" />' : '<div class="detail-gallery-empty">No property photos have been added yet.</div>'}</div><div class="detail-gallery-side">${((stay.images || []).filter(Boolean).slice(1,5).map((image,index)=>'<button class="detail-gallery-thumb" type="button" data-gallery-image="'+String(image).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" aria-label="View property photo '+(index+2)+'"><img src="'+String(image).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="'+stay.name+' photo '+(index+2)+'" /></button>').join(''))}<div class="detail-gallery-note"><i class="bi bi-camera"></i><span>Property photos</span><small>${(stay.images || []).filter(Boolean).length} photo(s)</small></div></div></div>
@@ -372,9 +378,59 @@ if (document.body.classList.contains("stay-details-page")) {
       <section class="detail-section"><span class="detail-eyebrow">COMFORTS & CONVENIENCES</span><h2>Amenities</h2><div class="detail-amenities">${amenities}</div></section>
       <section class="detail-section"><span class="detail-eyebrow">PLAN YOUR VISIT</span><h2>Location & nearby landmarks</h2><p class="detail-location"><i class="bi bi-geo-alt-fill"></i>${stay.location}</p><div class="landmark-list">${landmarks || '<p class="detail-muted">Nearby landmarks have not been specified for this property.</p>'}</div></section>
       <section class="detail-section"><span class="detail-eyebrow">GUEST FEEDBACK</span><h2>Guest rating</h2><div class="review-summary"><strong>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></strong><div><b>${stay.rating>=4.7?'Exceptional':stay.rating>=4.5?'Excellent':'Very good'}</b><small>Based on ${stay.reviews} sample guest reviews</small></div></div><p class="detail-muted">Ratings and review counts are demo content for this prototype and are not live review data.</p></section></div>
-      <aside class="detail-booking"><div class="booking-label"><i class="bi bi-house-heart"></i> Your sacred stay</div><div class="detail-price">₹${stay.price.toLocaleString('en-IN')} <small>/ night</small></div><p class="detail-muted">Starting price · taxes may apply</p><div class="booking-form"><label>Check-in<input id="detailCheckin" type="date" value="${checkin}" /></label><label>Check-out<input id="detailCheckout" type="date" value="${checkout}" /></label><label>Guests<select id="detailGuests"><option>${params.get("adults")||"2"} adults · ${params.get("children")||"0"} children</option><option>1 adult · 0 children</option><option>2 adults · 0 children</option><option>2 adults · 1 child</option><option>2 adults · 2 children</option><option>4 adults · 0 children</option></select></label><label>Rooms<select id="detailRooms"><option>${params.get("rooms")||"1"} room(s)</option><option>1 room</option><option>2 rooms</option><option>3 rooms</option></select></label></div><button class="detail-book-btn" id="checkAvailability"><i class="bi bi-calendar-check"></i> Check availability</button><p class="booking-note"><i class="bi bi-shield-check"></i> No payment is taken on this demo page.</p><div id="availabilityMessage" class="availability-message" aria-live="polite"></div></aside></div>`;
+      <aside class="detail-booking"><div class="booking-label"><i class="bi bi-house-heart"></i> Your sacred stay</div><div class="detail-price">₹${stay.price.toLocaleString('en-IN')} <small>/ night</small></div><p class="detail-muted">Starting price · taxes may apply</p><div class="booking-form"><label>Check-in<input id="detailCheckin" type="date" min="${today}" value="${checkin}" required /></label><label>Check-out<input id="detailCheckout" type="date" min="${checkin}" value="${checkout}" required /></label><label>Adults<select id="detailAdults">${Array.from({length:16},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===adults?"selected":""}>${n} adult${n===1?"":"s"}</option>`).join("")}</select></label><label>Children<select id="detailChildren">${Array.from({length:11},(_,i)=>i).map(n=>`<option value="${n}" ${n===children?"selected":""}>${n} ${n===1?"child":"children"}</option>`).join("")}</select></label><label class="booking-room-field">Rooms<select id="detailRooms">${Array.from({length:8},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===rooms?"selected":""}>${n} room${n===1?"":"s"}</option>`).join("")}</select></label></div><button class="detail-book-btn" id="checkAvailability"><i class="bi bi-search"></i> Check availability</button><p class="booking-note"><i class="bi bi-shield-check"></i> No payment is taken at this stage.</p><div id="availabilityMessage" class="availability-message" aria-live="polite"></div></aside></div><section id="availabilityResults" class="availability-results" hidden aria-live="polite"></section>`;
     root.querySelectorAll("[data-gallery-image]").forEach(button => button.addEventListener("click", () => { const main = document.getElementById("detailMainImage"); if (main) main.src = button.dataset.galleryImage; }));
-    document.getElementById("checkAvailability").addEventListener("click", () => { const a=document.getElementById("detailCheckin").value,b=document.getElementById("detailCheckout").value; const message=document.getElementById("availabilityMessage"); if(a&&b&&b<=a){message.textContent="Check-out must be after check-in.";return;} message.textContent="This is a demo listing. Live availability and booking will be available once connected to your property inventory."; });
+    const checkinInput = document.getElementById("detailCheckin");
+    const checkoutInput = document.getElementById("detailCheckout");
+    const availabilityMessage = document.getElementById("availabilityMessage");
+    const availabilityResults = document.getElementById("availabilityResults");
+    const updateCheckoutMinimum = () => {
+      checkoutInput.min = checkinInput.value || today;
+      if (checkoutInput.value && checkinInput.value && checkoutInput.value <= checkinInput.value) {
+        const next = new Date(checkinInput.value + "T12:00:00");
+        next.setDate(next.getDate() + 1);
+        checkoutInput.value = next.toISOString().slice(0, 10);
+      }
+    };
+    checkinInput.addEventListener("change", updateCheckoutMinimum);
+    document.getElementById("checkAvailability").addEventListener("click", () => {
+      const arrival = checkinInput.value;
+      const departure = checkoutInput.value;
+      const guestAdults = Number(document.getElementById("detailAdults").value);
+      const guestChildren = Number(document.getElementById("detailChildren").value);
+      const roomCount = Number(document.getElementById("detailRooms").value);
+      availabilityMessage.classList.remove("is-error");
+      availabilityResults.hidden = true;
+      if (!arrival || !departure) {
+        availabilityMessage.textContent = "Choose both your check-in and check-out dates to continue.";
+        availabilityMessage.classList.add("is-error");
+        return;
+      }
+      if (arrival < today) {
+        availabilityMessage.textContent = "Check-in cannot be in the past.";
+        availabilityMessage.classList.add("is-error");
+        return;
+      }
+      if (departure <= arrival) {
+        availabilityMessage.textContent = "Check-out must be at least one day after check-in.";
+        availabilityMessage.classList.add("is-error");
+        return;
+      }
+      const nights = Math.round((new Date(departure + "T12:00:00") - new Date(arrival + "T12:00:00")) / 86400000);
+      const total = nights * Number(stay.price || 0) * roomCount;
+      const query = new URLSearchParams(location.search);
+      query.set("stay", stay.id);
+      query.set("checkin", arrival);
+      query.set("checkout", departure);
+      query.set("adults", String(guestAdults));
+      query.set("children", String(guestChildren));
+      query.set("rooms", String(roomCount));
+      history.replaceState(null, "", location.pathname + "?" + query.toString());
+      availabilityMessage.textContent = "Your search details are ready.";
+      availabilityResults.innerHTML = `<div class="availability-results-head"><div><span class="detail-eyebrow">YOUR SEARCH</span><h2>Availability for your stay</h2><p>${arrival} → ${departure} · ${nights} night${nights === 1 ? "" : "s"} · ${guestAdults} adult${guestAdults === 1 ? "" : "s"} · ${guestChildren} child${guestChildren === 1 ? "" : "ren"} · ${roomCount} room${roomCount === 1 ? "" : "s"}</p></div><span class="availability-search-check"><i class="bi bi-calendar-check"></i> Search updated</span></div><article class="availability-option"><div class="availability-option-icon"><i class="bi bi-house-door"></i></div><div class="availability-option-copy"><h3>${stay.name}</h3><p>${Number(stay.bedrooms || 1)} bedroom(s) · up to ${Number(stay.maxGuests || guestAdults + guestChildren)} guests · ${Number(stay.bathrooms || 1)} bathroom(s)</p><small>Estimated price only. Room-level inventory and live availability have not been connected yet.</small></div><div class="availability-option-price"><strong>₹${total.toLocaleString("en-IN")}</strong><span>estimated total</span><small>₹${Number(stay.price || 0).toLocaleString("en-IN")} × ${nights} night(s) × ${roomCount} room(s)</small></div></article><div class="availability-honesty"><i class="bi bi-info-circle"></i><span><strong>Availability isn't confirmed yet.</strong> Your dates and guest details are saved in this page. ROOMO needs a property availability calendar before it can confirm vacant rooms or accept a booking.</span></div>`;
+      availabilityResults.hidden = false;
+      availabilityResults.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   } else if (root) root.innerHTML = '<div class="detail-not-found"><h1>Stay not found</h1><p>Please return to the listings and choose a stay.</p><a href="roomo-search-results.html">Browse stays</a></div>';
   })();
 }
