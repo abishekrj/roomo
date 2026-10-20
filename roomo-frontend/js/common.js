@@ -521,7 +521,9 @@ if (document.body.classList.contains("stay-details-page")) {
               }
               if (!bookingResponse.ok) {
                 if (bookingResponse.status === 409) status.classList.add("is-error");
-                throw new Error(bookingData.message || "Could not create your reservation.");
+                const bookingError = new Error(bookingData.message || "Could not create your reservation.");
+                bookingError.code = bookingData.code || null;
+                throw bookingError;
               }
               const reservation = bookingData.reservation;
               availabilityResults.innerHTML = '<div class="availability-results-head"><div><span class="detail-eyebrow">RESERVATION REQUESTED</span><h2>Your stay request has been received</h2><p>' + arrival + ' → ' + departure + ' · ' + data.nights + ' night(s)</p></div><span class="availability-search-check">Pending confirmation</span></div><div class="reservation-confirmation"><i class="bi bi-check-circle-fill"></i><div><strong>Reservation reference: ' + reservation.reservationCode + '</strong><p>' + reservation.property.title + ' · ' + money(reservation.totalAmount) + ' estimated total</p><p>The property must confirm this request. No payment has been collected.</p></div></div><a class="detail-book-btn reservation-view-btn" href="roomo-my-bookings.html">View my reservations</a>';
@@ -530,6 +532,69 @@ if (document.body.classList.contains("stay-details-page")) {
               status.classList.add("is-error");
               submit.disabled = false;
               submit.innerHTML = '<i class="bi bi-calendar2-check"></i> Try reservation again';
+              if (error.code === "PHONE_NOT_VERIFIED") {
+                const phone = document.createElement("input");
+                phone.type = "tel";
+                phone.inputMode = "tel";
+                phone.autocomplete = "tel";
+                phone.placeholder = "+919876543210";
+                phone.setAttribute("aria-label", "Mobile number with country code");
+                phone.style.cssText = "display:block;width:100%;margin-top:10px;padding:10px;border:1px solid #cbd5e1;border-radius:8px";
+                const sendCode = document.createElement("button");
+                sendCode.type = "button";
+                sendCode.textContent = "Send mobile verification code";
+                sendCode.className = "detail-book-btn";
+                sendCode.style.marginTop = "8px";
+                status.append(phone, sendCode);
+                sendCode.addEventListener("click", async () => {
+                  sendCode.disabled = true;
+                  try {
+                    const response = await fetch("http://localhost:5001/api/mobile-verification/send-current", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                      body: JSON.stringify({ phoneNumber: phone.value.trim() })
+                    });
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok) throw new Error(result.message || "Could not send a verification code.");
+                    status.append(document.createTextNode(" Code sent where messaging is configured. "));
+                    const code = document.createElement("input");
+                    code.type = "text";
+                    code.inputMode = "numeric";
+                    code.autocomplete = "one-time-code";
+                    code.maxLength = 6;
+                    code.placeholder = "6-digit code";
+                    code.style.cssText = "display:block;width:100%;margin-top:8px;padding:10px;border:1px solid #cbd5e1;border-radius:8px";
+                    const verify = document.createElement("button");
+                    verify.type = "button";
+                    verify.textContent = "Verify number";
+                    verify.className = "detail-book-btn";
+                    verify.style.marginTop = "8px";
+                    status.append(code, verify);
+                    verify.addEventListener("click", async () => {
+                      verify.disabled = true;
+                      try {
+                        const verifiedResponse = await fetch("http://localhost:5001/api/mobile-verification/verify", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ accountType: "GUEST", phoneNumber: phone.value.trim(), code: code.value.trim() })
+                        });
+                        const verified = await verifiedResponse.json().catch(() => ({}));
+                        if (!verifiedResponse.ok) throw new Error(verified.message || "Could not verify this number.");
+                        status.textContent = "Mobile number verified. Click “Try reservation again” to submit your request.";
+                        status.classList.remove("is-error");
+                        phone.disabled = true;
+                        code.disabled = true;
+                      } catch (verifyError) {
+                        status.append(document.createTextNode(" " + (verifyError.message || "Verification failed.")));
+                        verify.disabled = false;
+                      }
+                    });
+                  } catch (sendError) {
+                    status.append(document.createTextNode(" " + (sendError.message || "Could not send a verification code.")));
+                    sendCode.disabled = false;
+                  }
+                });
+              }
             }
           });
         }
