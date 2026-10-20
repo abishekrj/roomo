@@ -1522,7 +1522,7 @@ button,input,select,textarea{font:inherit}
  .search-page .listing .tag{top:6px;left:6px;max-width:calc(100% - 12px);padding:5px 6px;font-size:9px}
  .search-page .listing .heart{top:6px;right:6px;width:30px;height:30px}
  .search-page .listing h3{font-size:15px}
- .search-page .listing .desc{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:11px}
+ .search-page .listing .desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px}
  .search-page .listing .features,.search-page .listing .perks{display:none}
  .search-page .listing .side{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0 0;border-top:1px solid #edf0f2;border-left:0}
  .search-page .listing .price{font-size:19px}.search-page .listing .details{grid-column:auto;min-width:112px}
@@ -1713,4 +1713,13 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
     font-size: 11px;
     line-height: 1.3;
   }
+}
+
+
+/* Keep search-result descriptions to two lines on all screen sizes. */
+.search-page .listing .desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
