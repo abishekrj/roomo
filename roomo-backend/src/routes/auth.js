@@ -4,14 +4,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
-const { sendOtp } = require("../services/messaging");
 
 const router = express.Router();
 
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(254),
-  phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/),
+  phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/).optional().or(z.literal("")),
   password: z.string().min(12).max(72),
 });
 
@@ -41,7 +40,7 @@ router.post("/register", async (req, res, next) => {
 
     const fullName = parsed.data.fullName;
     const email = parsed.data.email.toLowerCase();
-    const phoneNumber = parsed.data.phoneNumber;
+    const phoneNumber = parsed.data.phoneNumber || null;
     const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
     const owner = await prisma.owner.create({
@@ -54,20 +53,10 @@ router.post("/register", async (req, res, next) => {
       },
     });
 
-    const otp = String(require("crypto").randomInt(0, 1000000)).padStart(6, "0");
-    const crypto = require("crypto");
-    const otpHash = crypto.createHmac("sha256", process.env.JWT_SECRET).update(otp).digest("hex");
-    await prisma.mobileOtp.create({ data: { accountType: "OWNER", accountId: owner.id, phoneNumber, otpHash, expiresAt: new Date(Date.now() + 5 * 60 * 1000) } });
-    const delivery = await sendOtp(phoneNumber, otp);
-    if (!delivery.some((item) => item.ok)) {
-      return res.status(503).json({ message: "Owner account was created, but the mobile verification code could not be sent. Use the resend verification endpoint after messaging is configured.", code: "MOBILE_OTP_FAILED" });
-    }
     return res.status(201).json({
-      message: "Owner account created. Enter the mobile verification code before signing in.",
+      message: "Owner account created successfully. You can now sign in.",
       owner,
-      verificationRequired: true,
-      channels: delivery.filter((item) => item.ok).map((item) => item.channel),
-      expiresInSeconds: 300,
+      verificationRequired: false,
     });
   } catch (error) {
     if (error.code === "P2002") {
@@ -103,10 +92,6 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).json({
         message: "Invalid email or password.",
       });
-    }
-
-    if (owner.role !== "ADMIN" && owner.phoneNumber && !owner.phoneVerified) {
-      return res.status(403).json({ message: "Verify your mobile number before signing in.", code: "PHONE_NOT_VERIFIED" });
     }
 
     const safeOwner = {
