@@ -513,7 +513,7 @@ document.getElementById("staySearchForm")?.addEventListener("submit", event => {
     adults: text("adultVal") || "2",
     children: text("childrenVal") || "0",
     rooms: text("roomVal") || "1",
-    category: activeCategory ? activeCategory.textContent.trim().replace(/\\s+/g, " ") : "All stays"
+    category: activeCategory ? activeCategory.textContent.trim().replace(/\s+/g, " ") : "All stays"
   });
   window.location.href = "roomo-search-results.html?" + params.toString();
 });
