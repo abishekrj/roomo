@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
+const { sendOtp } = require("../services/messaging");
 
 const router = express.Router();
 const googleClient = new OAuth2Client();
@@ -14,6 +15,7 @@ const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(254),
+  phoneNumber: z.string().trim().regex(/^\\+[1-9]\\d{7,14}$/),
   password: z.string().min(12).max(72),
 });
 const loginSchema = z.object({
@@ -43,6 +45,8 @@ function publicUser(user) {
     email: user.email,
     authProvider: user.authProvider,
     emailVerified: user.emailVerified,
+    phoneNumber: user.phoneNumber,
+    phoneVerified: user.phoneVerified,
     createdAt: user.createdAt,
   };
 }
@@ -139,11 +143,24 @@ router.post("/register", async (req, res, next) => {
       data: {
         fullName: parsed.data.fullName,
         email,
+        phoneNumber: parsed.data.phoneNumber,
+        phoneVerified: false,
         passwordHash: await bcrypt.hash(parsed.data.password, 12),
         authProvider: "EMAIL",
         emailVerified: false,
       },
     });
+
+    const phoneNumber = parsed.data.phoneNumber;
+    const otp = String(crypto.randomInt(0, 1000000)).padStart(6, "0");
+    const otpHash = crypto.createHmac("sha256", process.env.JWT_SECRET).update(otp).digest("hex");
+    await prisma.mobileOtp.create({
+      data: { accountType: "GUEST", accountId: user.id, phoneNumber, otpHash, expiresAt: new Date(Date.now() + 5 * 60 * 1000) },
+    });
+    const otpDelivery = await sendOtp(phoneNumber, otp);
+    if (!otpDelivery.some((item) => item.ok)) {
+      return res.status(503).json({ message: "Your account was created, but the mobile verification code could not be sent. Request a new code after messaging is configured.", code: "MOBILE_OTP_FAILED" });
+    }
 
     try {
       await issueVerificationEmail(user);
@@ -159,6 +176,9 @@ router.post("/register", async (req, res, next) => {
       message: "Account created. Check your inbox and click the verification link before signing in.",
       email: user.email,
       verificationRequired: true,
+      mobileVerificationRequired: true,
+      channels: otpDelivery.filter((item) => item.ok).map((item) => item.channel),
+      otpExpiresInSeconds: 300,
     });
   } catch (error) {
     if (error.code === "P2002") {
