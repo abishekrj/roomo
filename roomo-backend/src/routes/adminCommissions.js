@@ -30,7 +30,7 @@ router.get("/", async (_req, res, next) => {
     });
     const totals = reservations.reduce((acc, item) => {
       acc.bookingValue += Number(item.totalAmount);
-      acc.commissionDue += item.commissionStatus === "PAID" ? 0 : Number(item.commissionAmount);
+      acc.commissionDue += item.status === "CONFIRMED" && !["PAID", "WAIVED"].includes(item.commissionStatus) ? Number(item.commissionAmount) : 0;
       acc.commissionPaid += item.commissionStatus === "PAID" ? Number(item.commissionAmount) : 0;
       return acc;
     }, { bookingValue: 0, commissionDue: 0, commissionPaid: 0 });
@@ -66,6 +66,11 @@ router.patch("/reservations/:id/payment", async (req, res, next) => {
   }).safeParse(req.body);
   if (!id.success || !body.success) return res.status(400).json({ message: "Provide a valid reservation and commission payment status." });
   try {
+    const existing = await prisma.reservation.findUnique({ where: { id: id.data }, select: { id: true, status: true } });
+    if (!existing) return res.status(404).json({ message: "Reservation not found." });
+    if (existing.status !== "CONFIRMED" && body.data.commissionStatus === "PAID") {
+      return res.status(409).json({ message: "Only confirmed reservations can be marked as commission paid." });
+    }
     const reservation = await prisma.reservation.update({
       where: { id: id.data },
       data: {
