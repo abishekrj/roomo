@@ -32,7 +32,7 @@
       if (social) {
         social.replaceChildren();
         (links.social || []).forEach(item => {
-          const a = makeLink(item); a.setAttribute("aria-label", item.label || "Social media");
+          const a = makeLink(item); a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", item.label || "Social media");
           const icon = document.createElement("i");
           icon.className = "bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg");
           a.appendChild(icon); social.appendChild(a);
