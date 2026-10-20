@@ -182,7 +182,7 @@
     const dateLabel=value=>value?new Date(value+"T12:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"Select date";
     const checkinDisplay=document.getElementById("checkinDateDisplay");if(checkinDisplay)checkinDisplay.textContent=dateLabel(checkin?.value);
     const checkoutDisplay=document.getElementById("checkoutDateDisplay");if(checkoutDisplay)checkoutDisplay.textContent=dateLabel(checkout?.value);
-    const category=params.get("category")||"All stays";const tabs=[...document.querySelectorAll(".stay-category-pill-btn")];const match=tabs.find(tab=>tab.textContent.trim().replace(/\\s+/g," ")===category);if(match)window.switchCategory?.(match);
+    const category=params.get("category")||"All stays";const tabs=[...document.querySelectorAll(".stay-category-pill-btn")];const match=tabs.find(tab=>tab.textContent.trim().replace(/\s+/g," ")===category);if(match)window.switchCategory?.(match);
     const desired={adults:Math.max(1,Math.min(8,Number(params.get("adults"))||2)),children:Math.max(0,Math.min(6,Number(params.get("children"))||0)),rooms:Math.max(1,Math.min(5,Number(params.get("rooms"))||1))};
     for(const type of ["adults","children","rooms"]){const id=type==="adults"?"adultVal":type==="children"?"childrenVal":"roomVal";let current=Number(document.getElementById(id)?.textContent)||({adults:2,children:0,rooms:1}[type]);while(current!==desired[type]){const step=current<desired[type]?1:-1;window.updateCount?.(type,step);current+=step;}}
     const notice=document.getElementById("destinationSuggestionNotice");if(notice)notice.id="listingDestinationSuggestionNotice";
