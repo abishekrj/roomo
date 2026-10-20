@@ -47,6 +47,7 @@ model GuestUser {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
   reservations Reservation[]
+  favorites    GuestFavorite[]
 
   @@map("guest_users")
 }
@@ -213,4 +214,19 @@ model NotificationLog {
   @@index([reservationId, createdAt])
   @@index([status, createdAt])
   @@map("notification_logs")
+}
+
+
+model GuestFavorite {
+  id               String   @id @default(uuid()) @db.Uuid
+  guestId          String   @db.Uuid @map("guest_id")
+  propertyId       String   @map("property_id") @db.VarChar(100)
+  propertySnapshot Json     @map("property_snapshot")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  guest            GuestUser @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([guestId, propertyId])
+  @@index([guestId, createdAt])
+  @@map("guest_favorites")
 }
