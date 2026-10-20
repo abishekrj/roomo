@@ -1087,7 +1087,7 @@ body.auth-page .mobile-brand { display: none; }
 }
 body { background-color: #F6F4EF; }
 body.home-page { background-color: #F6F4EF; }
-.roomo-brand-logo { display:block; width:176px; height:auto; max-height:58px; object-fit:contain; object-position:left center; }
+.roomo-brand-logo { display:block; width:216px; height:auto; max-height:58px; object-fit:contain; object-position:left center; }
 .roomo-brand-logo-footer { filter: brightness(0) invert(1); }
 .roomo-brand-tagline { font-size:.67rem; letter-spacing:.08em; }
 .heritage-navbar { background-color:#FFFFFF; border-bottom-color:#E4E0D7; }
