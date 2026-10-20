@@ -1615,3 +1615,15 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .search-page .favorite-feedback[hidden]{display:none!important}
 .search-page .listing-edit-search .destination-suggestions{z-index:1300}
 @media(max-width:767px){.search-page .listing-edit-search{padding:14px;margin:14px 0 20px}.search-page .listing-edit-search .roomo-range-calendar{left:0;max-width:calc(100vw - 44px)}}
+
+
+/* Homepage featured property descriptions: clamp to two lines. */
+.home-page .sanctuary-card .p-3 > p.text-muted.small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.5em * 2);
+}
