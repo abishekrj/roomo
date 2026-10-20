@@ -1193,7 +1193,7 @@ body {
 .destination-suggestions[hidden] { display: none !important; }
 .destination-suggestion-option {
   display: block; width: 100%; padding: 11px 12px; border: 0; border-radius: 6px;
-  background: #fff; color: #202b33; text-align: left; font: inherit; font-size: 13px; cursor: pointer;
+  background: #fff; color: #202b33; text-align: left; font: inherit; font-size: 15px; font-weight: 600; line-height: 1.45; cursor: pointer;
 }
 .destination-suggestion-option:hover, .destination-suggestion-option:focus-visible {
   outline: none; background: #eaf2f8; color: #1d4e89;
