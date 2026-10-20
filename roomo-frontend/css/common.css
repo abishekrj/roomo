@@ -1029,3 +1029,36 @@ body.auth-page .mobile-brand { display: none; }
   .availability-option-icon { width: 38px; height: 38px; }
   .availability-option-price { grid-column: 2; align-items: flex-start; text-align: left; }
 }
+
+
+/* Reservation request controls and availability state */
+.availability-search-check.is-unavailable { background: #fff0ef; color: #b42318; }
+.reservation-request-label { display: block; margin: 18px 0 7px; color: #173f6b; font-size: 13px; font-weight: 800; }
+#reservationSpecialRequests { display: block; width: 100%; border: 1px solid #d6e0ea; border-radius: 9px; padding: 12px; font: inherit; font-size: 13px; resize: vertical; }
+.reservation-submit-btn { width: 100%; margin-top: 14px; }
+.reservation-submit-btn:disabled { opacity: .65; cursor: wait; }
+.reservation-confirmation { display: flex; align-items: flex-start; gap: 14px; padding: 20px; border-radius: 12px; background: #edf8f1; color: #214e35; }
+.reservation-confirmation > i { font-size: 26px; color: #20834b; }
+.reservation-confirmation strong { display: block; overflow-wrap: anywhere; }
+.reservation-confirmation p { margin: 6px 0 0; font-size: 13px; }
+.reservation-view-btn { display: inline-flex; justify-content: center; align-items: center; margin-top: 18px; padding: 13px 18px; text-decoration: none; }
+.booking-list { display: grid; gap: 16px; }
+.booking-card { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 18px; padding: 18px; border: 1px solid #e0e7ef; border-radius: 14px; background: #fff; }
+.booking-card-image { width: 120px; height: 120px; border-radius: 10px; object-fit: cover; background: #edf3f9; }
+.booking-card h2 { margin: 0 0 8px; color: #173f6b; font-size: 18px; font-weight: 800; }
+.booking-card p { margin: 5px 0; color: #5d6c7c; font-size: 13px; }
+.booking-reference { font-size: 12px; color: #64748b; overflow-wrap: anywhere; }
+.booking-status { display: inline-flex; align-items: center; padding: 5px 9px; border-radius: 999px; background: #fff5d8; color: #825b08; font-size: 11px; font-weight: 800; text-transform: capitalize; }
+.booking-status.confirmed { background: #e6f7ed; color: #17663b; }
+.booking-status.cancelled { background: #f0f2f5; color: #566273; }
+.booking-card-total { color: #173f6b; font-size: 20px; font-weight: 800; text-align: right; white-space: nowrap; }
+.booking-cancel { margin-top: 12px; border: 1px solid #d7a7a7; border-radius: 8px; background: white; color: #a12626; padding: 8px 10px; font-size: 12px; font-weight: 700; }
+.booking-page-title { margin: 12px 0 24px; color: #173f6b; font-family: 'Manrope', sans-serif; font-size: clamp(26px,4vw,38px); font-weight: 800; }
+.booking-empty { padding: 40px 20px; text-align: center; border: 1px dashed #cad5e1; border-radius: 14px; color: #5d6c7c; }
+.booking-empty i { display: block; margin-bottom: 12px; color: #3378b8; font-size: 36px; }
+.booking-empty h2 { color: #173f6b; font-size: 20px; }
+@media(max-width:640px) {
+  .booking-card { grid-template-columns: 76px minmax(0,1fr); gap: 12px; padding: 13px; }
+  .booking-card-image { width: 76px; height: 84px; }
+  .booking-card-total { grid-column: 2; text-align: left; font-size: 18px; }
+}
