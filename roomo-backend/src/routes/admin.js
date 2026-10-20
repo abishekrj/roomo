@@ -54,7 +54,7 @@ const propertySchema = z.object({
   maxGuests: z.coerce.number().int().min(1).max(100),
   bedrooms: z.coerce.number().int().min(0).max(100).default(1),
   bathrooms: z.coerce.number().int().min(1).max(100).default(1),
-  amenities: z.array(z.enum(["wifi", "parking", "ac", "breakfast", "view", "hotwater", "private", "quiet", "family", "accessible"])).max(10).default([]),
+  amenities: z.array(z.string().trim().min(1).max(100)).max(100).default([]),
   nearbyLandmarks: z.array(z.enum(["annamalaiyar-temple", "sri-ramanasramam", "girivalam-path", "arunachala-hill", "skandashramam", "virupaksha-cave", "sathanur-dam", "central-bus-stand", "railway-station", "yogi-ram-surathkumar-ashram"])).max(10).default([]),
   perks: z.array(z.string().trim().min(2).max(100)).max(8).default([]),
   imageUrls: z.array(z.string().url().max(2048)).max(10).default([]),
