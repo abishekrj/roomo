@@ -39,6 +39,7 @@ model GuestUser {
   emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  reservations Reservation[]
 
   @@map("guest_users")
 }
@@ -58,6 +59,7 @@ model Property {
   maxGuests     Int            @map("max_guests")
   bedrooms      Int            @default(1)
   bathrooms     Int            @default(1)
+  totalUnits    Int            @default(1) @map("total_units")
   amenities     Json           @default("[]")
   nearbyLandmarks Json         @default("[]") @map("nearby_landmarks")
   perks         Json           @default("[]")
@@ -68,6 +70,7 @@ model Property {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   owner         Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   images        PropertyImage[]
+  reservations  Reservation[]
 
   @@index([ownerId])
   @@index([city, status])
@@ -126,4 +129,37 @@ model GalleryConfig {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("gallery_config")
+}
+
+
+enum ReservationStatus {
+  REQUESTED
+  CONFIRMED
+  CANCELLED
+}
+
+model Reservation {
+  id              String            @id @default(uuid()) @db.Uuid
+  reservationCode String            @unique @map("reservation_code")
+  guestId         String            @db.Uuid @map("guest_id")
+  propertyId      String            @db.Uuid @map("property_id")
+  checkIn         DateTime          @db.Date @map("check_in")
+  checkOut        DateTime          @db.Date @map("check_out")
+  adults          Int
+  children        Int               @default(0)
+  roomCount       Int               @default(1) @map("room_count")
+  nights          Int
+  nightlyPrice    Decimal           @db.Decimal(10, 2) @map("nightly_price")
+  totalAmount     Decimal           @db.Decimal(12, 2) @map("total_amount")
+  status          ReservationStatus @default(REQUESTED)
+  specialRequests String?           @db.VarChar(1000) @map("special_requests")
+  cancelledAt     DateTime?         @map("cancelled_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  guest           GuestUser         @relation(fields: [guestId], references: [id], onDelete: Restrict)
+  property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+
+  @@index([propertyId, checkIn, checkOut, status])
+  @@index([guestId, createdAt])
+  @@map("reservations")
 }
