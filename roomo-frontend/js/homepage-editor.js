@@ -48,6 +48,13 @@
     const showStatus=(message,isError=false)=>{
       if(!status)return;
       if(statusTimer)clearTimeout(statusTimer);
+      statusTimer=null;
+      if(!message){
+        status.classList.remove("is-visible","is-hiding","is-success","is-error");
+        status.hidden=true;
+        status.replaceChildren();
+        return;
+      }
       status.textContent="";
       const icon=document.createElement("i");
       icon.className=isError?"bi bi-exclamation-circle-fill":"bi bi-check-circle-fill";
