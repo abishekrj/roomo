@@ -1595,3 +1595,23 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .my-bookings-page .favorite-remove-btn{margin:4px 15px 15px;padding:8px 10px}
 .my-bookings-page .favorites-empty{margin-top:12px}
 @media(max-width:520px){.my-bookings-page .favorite-stays-grid{grid-template-columns:1fr}.my-bookings-page .favorite-stay-link img{height:190px}}
+
+
+/* Search page: embedded, reusable homepage search component and favourite feedback. */
+.search-page .listing-edit-search{margin:18px 0 26px;padding:clamp(18px,3vw,30px);border:1px solid #d9e2ec;border-radius:20px;background:#f8fbff;box-shadow:0 12px 32px rgba(0,53,128,.07)}
+.search-page .listing-edit-search-heading{margin:0 0 18px}
+.search-page .listing-search-eyebrow{color:#b8893b;font-size:11px;font-weight:600;letter-spacing:.12em}
+.search-page .listing-edit-search-heading h2{margin:5px 0;color:#003580;font-size:clamp(22px,3vw,30px);font-weight:600}
+.search-page .listing-edit-search-heading p{margin:0;color:#526579;font-size:14px;font-weight:400}
+.search-page .listing-edit-search .monolithic-search-engine{box-shadow:none;border-radius:15px;border-color:#d9e2ec}
+.search-page .listing-edit-search .stay-category-pill-btn{color:#34465b}
+.search-page .listing-edit-search .stay-category-pill-btn.active{color:#003580;background:#e8f1ff;border-color:#c7dcff}
+.search-page .listing-edit-search .heritage-input-box{background:#fff;border-color:#cbd5e1}
+.search-page .listing-edit-search .heritage-input-box label{color:#526579!important}
+.search-page .listing-edit-search .heritage-input-box input{color:#172b4d!important}
+.search-page .listing-edit-search .btn-sacred-primary{background:#003580;color:#fff}
+.search-page .favorite-feedback{margin:0 0 18px;padding:13px 16px;border:1px solid #a7dfc1;border-radius:10px;background:#edfff4;color:#17643a;font-size:14px;font-weight:600}
+.search-page .favorite-feedback.is-error{border-color:#f2b8b5;background:#fff1f0;color:#9c2823}
+.search-page .favorite-feedback[hidden]{display:none!important}
+.search-page .listing-edit-search .destination-suggestions{z-index:1300}
+@media(max-width:767px){.search-page .listing-edit-search{padding:14px;margin:14px 0 20px}.search-page .listing-edit-search .roomo-range-calendar{left:0;max-width:calc(100vw - 44px)}}
