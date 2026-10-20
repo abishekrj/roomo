@@ -94,7 +94,13 @@
     const renderList=(keepStatus=false)=>{
       const query=input.value.trim();
       const normalized=normalize(query);
-      if(!query){const matches=places;list.innerHTML=matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+'</button>').join("");}
+      if(!query){
+        const trendingNames=["Annamalaiyar Temple","Sri Ramanasramam","Girivalam Path","Arunachala Hill","Skandashramam"];
+        const trending=trendingNames.map(name=>places.find(place=>normalize(place.name)===normalize(name))).filter(Boolean);
+        places.forEach(place=>{if(trending.length<5&&!trending.some(item=>normalize(item.name)===normalize(place.name)))trending.push(place);});
+        const matches=trending.slice(0,5);
+        list.innerHTML='<div class="destination-suggestions-heading">Trending Destinations</div>'+matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'" data-place-name="'+escapeHtml(place.name)+'">'+escapeHtml(place.name)+'</button>').join("");
+      }
       else{
         const direct=places.filter(place=>normalize(place.name).includes(normalized));
         const similar=findSimilar(query);
