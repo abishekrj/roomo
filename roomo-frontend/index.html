@@ -264,6 +264,37 @@
         </div>
       </div>
     </section>
+    <!-- Popular Stays: Smooth Slider with "View All" aligned before prev/next arrows -->
+    <section class="py-5 home-inline-75" id="popularStays">
+      <div class="container">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+          <div>
+            <span class="badge px-3 py-1 mb-1 rounded-pill border font-cinzel home-inline-76"> Handcrafted Devotional Stays </span>
+            <h2 id="featuredSectionTitle" class="display-6 fw-bold text-dark mb-0 font-serif-sacred">Revered Pilgrim Sanctuaries</h2>
+            <p id="featuredSectionDescription" class="text-muted small mb-0">Peaceful sanctuaries vetted for silence, cleanliness, and proximity to divine spots.</p>
+          </div>
+          <!-- Header Actions: "View All" positioned immediately before Prev/Next arrows -->
+          <div class="d-flex align-items-center gap-3 align-self-start align-self-md-center">
+            <a class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1 home-inline-77" href="#popularStays" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='var(--sacred-blue)'; this.style.color='var(--sacred-blue)';" onmouseover="this.style.backgroundColor='#0058bc'; this.style.borderColor='#0058bc'; this.style.color='#FACC15';">
+              <span class="">View All</span>
+              <i class="bi bi-arrow-right-short fs-6"></i>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+              <button aria-label="Previous Stays" class="btn btn-light rounded-circle border p-2 shadow-sm home-inline-78" onclick="scrollCarousel(-1)">
+                <i class="bi bi-chevron-left text-dark"></i>
+              </button>
+              <button aria-label="Next Stays" class="btn btn-light rounded-circle border p-2 shadow-sm home-inline-79" onclick="scrollCarousel(1)">
+                <i class="bi bi-chevron-right text-dark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Popular Stays Carousel Track -->
+        <div class="popular-stays-track" id="stayTrack">
+          <!-- Properties are rendered only from the homepage API. -->
+        </div>
+      </div>
+    </section>
     <!-- Festival Spotlight: Karthigai Deepam Opulent Dark Navy & Golden Card -->
     <section class="py-5" id="karthigaiPromo">
       <div class="container">
@@ -325,37 +356,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-    <!-- Popular Stays: Smooth Slider with "View All" aligned before prev/next arrows -->
-    <section class="py-5 home-inline-75" id="popularStays">
-      <div class="container">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
-          <div>
-            <span class="badge px-3 py-1 mb-1 rounded-pill border font-cinzel home-inline-76"> Handcrafted Devotional Stays </span>
-            <h2 id="featuredSectionTitle" class="display-6 fw-bold text-dark mb-0 font-serif-sacred">Revered Pilgrim Sanctuaries</h2>
-            <p id="featuredSectionDescription" class="text-muted small mb-0">Peaceful sanctuaries vetted for silence, cleanliness, and proximity to divine spots.</p>
-          </div>
-          <!-- Header Actions: "View All" positioned immediately before Prev/Next arrows -->
-          <div class="d-flex align-items-center gap-3 align-self-start align-self-md-center">
-            <a class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1 home-inline-77" href="#popularStays" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='var(--sacred-blue)'; this.style.color='var(--sacred-blue)';" onmouseover="this.style.backgroundColor='#0058bc'; this.style.borderColor='#0058bc'; this.style.color='#FACC15';">
-              <span class="">View All</span>
-              <i class="bi bi-arrow-right-short fs-6"></i>
-            </a>
-            <div class="d-flex align-items-center gap-2">
-              <button aria-label="Previous Stays" class="btn btn-light rounded-circle border p-2 shadow-sm home-inline-78" onclick="scrollCarousel(-1)">
-                <i class="bi bi-chevron-left text-dark"></i>
-              </button>
-              <button aria-label="Next Stays" class="btn btn-light rounded-circle border p-2 shadow-sm home-inline-79" onclick="scrollCarousel(1)">
-                <i class="bi bi-chevron-right text-dark"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- Popular Stays Carousel Track -->
-        <div class="popular-stays-track" id="stayTrack">
-          <!-- Properties are rendered only from the homepage API. -->
         </div>
       </div>
     </section>
