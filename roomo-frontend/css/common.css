@@ -1200,6 +1200,8 @@ body {
 }
 
 
+.destination-suggestions-heading { padding: 9px 12px 8px; color: #59666f; font: 800 11px/1.4 'DM Sans', sans-serif; letter-spacing: .09em; text-transform: uppercase; }
+
 /* Anchor the destination suggestions directly to the destination search field. */
 #destinationInput {
   position: relative;
