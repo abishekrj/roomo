@@ -880,6 +880,26 @@
 
                 <div class="col-md-6">
                   <div class="field-group">
+                    <label class="field-label" for="totalUnits">
+                      Bookable units <span class="required">*</span>
+                    </label>
+                    <input
+                      class="form-control"
+                      id="totalUnits"
+                      name="totalUnits"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="1"
+                      value="1"
+                      required
+                    >
+                    <small class="form-text text-muted">How many separate units can be booked for the same dates? Set 1 for a single whole-property rental.</small>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="field-group">
                     <label class="field-label" for="bedrooms">
                       Bedrooms <span class="required">*</span>
                     </label>
@@ -1165,6 +1185,7 @@
             document.getElementById("nightlyPrice").value
           ),
           maxGuests: Number(document.getElementById("maxGuests").value),
+          totalUnits: Number(document.getElementById("totalUnits").value),
           bedrooms: Number(document.getElementById("bedrooms").value),
           bathrooms: Number(document.getElementById("bathrooms").value),
           imageUrls
@@ -1227,6 +1248,7 @@
           // Restore useful defaults after a successful submission.
           document.getElementById("country").value = "India";
           document.getElementById("maxGuests").value = "2";
+          document.getElementById("totalUnits").value = "1";
           document.getElementById("bedrooms").value = "1";
           document.getElementById("bathrooms").value = "1";
 
