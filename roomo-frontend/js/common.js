@@ -495,6 +495,73 @@ if (document.body.classList.contains("stay-details-page")) {
   })();
 }
 
+// ROOMO guest reservations — view and cancel bookings
+if (document.body.classList.contains("my-bookings-page")) {
+  (async function loadGuestReservations() {
+    const list = document.getElementById("myBookingsList");
+    const message = document.getElementById("myBookingsMessage");
+    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+    if (!token) {
+      const returnTo = location.pathname + location.search + location.hash;
+      location.replace("roomo-login.html?returnTo=" + encodeURIComponent(returnTo));
+      return;
+    }
+    const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+    const formatDate = value => new Date(String(value).slice(0,10) + "T12:00:00").toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" });
+    const money = value => "₹" + Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits:2 });
+    function render(reservations) {
+      if (!reservations.length) {
+        list.innerHTML = '<div class="booking-empty"><i class="bi bi-calendar2-heart"></i><h2>No reservations yet</h2><p>Choose a stay and check availability to start planning your visit.</p><a class="detail-book-btn reservation-view-btn" href="roomo-search-results.html">Explore stays</a></div>';
+        return;
+      }
+      list.innerHTML = '<div class="booking-list">' + reservations.map(item => {
+        const property = item.property || {};
+        const image = property.images?.[0]?.imageUrl;
+        const status = String(item.status || "REQUESTED").toLowerCase();
+        const canCancel = status !== "cancelled" && new Date(String(item.checkIn).slice(0,10) + "T00:00:00") > new Date(new Date().toISOString().slice(0,10) + "T00:00:00");
+        return '<article class="booking-card" data-reservation-id="' + escapeHTML(item.id) + '"><img class="booking-card-image" src="' + escapeHTML(image || "https://placehold.co/240x240/eaf1f8/45617c?text=ROOMO") + '" alt="' + escapeHTML(property.title || "ROOMO stay") + '"><div><h2>' + escapeHTML(property.title || "Your stay") + '</h2><p><i class="bi bi-geo-alt"></i> ' + escapeHTML([property.city, property.address].filter(Boolean).join(", ")) + '</p><p><i class="bi bi-calendar3"></i> ' + escapeHTML(formatDate(item.checkIn)) + ' – ' + escapeHTML(formatDate(item.checkOut)) + ' · ' + escapeHTML(item.nights) + ' night(s)</p><p><i class="bi bi-people"></i> ' + escapeHTML(item.adults) + ' adults · ' + escapeHTML(item.children) + ' children · ' + escapeHTML(item.roomCount) + ' room(s)</p><p class="booking-reference">Reference: ' + escapeHTML(item.reservationCode) + '</p><span class="booking-status ' + escapeHTML(status) + '">' + escapeHTML(status === "requested" ? "Pending confirmation" : status) + '</span>' + (canCancel ? '<div><button type="button" class="booking-cancel" data-cancel-reservation="' + escapeHTML(item.id) + '">Cancel reservation</button></div>' : '') + '</div><div class="booking-card-total">' + money(item.totalAmount) + '<p>estimated total</p></div></article>';
+      }).join("") + '</div>';
+    }
+    async function load() {
+      try {
+        const response = await fetch("http://localhost:5001/api/reservations/mine", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          sessionStorage.removeItem("roomoGuestToken"); localStorage.removeItem("roomoGuestToken");
+          location.replace("roomo-login.html?returnTo=" + encodeURIComponent(location.pathname + location.search));
+          return;
+        }
+        if (!response.ok) throw new Error(data.message || "Could not load your reservations.");
+        render(data.reservations || []);
+        message.textContent = "";
+      } catch (error) {
+        message.textContent = error.message || "Could not load your reservations.";
+      }
+    }
+    list.addEventListener("click", async event => {
+      const button = event.target.closest("[data-cancel-reservation]");
+      if (!button) return;
+      if (!window.confirm("Cancel this reservation request?")) return;
+      button.disabled = true;
+      button.textContent = "Cancelling…";
+      try {
+        const response = await fetch("http://localhost:5001/api/reservations/" + encodeURIComponent(button.dataset.cancelReservation) + "/cancel", {
+          method: "PATCH", headers: { Authorization: "Bearer " + token }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Could not cancel this reservation.");
+        message.textContent = data.message || "Reservation cancelled.";
+        await load();
+      } catch (error) {
+        message.textContent = error.message || "Could not cancel this reservation.";
+        button.disabled = false;
+        button.textContent = "Cancel reservation";
+      }
+    });
+    await load();
+  })();
+}
+
 // ROOMO guest authentication — email and password
 (function () {
   "use strict";
