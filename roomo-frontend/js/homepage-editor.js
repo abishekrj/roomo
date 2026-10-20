@@ -36,7 +36,7 @@
     const closeList=()=>{list.hidden=true;input.setAttribute("aria-expanded","false");};
     const renderList=()=>{
       const query=input.value.trim().toLocaleLowerCase();
-      const matches=places.filter(place=>place.name.toLocaleLowerCase().includes(query)).slice(0,5);
+      const matches=places.filter(place=>place.name.toLocaleLowerCase().includes(query));
       list.innerHTML=matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+'</button>').join("");
       list.hidden=matches.length===0;
       input.setAttribute("aria-expanded",String(matches.length>0));
