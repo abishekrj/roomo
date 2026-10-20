@@ -1107,3 +1107,10 @@ body.home-page { background-color: #F6F4EF; }
 #popularStays, #spiritualGuide { background-color:#F6F4EF; }
 #karthigaiPromo { background-color:#EAF2F8; }
 .sanctuary-card, .heritage-input-box, .stone-pill-badge { background-color:#FFFFFF; }
+
+/* ROOMO global corner-radius standard: 8px throughout the site */
+*,
+*::before,
+*::after {
+  border-radius: 8px !important;
+}
