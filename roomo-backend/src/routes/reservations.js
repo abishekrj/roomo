@@ -4,6 +4,7 @@ const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateGuest = require("../middleware/authenticateGuest");
 const authenticateToken = require("../middleware/auth");
+const { sendReservationConfirmation } = require("../services/messaging");
 
 const router = express.Router();
 
@@ -105,6 +106,7 @@ router.post("/", authenticateGuest, async (req, res, next) => {
 
   try {
     const input = parsed.data;
+    if (!req.guest.phoneVerified) return res.status(403).json({ message: "Verify your mobile number before requesting a reservation.", code: "PHONE_NOT_VERIFIED" });
     const checkIn = parseDate(input.checkIn);
     const checkOut = parseDate(input.checkOut);
     if (!checkIn || !checkOut) return res.status(400).json({ message: "Enter valid check-in and check-out dates." });
@@ -118,6 +120,10 @@ router.post("/", authenticateGuest, async (req, res, next) => {
       if (availability.notFound || availability.error) return availability;
       if (!availability.available) return { unavailable: true, availability };
 
+      const propertyOwner = await tx.property.findUnique({ where: { id: input.propertyId }, select: { owner: { select: { commissionRate: true } } } });
+      const commissionRate = Number(propertyOwner?.owner?.commissionRate ?? 10);
+      const commissionAmount = Math.round(Number(availability.totalAmount) * commissionRate) / 100;
+      const ownerPayoutAmount = Math.round((Number(availability.totalAmount) - commissionAmount) * 100) / 100;
       const created = await tx.reservation.create({
         data: {
           reservationCode: reservationCode(),
@@ -131,6 +137,9 @@ router.post("/", authenticateGuest, async (req, res, next) => {
           nights: availability.nights,
           nightlyPrice: availability.nightlyPrice,
           totalAmount: availability.totalAmount,
+          commissionRateSnapshot: commissionRate.toFixed(2),
+          commissionAmount: commissionAmount.toFixed(2),
+          ownerPayoutAmount: ownerPayoutAmount.toFixed(2),
           status: "REQUESTED",
           specialRequests: input.specialRequests || null,
         },
@@ -192,11 +201,15 @@ router.patch("/owner/:id/decision", authenticateToken, async (req, res, next) =>
         ...(decision.data.status === "CANCELLED" ? { cancelledAt: new Date() } : {}),
       },
       include: {
-        guest: { select: { id: true, fullName: true, email: true } },
-        property: { select: { id: true, title: true, city: true } },
+        guest: { select: { id: true, fullName: true, email: true, phoneNumber: true } },
+        property: { select: { id: true, title: true, city: true, owner: { select: { id: true, fullName: true, phoneNumber: true } } } },
       },
     });
-    res.json({ message: decision.data.status === "CONFIRMED" ? "Reservation confirmed." : "Reservation request declined.", reservation });
+    if (decision.data.status === "CONFIRMED") {
+      // Notification delivery is best-effort; provider outages must not undo a confirmation.
+      await sendReservationConfirmation(reservation);
+    }
+    res.json({ message: decision.data.status === "CONFIRMED" ? "Reservation confirmed. Notifications were attempted where messaging is configured." : "Reservation request declined.", reservation });
   } catch (error) {
     next(error);
   }
