@@ -1600,9 +1600,7 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 
 /* Listing page search editor is collapsed until requested. */
 .search-page .listing-edit-search[hidden] { display: none !important; }
-.search-page.is-editing-search .hero h1,
-.search-page.is-editing-search .hero > div > p { display: none !important; }
-.search-page.is-editing-search .hero { align-items: flex-start; }
+.search-page.is-editing-search .hero { display: none !important; }
 .search-page .listing-edit-search { scroll-margin-top: 24px; }
 
 /* Search page: embedded, reusable homepage search component and favourite feedback. */
@@ -1634,4 +1632,26 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: calc(1.5em * 2);
+}
+
+
+/* Search results refinements: square property photos and tighter search inputs. */
+.search-page .listing .photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  align-self: start;
+  min-height: 0 !important;
+  height: auto;
+  overflow: hidden;
+}
+.search-page .listing .photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.search-page .listing-edit-search .heritage-input-box {
+  padding: 0.65rem !important;
 }
