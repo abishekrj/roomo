@@ -1062,3 +1062,48 @@ body.auth-page .mobile-brand { display: none; }
   .booking-card-image { width: 76px; height: 84px; }
   .booking-card-total { grid-column: 2; text-align: left; font-size: 18px; }
 }
+
+
+/* ROOMO solid-color refresh — warm, calm and accessible */
+:root {
+  --navy-deep: #183B56;
+  --navy-midnight: #102A43;
+  --navy-card: #183B56;
+  --navy-primary: #1D4E89;
+  --sacred-blue: #2563A6;
+  --sacred-blue-hover: #1D4E89;
+  --sacred-blue-subtle: #EAF2F8;
+  --sacred-blue-border: #C6D9E8;
+  --sacred-yellow: #D6A84F;
+  --sacred-gold: #B8893B;
+  --sacred-yellow-bright: #E7C879;
+  --sacred-yellow-light: #F8EED5;
+  --sacred-yellow-subtle: #FBF6EA;
+  --bg-light: #F6F4EF;
+  --card-white: #FFFFFF;
+  --border-subtle: #E4E0D7;
+  --text-dark: #202B33;
+  --text-muted: #59666F;
+}
+body { background-color: #F6F4EF; }
+body.home-page { background-color: #F6F4EF; }
+.roomo-brand-logo { display:block; width:176px; height:auto; max-height:58px; object-fit:contain; object-position:left center; }
+.roomo-brand-logo-footer { filter: brightness(0) invert(1); }
+.roomo-brand-tagline { font-size:.67rem; letter-spacing:.08em; }
+.heritage-navbar { background-color:#FFFFFF; border-bottom-color:#E4E0D7; }
+.hero-heritage-wrapper { background:#F3F0E8 !important; }
+.hero-heritage-wrapper::before { display:none !important; }
+.pournami-banner-capsule { background:#183B56 !important; }
+.monolithic-search-engine { background:#FFFFFF; box-shadow:0 18px 44px -20px rgba(24,59,86,.22), 0 0 0 5px #E9E3D7; }
+.stay-category-pill-btn.active { background:#EAF2F8; border-color:#C6D9E8; }
+.btn-sacred-primary { background:#2563A6 !important; border-color:#1D4E89; }
+.btn-sacred-primary:hover { background:#1D4E89 !important; }
+.karthigai-heritage-card { background:#183B56 !important; }
+.karthigai-heritage-card::after { display:none !important; }
+.brass-btn { background:#E7C879 !important; border-color:#D6A84F; color:#183B56; }
+.brass-btn:hover { background:#D6A84F !important; color:#102A43; }
+.temple-granite-footer { background:#102A43 !important; }
+.section, section[id] { background-color:transparent; }
+#popularStays, #spiritualGuide { background-color:#F6F4EF; }
+#karthigaiPromo { background-color:#EAF2F8; }
+.sanctuary-card, .heritage-input-box, .stone-pill-badge { background-color:#FFFFFF; }
