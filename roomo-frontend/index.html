@@ -94,18 +94,42 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Manual Check-in / Check-out Date Pickers -->
-                  <div class="col-12 col-md-6 col-lg-4">
-                    <div class="heritage-input-box p-3 h-100 d-flex align-items-center">
-                      <div class="flex-grow-1 pe-3 border-end home-inline-26">
-                        <label class="text-muted small d-block mb-1 home-inline-27">
-                          <i class="bi bi-calendar4-event me-1.5 home-inline-28"></i>CHECK-IN </label>
-                        <input class="native-date-field-sacred py-1 home-inline-29" id="checkinPicker" onchange="onDateChanged()" type="date">
+                  <!-- Single-view check-in / check-out range calendar -->
+                  <div class="col-12 col-md-6 col-lg-4 roomo-date-range-wrap">
+                    <div class="heritage-input-box roomo-date-range-field p-3 h-100">
+                      <button class="roomo-date-endpoint" id="checkinDateTrigger" type="button" aria-label="Choose check-in date" aria-haspopup="dialog" aria-expanded="false">
+                        <span class="roomo-date-endpoint-label"><i class="bi bi-calendar4-event"></i> CHECK-IN</span>
+                        <strong id="checkinDateDisplay">Select date</strong>
+                      </button>
+                      <span class="roomo-date-range-divider" aria-hidden="true"></span>
+                      <button class="roomo-date-endpoint" id="checkoutDateTrigger" type="button" aria-label="Choose check-out date" aria-haspopup="dialog" aria-expanded="false">
+                        <span class="roomo-date-endpoint-label"><i class="bi bi-calendar-check"></i> CHECK-OUT</span>
+                        <strong id="checkoutDateDisplay">Select date</strong>
+                      </button>
+                    </div>
+                    <input id="checkinPicker" name="checkin" type="date" hidden>
+                    <input id="checkoutPicker" name="checkout" type="date" hidden>
+                    <div class="roomo-range-calendar" id="roomoRangeCalendar" role="dialog" aria-label="Select check-in and check-out dates" hidden>
+                      <div class="roomo-range-calendar-top">
+                        <div>
+                          <span class="roomo-range-eyebrow">YOUR STAY</span>
+                          <h3>Select your dates</h3>
+                          <p id="roomoCalendarHint">Choose your check-in, then your check-out</p>
+                        </div>
+                        <button class="roomo-calendar-close" id="roomoCalendarClose" type="button" aria-label="Close calendar"><i class="bi bi-x-lg"></i></button>
                       </div>
-                      <div class="flex-grow-1 ps-3">
-                        <label class="text-muted small d-block mb-1 home-inline-30">
-                          <i class="bi bi-calendar-check me-1.5 home-inline-31"></i>CHECK-OUT </label>
-                        <input class="native-date-field-sacred py-1 home-inline-32" id="checkoutPicker" onchange="onDateChanged()" type="date">
+                      <div class="roomo-calendar-monthbar">
+                        <button type="button" id="roomoCalendarPrev" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+                        <strong id="roomoCalendarMonth">Month Year</strong>
+                        <button type="button" id="roomoCalendarNext" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+                      </div>
+                      <div class="roomo-calendar-weekdays" aria-hidden="true">
+                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                      </div>
+                      <div class="roomo-calendar-days" id="roomoCalendarDays"></div>
+                      <div class="roomo-calendar-footer">
+                        <div class="roomo-calendar-selection"><span>Selected stay</span><strong id="roomoCalendarSelection">Choose check-in date</strong></div>
+                        <button class="roomo-calendar-done" id="roomoCalendarDone" type="button" disabled>Done</button>
                       </div>
                     </div>
                   </div>
