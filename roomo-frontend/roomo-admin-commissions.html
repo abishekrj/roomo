@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commission Management | ROOMO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"DM Sans",sans-serif;color:#172b40;background:#f5f8fc}*{box-sizing:border-box}body{margin:0}header{padding:24px clamp(18px,4vw,56px);background:#fff;border-bottom:1px solid #dfe7ef;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}header a{font:800 18px Manrope,sans-serif;color:#1769aa;text-decoration:none;letter-spacing:.06em}main{max-width:1400px;margin:auto;padding:28px clamp(16px,3vw,36px) 60px}h1,h2{font-family:Manrope,sans-serif}h1{margin:0;font-size:clamp(26px,4vw,36px)}h2{font-size:20px;margin:0 0 14px}.muted{color:#66788a}.panel{background:#fff;border:1px solid #dfe7ef;border-radius:14px;padding:20px;margin-top:20px;box-shadow:0 6px 24px #173c5c08}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:20px}.stat{background:#fff;border:1px solid #dfe7ef;border-radius:12px;padding:18px}.stat span{display:block;color:#66788a;font-size:13px}.stat strong{display:block;font:800 24px Manrope,sans-serif;margin-top:7px}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.controls input,.controls select,.notes{padding:9px 10px;border:1px solid #d2dce7;border-radius:8px;font:inherit;max-width:100%}button{border:0;border-radius:8px;padding:10px 13px;background:#1769aa;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px;font-size:13px}th,td{padding:12px 10px;text-align:left;border-bottom:1px solid #e6edf4;vertical-align:top}th{background:#f5f8fc;color:#52667a;white-space:nowrap}.notes{width:190px}.status{font-weight:700}.message{margin-top:14px;padding:12px;border-radius:8px;background:#f0f5fb;white-space:pre-wrap}.hidden{display:none!important}.small{font-size:12px;color:#66788a}
+</style>
+</head>
+<body>
+<header><a href="index.html">ROOMO <span style="font-size:11px">SACRED</span></a><div><strong>Admin tools</strong><div class="small">Commission ledger · SMS / WhatsApp delivery log</div></div></header>
+<main>
+  <div><h1>Commission management</h1><p class="muted">Review reservation values, owner-specific rates, commission due, settlement status, and notification delivery. This ledger records manual settlements; it does not collect or transfer money.</p></div>
+  <div id="pageMessage" class="message">Loading commission records…</div>
+  <section class="stats">
+    <div class="stat"><span>Booking value</span><strong id="bookingValue">₹0</strong></div>
+    <div class="stat"><span>Commission due</span><strong id="commissionDue">₹0</strong></div>
+    <div class="stat"><span>Commission paid</span><strong id="commissionPaid">₹0</strong></div>
+  </section>
+  <section class="panel">
+    <h2>Owner commission rates</h2>
+    <div class="controls"><select id="ownerSelect" aria-label="Select property owner"><option value="">Select owner</option></select><input id="ownerRate" type="number" min="0" max="50" step="0.01" placeholder="Rate %" aria-label="Commission rate percent"><button id="saveRate">Save rate</button></div>
+    <p class="small">Allowed range: 0–50%. Rate changes apply to new reservations only; each existing reservation keeps its original rate.</p>
+  </section>
+  <section class="panel">
+    <h2>Reservation commission ledger</h2>
+    <div class="table-wrap"><table><thead><tr><th>Reference / Dates</th><th>Property / Owner</th><th>Guest</th><th>Booking total</th><th>Saved rate</th><th>Commission</th><th>Owner payout</th><th>Settlement</th><th>Notes</th><th>Save</th></tr></thead><tbody id="reservationRows"><tr><td colspan="10">Loading…</td></tr></tbody></table></div>
+  </section>
+  <section class="panel">
+    <h2>SMS and WhatsApp delivery history</h2>
+    <div class="table-wrap"><table><thead><tr><th>Created</th><th>Reservation</th><th>Recipient</th><th>Channel</th><th>Message</th><th>Status</th><th>Provider detail</th></tr></thead><tbody id="notificationRows"><tr><td colspan="7">Loading…</td></tr></tbody></table></div>
+  </section>
+</main>
+<script>
+(() => {
+  const API = "http://localhost:5001/api";
+  const $ = id => document.getElementById(id);
+  const token = localStorage.getItem("roomoAdminToken") || localStorage.getItem("roomoToken");
+  let reservations = [];
+  const money = value => new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(Number(value)||0);
+  const cell = (row, value) => { const td=document.createElement("td"); td.textContent=value == null ? "—" : String(value); row.appendChild(td); return td; };
+  async function request(path, options={}) {
+    const response = await fetch(API + path, { ...options, headers: { ...(options.headers||{}), Authorization:"Bearer "+token, ...(options.body?{"Content-Type":"application/json"}:{}) } });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.message || "Request failed. Make sure you are signed in as an administrator.");
+    return data;
+  }
+  function showMessage(value, isError=false){ $("pageMessage").textContent=value; $("pageMessage").style.color=isError?"#b42318":"#17603b"; }
+  function renderReservations(){
+    const body=$("reservationRows"); body.replaceChildren();
+    const owners=new Map();
+    for(const item of reservations){
+      const owner=item.property?.owner;
+      if(owner?.id) owners.set(owner.id,owner);
+      const tr=document.createElement("tr");
+      cell(tr,item.reservationCode+"\n"+String(item.checkIn).slice(0,10)+" → "+String(item.checkOut).slice(0,10));
+      cell(tr,(item.property?.title||"Property")+"\nOwner: "+(owner?.fullName||"Unknown"));
+      cell(tr,(item.guest?.fullName||"Guest")+"\n"+(item.guest?.email||""));
+      cell(tr,money(item.totalAmount));
+      cell(tr,Number(item.commissionRateSnapshot).toFixed(2)+"%");
+      cell(tr,money(item.commissionAmount));
+      cell(tr,money(item.ownerPayoutAmount));
+      const statusCell=document.createElement("td"); const select=document.createElement("select"); select.className="settlement";
+      for(const val of ["DUE","PAID","WAIVED"]){const opt=document.createElement("option");opt.value=val;opt.textContent=val;select.appendChild(opt)}
+      select.value=item.commissionStatus||"DUE";statusCell.appendChild(select);tr.appendChild(statusCell);
+      const notesCell=document.createElement("td");const notes=document.createElement("input");notes.className="notes";notes.maxLength=2000;notes.placeholder="Transfer reference / notes";notes.value=item.commissionNotes||"";notesCell.appendChild(notes);tr.appendChild(notesCell);
+      const action=document.createElement("td");const save=document.createElement("button");save.textContent="Save";save.addEventListener("click",async()=>{save.disabled=true;try{await request("/admin/commissions/reservations/"+encodeURIComponent(item.id)+"/payment",{method:"PATCH",body:JSON.stringify({commissionStatus:select.value,commissionNotes:notes.value})});showMessage("Commission settlement saved for "+item.reservationCode);await load()}catch(e){showMessage(e.message,true)}finally{save.disabled=false}});action.appendChild(save);tr.appendChild(action);
+      body.appendChild(tr);
+    }
+    if(!reservations.length) body.innerHTML='<tr><td colspan="10">No reservation records yet.</td></tr>';
+    const select=$("ownerSelect"); const prior=select.value;select.replaceChildren(new Option("Select owner",""));
+    for(const owner of owners.values()){const option=new Option(owner.fullName+" · "+owner.email,owner.id);option.dataset.rate=String(owner.commissionRate);select.appendChild(option)}
+    if(prior && owners.has(prior)) select.value=prior;
+    updateOwnerRate();
+  }
+  function updateOwnerRate(){const option=$("ownerSelect").selectedOptions[0];$("ownerRate").value=option?.dataset?.rate||""}
+  $("ownerSelect").addEventListener("change",updateOwnerRate);
+  $("saveRate").addEventListener("click",async()=>{const ownerId=$("ownerSelect").value;const rate=Number($("ownerRate").value);if(!ownerId)return showMessage("Select an owner first.",true);if(!Number.isFinite(rate)||rate<0||rate>50)return showMessage("Enter a rate from 0 to 50 percent.",true);$("saveRate").disabled=true;try{await request("/admin/commissions/owners/"+encodeURIComponent(ownerId)+"/rate",{method:"PATCH",body:JSON.stringify({commissionRate:rate})});showMessage("Owner rate updated. Existing reservations are unchanged.");await load()}catch(e){showMessage(e.message,true)}finally{$("saveRate").disabled=false}});
+  async function loadNotifications(){
+    const data=await request("/admin/commissions/notifications?limit=50");const body=$("notificationRows");body.replaceChildren();
+    for(const item of data.notifications||[]){const tr=document.createElement("tr");cell(tr,new Date(item.createdAt).toLocaleString());cell(tr,item.reservationId);cell(tr,item.recipientType+" · "+item.recipientPhone);cell(tr,item.channel);cell(tr,item.messageType);cell(tr,item.status);cell(tr,item.errorMessage||item.providerMessageId||"—");body.appendChild(tr)}
+    if(!data.notifications?.length)body.innerHTML='<tr><td colspan="7">No notifications logged yet.</td></tr>';
+  }
+  async function load(){
+    if(!token){showMessage("Admin sign-in is required. Sign in through the existing ROOMO admin login, then reopen this page.",true);return}
+    try{
+      const data=await request("/admin/commissions");reservations=data.reservations||[];
+      $("bookingValue").textContent=money(data.totals?.bookingValue);$("commissionDue").textContent=money(data.totals?.commissionDue);$("commissionPaid").textContent=money(data.totals?.commissionPaid);
+      renderReservations();await loadNotifications();showMessage("Loaded "+reservations.length+" reservation record(s).");
+    }catch(e){showMessage(e.message,true)}
+  }
+  load();
+})();
+</script>
+</body>
+</html>
