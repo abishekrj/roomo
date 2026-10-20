@@ -150,9 +150,11 @@ router.post("/destinations", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Enter a destination name between 2 and 100 characters." });
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
     const places = [...(row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces)];
-    if (places.some(place => place.name.toLocaleLowerCase() === parsed.data.name.toLocaleLowerCase())) {
-      return res.status(409).json({ message: "That destination already exists." });
-    }
+    const normalizedName = normalizeDestinationName(parsed.data.name);
+    const exactMatch = places.find(place => normalizeDestinationName(place.name) === normalizedName);
+    if (exactMatch) return res.status(409).json({ message: "That destination already exists.", matches: [exactMatch] });
+    const similarMatch = findSimilarDestination(parsed.data.name, places);
+    if (similarMatch) return res.status(409).json({ message: 'This may be a spelling duplicate of "' + similarMatch.name + '". Use the existing destination or correct the spelling.', matches: [similarMatch] });
     const base = destinationSlug(parsed.data.name);
     let id = base, suffix = 2;
     while (places.some(place => place.id === id)) id = base + "-" + suffix++;
@@ -169,9 +171,12 @@ router.put("/destinations/:id", async (req, res, next) => {
     const places = [...(row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces)];
     const index = places.findIndex(place => place.id === req.params.id);
     if (index < 0) return res.status(404).json({ message: "Destination not found. Reload the list and try again." });
-    if (places.some((place, i) => i !== index && place.name.toLocaleLowerCase() === parsed.data.name.toLocaleLowerCase())) {
-      return res.status(409).json({ message: "That destination already exists." });
-    }
+    const otherPlaces = places.filter((place, i) => i !== index);
+    const normalizedName = normalizeDestinationName(parsed.data.name);
+    const exactMatch = otherPlaces.find(place => normalizeDestinationName(place.name) === normalizedName);
+    if (exactMatch) return res.status(409).json({ message: "That destination already exists.", matches: [exactMatch] });
+    const similarMatch = findSimilarDestination(parsed.data.name, otherPlaces);
+    if (similarMatch) return res.status(409).json({ message: 'This may be a spelling duplicate of "' + similarMatch.name + '". Use the existing destination or correct the spelling.', matches: [similarMatch] });
     places[index] = { ...places[index], name: parsed.data.name };
     await saveDestinationPlaces(places);
     res.json({ message: "Destination updated on the homepage.", places });
