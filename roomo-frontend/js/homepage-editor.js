@@ -31,31 +31,75 @@
     const input=document.getElementById("destinationInput");
     const list=document.getElementById("destinationSuggestions");
     if(!input||!list)return;
-    const fallbackPlaces=["Annamalaiyar Temple","Sri Ramanasramam","Girivalam Path","Arunachala Hill","Skandashramam","Virupaksha Cave","Seshadri Swamigal Ashram","Yogi Ramsuratkumar Ashram","Adi Annamalai Temple","Tiruvannamalai Central Bus Stand","Tiruvannamalai Railway Station"];
-    let places=fallbackPlaces.map(name=>({name}));
+    const fallbackPlaces=["Annamalaiyar Temple","Sri Ramanasramam","Girivalam Path","Arunachala Hill","Skandashramam","Virupaksha Cave","Seshadri Swamigal Ashram","Yogi Ramsuratkumar Ashram","Adi Annamalai Temple","Tiruvannamalai Central Bus Stand","Tiruvannamalai Railway Station"].map(name=>({name}));
+    let places=fallbackPlaces;
     const closeList=()=>{list.hidden=true;input.setAttribute("aria-expanded","false");};
-    const renderList=()=>{
-      const query=input.value.trim().toLocaleLowerCase();
-      const matches=places.filter(place=>place.name.toLocaleLowerCase().includes(query));
-      list.innerHTML=matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+'</button>').join("");
-      list.hidden=matches.length===0;
-      input.setAttribute("aria-expanded",String(matches.length>0));
-      list.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{input.value=button.textContent.trim();closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}));
+    const normalize=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("en").replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+    const distance=(a,b)=>{
+      const left=normalize(a),right=normalize(b),row=Array.from({length:right.length+1},(_,i)=>i);
+      for(let i=1;i<=left.length;i++){let previous=row[0];row[0]=i;for(let j=1;j<=right.length;j++){const old=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,previous+(left[i-1]===right[j-1]?0:1));previous=old;}}
+      return row[right.length];
+    };
+    const findSimilar=query=>places.map(place=>{const d=distance(query,place.name),a=normalize(query),b=normalize(place.name);return {place,d,similarity:1-d/Math.max(a.length,b.length,1),sameWords:a.split(" ").sort().join(" ")===b.split(" ").sort().join(" ")};})
+      .filter(item=>item.sameWords||(Math.max(normalize(query).length,normalize(item.place.name).length)>=5&&(item.d<=2||item.similarity>=.78)))
+      .sort((a,b)=>b.similarity-a.similarity).slice(0,5).map(item=>item.place);
+    let status=document.getElementById("destinationSuggestionStatus");
+    if(!status){status=document.createElement("p");status.id="destinationSuggestionStatus";status.className="small mt-2 mb-0";status.setAttribute("role","status");status.setAttribute("aria-live","polite");list.insertAdjacentElement("afterend",status);}
+    const showStatus=(message,isError=false)=>{status.textContent=message;status.style.color=isError?"#b42318":"#2563a6";};
+    const sendSuggestion=async name=>{
+      const button=list.querySelector("[data-suggest-new]");
+      if(button)button.disabled=true;
+      showStatus("Sending suggestion for admin review…");
+      try{
+        const response=await fetch(API+"/homepage/destination-suggestions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name})});
+        const data=await response.json().catch(()=>({}));
+        if(response.status===409&&Array.isArray(data.matches)&&data.matches.length){
+          showStatus(data.message+" Select the correct existing place below.",true);
+          renderList(true);
+          return;
+        }
+        if(!response.ok)throw new Error(data.message||"Could not submit destination suggestion.");
+        showStatus(data.message||"Suggestion submitted for admin review.");
+        closeList();
+      }catch(error){showStatus(error.message||"Could not submit destination suggestion.",true);}
+      finally{if(button)button.disabled=false;}
+    };
+    const renderList=(keepStatus=false)=>{
+      const query=input.value.trim();
+      const normalized=normalize(query);
+      if(!query){const matches=places;list.innerHTML=matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+'</button>').join("");}
+      else{
+        const direct=places.filter(place=>normalize(place.name).includes(normalized));
+        const similar=findSimilar(query);
+        const matches=direct.length?direct:similar;
+        const unique=Array.from(new Map(matches.map(place=>[place.id||normalize(place.name),place])).values());
+        list.innerHTML=unique.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+(similar.includes(place)&&!normalize(place.name).includes(normalized)?' <span class="small">(possible match)</span>':'')+'</button>').join("");
+        const exact=places.some(place=>normalize(place.name)===normalized);
+        const canSuggest=query.length>=2&&!exact&&!similar.length;
+        if(canSuggest)list.innerHTML+='<button type="button" class="destination-suggestion-option destination-suggest-new" data-suggest-new="true"><i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Suggest “'+escapeHtml(query)+'” as a new destination</button>';
+        if(query.length>=2&&similar.length&&!direct.length)showStatus("A similar destination may already exist. Please select it to avoid duplicates.",true);
+        else if(!keepStatus)showStatus("");
+      }
+      list.hidden=!list.children.length;
+      input.setAttribute("aria-expanded",String(!list.hidden));
+      list.querySelectorAll("button[data-destination-index]").forEach(button=>button.addEventListener("click",()=>{const selected=places.find(place=>place.name===button.textContent.trim()||normalize(place.name)===normalize(button.textContent));if(selected)input.value=selected.name;else input.value=button.textContent.trim();showStatus("");closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}));
+      const suggestButton=list.querySelector("[data-suggest-new]");
+      if(suggestButton)suggestButton.addEventListener("click",()=>sendSuggestion(query));
     };
     try{
       const response=await fetch(API+"/homepage/destinations",{cache:"no-store"});
-      if(response.ok){const data=await response.json();if(Array.isArray(data.places)&&data.places.length)places=data.places.filter(place=>place&&typeof place.name==="string"&&place.name.trim()).map(place=>({name:place.name.trim()}));}
+      if(response.ok){const data=await response.json();if(Array.isArray(data.places)&&data.places.length)places=data.places.filter(place=>place&&typeof place.name==="string"&&place.name.trim()).map(place=>({id:place.id,name:place.name.trim()}));}
     }catch(error){console.warn("ROOMO destination list unavailable; using suggested destinations.",error);}
     input.addEventListener("focus",renderList);
     input.addEventListener("click",renderList);
-    input.addEventListener("input",renderList);
+    input.addEventListener("input",()=>{showStatus("");renderList();});
     input.addEventListener("keydown",event=>{
-      const options=Array.from(list.querySelectorAll("button"));
+      const options=Array.from(list.querySelectorAll("button[data-destination-index]"));
       const active=options.indexOf(document.activeElement);
       if(event.key==="Escape"){closeList();return;}
       if(event.key==="ArrowDown"&&options.length){event.preventDefault();options[Math.min(active+1,options.length-1)].focus();}
       if(event.key==="ArrowUp"&&options.length){event.preventDefault();if(active>0)options[active-1].focus();else input.focus();}
-      if(event.key==="Enter"&&!list.hidden&&options.length&&document.activeElement===input){event.preventDefault();input.value=options[0].textContent.trim();closeList();}
+      if(event.key==="Enter"&&!list.hidden&&options.length&&document.activeElement===input){event.preventDefault();input.value=options[0].textContent.trim();closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}
     });
     document.addEventListener("click",event=>{if(!event.target.closest(".destination-suggestions")&&event.target!==input)closeList();});
   }
