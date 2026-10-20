@@ -1146,10 +1146,20 @@ h1, h2, h3, h4, h5, h6, strong, b, .fw-bold, .fw-semibold {
 a, .link-primary { color: #003580; }
 a:hover, .link-primary:hover { color: #009fe3; }
 
-/* Remove gradients and decorative color effects site-wide */
-*, *::before, *::after {
+/* Remove gradient fills while preserving background and property photography */
+.hero-heritage-wrapper,
+.pournami-banner-capsule,
+.btn-sacred-primary,
+.karthigai-heritage-card,
+.brass-btn,
+.temple-granite-footer,
+.stay-category-pill-btn,
+.monolithic-search-engine {
   background-image: none !important;
-  text-shadow: none;
+}
+.hero-heritage-wrapper::before,
+.karthigai-heritage-card::after {
+  display: none !important;
 }
 .hero-heritage-wrapper,
 #popularStays,
