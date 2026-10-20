@@ -586,6 +586,22 @@ if (document.body.classList.contains("stay-details-page")) {
     storage.setItem(USER_KEY, JSON.stringify(data.user));
     (storage === sessionStorage ? localStorage : sessionStorage).removeItem(TOKEN_KEY);
     (storage === sessionStorage ? localStorage : sessionStorage).removeItem(USER_KEY);
+
+    // Return guests to the page where they started sign-in. Only allow same-origin
+    // destinations so a crafted URL cannot redirect guests to an external site.
+    const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+    if (returnTo) {
+      try {
+        const destination = new URL(returnTo, window.location.origin);
+        if (destination.origin === window.location.origin) {
+          window.location.replace(destination.href);
+          return;
+        }
+      } catch (error) {
+        console.warn("ROOMO: Invalid post-authentication return URL.", error);
+      }
+    }
+    window.location.replace("index.html");
   }
 
   form.addEventListener("submit", async (event) => {
