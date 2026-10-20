@@ -26,9 +26,13 @@ const googleSchema = z.object({ credential: z.string().min(20).max(10000) });
 
 function createGuestToken(user) {
   return jwt.sign(
-    { sub: user.id, role: "GUEST", audience: "roomo-guest" },
+    { sub: user.id, role: "GUEST" },
     process.env.JWT_SECRET,
-    { expiresIn: "1h", issuer: "roomo-api" }
+    {
+      expiresIn: "1h",
+      issuer: "roomo-api",
+      audience: "roomo-guest",
+    }
   );
 }
 
