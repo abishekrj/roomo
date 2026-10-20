@@ -58,6 +58,7 @@ const homepageSchema = z.object({
   heroTitleAccent: z.string().trim().min(1).max(120),
   heroDescription: z.string().trim().min(10).max(1000),
   heroImageUrl: z.string().trim().url().max(2000).refine(value => value.startsWith("https://") || value.startsWith("http://localhost:5001/uploads/"), "Use HTTPS for image URLs except local ROOMO uploads.").optional(),
+  pournamiItems: z.array(z.object({ eyebrow: z.string().trim().min(1).max(50), title: z.string().trim().min(1).max(70), description: z.string().trim().min(1).max(110) })).length(5).default([{"eyebrow":"POURNAMI GIRIVALAM","title":"Full Moon. Sacred Walk.","description":"Walk the holy path around Arunachala."},{"eyebrow":"PLAN AHEAD","title":"Book Your Stay Early","description":"Pournami rooms can fill quickly."},{"eyebrow":"TEMPLE DARSHAN","title":"Begin with Annamalaiyar","description":"Keep time for a peaceful darshan."},{"eyebrow":"STAY CLOSE","title":"Rest Near Arunachala","description":"Choose a calm stay near Girivalam."},{"eyebrow":"TRAVEL LIGHT","title":"Water. Comfortable Shoes.","description":"Prepare well for the sacred walk."}]),
   festivalTitle: z.string().trim().min(1).max(160),
   festivalDescription: z.string().trim().min(10).max(1000),
   festivalDate: z.string().trim().min(10).max(50),
