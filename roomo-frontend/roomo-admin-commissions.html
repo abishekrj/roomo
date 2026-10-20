@@ -39,6 +39,7 @@
   const $ = id => document.getElementById(id);
   const token = localStorage.getItem("roomoAdminToken") || localStorage.getItem("roomoToken");
   let reservations = [];
+  let owners = [];
   const money = value => new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(Number(value)||0);
   const cell = (row, value) => { const td=document.createElement("td"); td.textContent=value == null ? "—" : String(value); row.appendChild(td); return td; };
   async function request(path, options={}) {
@@ -50,10 +51,10 @@
   function showMessage(value, isError=false){ $("pageMessage").textContent=value; $("pageMessage").style.color=isError?"#b42318":"#17603b"; }
   function renderReservations(){
     const body=$("reservationRows"); body.replaceChildren();
-    const owners=new Map();
+    const ownerMap=new Map(owners.map(owner=>[owner.id,owner]));
     for(const item of reservations){
       const owner=item.property?.owner;
-      if(owner?.id) owners.set(owner.id,owner);
+      if(owner?.id && !ownerMap.has(owner.id)) ownerMap.set(owner.id,owner);
       const tr=document.createElement("tr");
       cell(tr,item.reservationCode+"\n"+String(item.checkIn).slice(0,10)+" → "+String(item.checkOut).slice(0,10));
       cell(tr,(item.property?.title||"Property")+"\nOwner: "+(owner?.fullName||"Unknown"));
@@ -71,8 +72,8 @@
     }
     if(!reservations.length) body.innerHTML='<tr><td colspan="10">No reservation records yet.</td></tr>';
     const select=$("ownerSelect"); const prior=select.value;select.replaceChildren(new Option("Select owner",""));
-    for(const owner of owners.values()){const option=new Option(owner.fullName+" · "+owner.email,owner.id);option.dataset.rate=String(owner.commissionRate);select.appendChild(option)}
-    if(prior && owners.has(prior)) select.value=prior;
+    for(const owner of ownerMap.values()){const option=new Option(owner.fullName+" · "+owner.email,owner.id);option.dataset.rate=String(owner.commissionRate);select.appendChild(option)}
+    if(prior && ownerMap.has(prior)) select.value=prior;
     updateOwnerRate();
   }
   function updateOwnerRate(){const option=$("ownerSelect").selectedOptions[0];$("ownerRate").value=option?.dataset?.rate||""}
@@ -87,6 +88,7 @@
     if(!token){showMessage("Admin sign-in is required. Sign in through the existing ROOMO admin login, then reopen this page.",true);return}
     try{
       const data=await request("/admin/commissions");reservations=data.reservations||[];
+      const ownerData=await request("/admin/commissions/owners");owners=ownerData.owners||[];
       $("bookingValue").textContent=money(data.totals?.bookingValue);$("commissionDue").textContent=money(data.totals?.commissionDue);$("commissionPaid").textContent=money(data.totals?.commissionPaid);
       renderReservations();await loadNotifications();showMessage("Loaded "+reservations.length+" reservation record(s).");
     }catch(e){showMessage(e.message,true)}
