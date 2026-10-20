@@ -27,7 +27,38 @@
     const target=new Date(c.festivalDate).getTime();if(Number.isFinite(target)){const update=()=>{let s=Math.max(0,Math.floor((target-Date.now())/1000));const d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;setText("cdDays",String(d));setText("cdHours",String(h).padStart(2,"0"));setText("cdMins",String(m).padStart(2,"0"));setText("cdSecs",String(s).padStart(2,"0"));};update();if(window.roomoHomepageCountdown)clearInterval(window.roomoHomepageCountdown);window.roomoHomepageCountdown=setInterval(update,1000);}
   }
   function hidePageLoader(){const loader=document.getElementById("roomoPageLoader");if(loader)loader.classList.add("is-hidden");}
-  async function loadDestinationOptions(){const input=document.getElementById("destinationInput"),list=document.getElementById("destinationOptions");if(!input||!list)return;try{const response=await fetch(API+"/homepage/destinations",{cache:"no-store"});if(!response.ok)throw new Error("Destination list unavailable");const data=await response.json();const places=Array.isArray(data.places)?data.places:[];list.innerHTML=places.map(place=>'<option value="'+escapeHtml(place.name)+'"></option>').join("");if(!input.value.trim())input.value="Tiruvannamalai";}catch(error){console.warn("ROOMO destination list unavailable; using the default destination.",error);}}
+  async function loadDestinationOptions(){
+    const input=document.getElementById("destinationInput");
+    const list=document.getElementById("destinationSuggestions");
+    if(!input||!list)return;
+    const fallbackPlaces=["Annamalaiyar Temple","Sri Ramanasramam","Girivalam Path","Arunachala Hill","Skandashramam","Virupaksha Cave","Seshadri Swamigal Ashram","Yogi Ramsuratkumar Ashram","Adi Annamalai Temple","Tiruvannamalai Central Bus Stand","Tiruvannamalai Railway Station"];
+    let places=fallbackPlaces.map(name=>({name}));
+    const closeList=()=>{list.hidden=true;input.setAttribute("aria-expanded","false");};
+    const renderList=()=>{
+      const query=input.value.trim().toLocaleLowerCase();
+      const matches=places.filter(place=>place.name.toLocaleLowerCase().includes(query)).slice(0,5);
+      list.innerHTML=matches.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+'</button>').join("");
+      list.hidden=matches.length===0;
+      input.setAttribute("aria-expanded",String(matches.length>0));
+      list.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{input.value=button.textContent.trim();closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}));
+    };
+    try{
+      const response=await fetch(API+"/homepage/destinations",{cache:"no-store"});
+      if(response.ok){const data=await response.json();if(Array.isArray(data.places)&&data.places.length)places=data.places.filter(place=>place&&typeof place.name==="string"&&place.name.trim()).map(place=>({name:place.name.trim()}));}
+    }catch(error){console.warn("ROOMO destination list unavailable; using suggested destinations.",error);}
+    input.addEventListener("focus",renderList);
+    input.addEventListener("click",renderList);
+    input.addEventListener("input",renderList);
+    input.addEventListener("keydown",event=>{
+      const options=Array.from(list.querySelectorAll("button"));
+      const active=options.indexOf(document.activeElement);
+      if(event.key==="Escape"){closeList();return;}
+      if(event.key==="ArrowDown"&&options.length){event.preventDefault();options[Math.min(active+1,options.length-1)].focus();}
+      if(event.key==="ArrowUp"&&options.length){event.preventDefault();if(active>0)options[active-1].focus();else input.focus();}
+      if(event.key==="Enter"&&!list.hidden&&options.length&&document.activeElement===input){event.preventDefault();input.value=options[0].textContent.trim();closeList();}
+    });
+    document.addEventListener("click",event=>{if(!event.target.closest(".destination-suggestions")&&event.target!==input)closeList();});
+  }
   document.addEventListener("DOMContentLoaded",async()=>{const destinationsPromise=loadDestinationOptions();try{const r=await fetch(API+"/homepage",{cache:"no-store"});if(r.ok){const data=await r.json();apply(data.content||defaults);await destinationsPromise;hidePageLoader();return;}}catch(error){console.warn("ROOMO homepage API unavailable; property cards will remain empty.",error);}apply({...defaults,featuredProperties:[]});await destinationsPromise;hidePageLoader();});
   window.addEventListener("pageshow",event=>{if(event.persisted)hidePageLoader();});
 })();
