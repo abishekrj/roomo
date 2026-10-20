@@ -73,7 +73,7 @@
         const similar=findSimilar(query);
         const matches=direct.length?direct:similar;
         const unique=Array.from(new Map(matches.map(place=>[place.id||normalize(place.name),place])).values());
-        list.innerHTML=unique.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'">'+escapeHtml(place.name)+(similar.includes(place)&&!normalize(place.name).includes(normalized)?' <span class="small">(possible match)</span>':'')+'</button>').join("");
+        list.innerHTML=unique.map((place,index)=>'<button type="button" class="destination-suggestion-option" role="option" aria-selected="false" data-destination-index="'+index+'" data-place-name="'+escapeHtml(place.name)+'">'+escapeHtml(place.name)+(similar.includes(place)&&!normalize(place.name).includes(normalized)?' <span class="small">(possible match)</span>':'')+'</button>').join("");
         const exact=places.some(place=>normalize(place.name)===normalized);
         const canSuggest=query.length>=2&&!exact&&!similar.length;
         if(canSuggest)list.innerHTML+='<button type="button" class="destination-suggestion-option destination-suggest-new" data-suggest-new="true"><i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Suggest “'+escapeHtml(query)+'” as a new destination</button>';
@@ -82,7 +82,7 @@
       }
       list.hidden=!list.children.length;
       input.setAttribute("aria-expanded",String(!list.hidden));
-      list.querySelectorAll("button[data-destination-index]").forEach(button=>button.addEventListener("click",()=>{const selected=places.find(place=>place.name===button.textContent.trim()||normalize(place.name)===normalize(button.textContent));if(selected)input.value=selected.name;else input.value=button.textContent.trim();showStatus("");closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}));
+      list.querySelectorAll("button[data-destination-index]").forEach(button=>button.addEventListener("click",()=>{const selected=places.find(place=>place.name===button.dataset.placeName);if(selected)input.value=selected.name;else input.value=button.textContent.trim();showStatus("");closeList();input.dispatchEvent(new Event("change",{bubbles:true}));}));
       const suggestButton=list.querySelector("[data-suggest-new]");
       if(suggestButton)suggestButton.addEventListener("click",()=>sendSuggestion(query));
     };
