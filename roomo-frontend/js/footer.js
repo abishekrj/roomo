@@ -4,7 +4,7 @@
   const FOOTER_URL = "components/footer.html";
   const defaults = {
     social: [{label:"Facebook",url:"#",icon:"bi-facebook"},{label:"Instagram",url:"#",icon:"bi-instagram"},{label:"WhatsApp",url:"https://wa.me/919444000000",icon:"bi-whatsapp"},{label:"YouTube",url:"#",icon:"bi-youtube"}],
-    sanctuaries: [{label:"Ashrams & Meditation Kutir",url:"index.html#popularStays"},{label:"Heritage Haveli Courtyards",url:"index.html#popularStays"},{label:"Temple Gopuram View Suites",url:"index.html#popularStays"},{label:"Girivalam Pradakshina Inns",url:"index.html#popularStays"},{label:"Sattvic Homestays",url:"index.html#popularStays"}],
+    sanctuaries: [{label:"Hotels Near Arunachaleswarar Temple",url:"hotels-near-arunachaleswarar-temple.html"},{label:"Stays Near Sri Ramanasramam",url:"stays-near-sri-ramanasramam.html"},{label:"Budget Rooms in Tiruvannamalai",url:"budget-rooms-in-tiruvannamalai.html"},{label:"Family Stays for Girivalam",url:"family-stays-for-girivalam.html"},{label:"Monthly Stays in Tiruvannamalai",url:"monthly-stays-in-tiruvannamalai.html"}],
     pilgrimCare: [{label:"Karthigai Deepam 2026 Passes",url:"index.html#karthigaiPromo"},{label:"Pournami Girivalam Calendar",url:"index.html#spiritualGuide"},{label:"Annamalaiyar Darshan Timings",url:"index.html#spiritualGuide"},{label:"Ashram Taxi & Station Pickups",url:"#"}],
     legal: [{label:"Pilgrim Code of Conduct",url:"#"},{label:"Privacy Terms",url:"#"},{label:"Host an Ashram or Haveli",url:"roomo-signup.html"}]
   };
@@ -47,28 +47,6 @@
     if (legal) { legal.replaceChildren(); (links.legal || []).forEach(item => legal.appendChild(makeLink(item))); }
 
   }
-  async function loadCmsGuideLinks() {
-    try {
-      const response = await fetch(API.replace("/homepage", "/cms-pages"), {cache:"no-store"});
-      if (!response.ok) return;
-      const data = await response.json();
-      const pages = Array.isArray(data.pages) ? data.pages : [];
-      const footer = document.querySelector("footer.temple-granite-footer");
-      const list = footer?.querySelectorAll(".row.g-4.mb-4 > div")[1]?.querySelector("ul");
-      if (!list || !pages.length) return;
-      pages.forEach(page => {
-        if (!page.slug || !page.title) return;
-        const fixedSlugs = new Set(["hotels-near-arunachaleswarar-temple","stays-near-sri-ramanasramam","budget-rooms-in-tiruvannamalai","family-stays-for-girivalam","monthly-stays-in-tiruvannamalai"]);
-        const url = fixedSlugs.has(page.slug) ? page.slug + ".html" : "cms-page.html?slug=" + encodeURIComponent(page.slug);
-        if ([...list.querySelectorAll("a")].some(a => a.getAttribute("href") === url)) return;
-        const li = document.createElement("li");
-        li.appendChild(makeLink({label:page.title,url}));
-        list.appendChild(li);
-      });
-    } catch (error) {
-      console.warn("ROOMO CMS guide links are temporarily unavailable.", error);
-    }
-  }
   async function updateVisitorCount() {
     const container = document.getElementById("visitorCountContainer");
     const value = document.getElementById("visitorCountValue");
@@ -101,7 +79,6 @@
         const response = await fetch(API, {cache:"no-store"});
         if (response.ok) { const data = await response.json(); apply(data.content || {}); }
       } catch (error) { console.warn("ROOMO footer settings unavailable; showing default footer links.", error); }
-      await loadCmsGuideLinks();
     } catch (error) {
       console.error("ROOMO shared footer could not load.", error);
     }
