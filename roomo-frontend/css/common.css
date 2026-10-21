@@ -1833,3 +1833,18 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
   padding-bottom: 32px !important;
 }
 
+/* Listing filters: keep the complete filter list in the page flow instead of clipping it inside a short sidebar. */
+@media (min-width: 761px) {
+  .search-page .filters {
+    position: static !important;
+    top: auto !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    align-self: start;
+  }
+  .search-page .filters > * {
+    max-height: none;
+  }
+}
+
