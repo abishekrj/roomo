@@ -231,7 +231,8 @@
   });
   document.querySelectorAll("[data-owner-nav]").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll("[data-owner-nav]").forEach(item=>item.classList.toggle("active",item===link));}));
   $("logoutButton").addEventListener("click",()=>signOut());
-  $("enquirySearch").addEventListener("input",renderEnquiries);\n  $("refreshButton").addEventListener("click",async()=>{try{await loadDashboard();notice("dashboardNotice","Dashboard refreshed.","success");}catch(e){notice("dashboardNotice",e.message,"error");}});
+  $("enquirySearch").addEventListener("input",renderEnquiries);
+  $("refreshButton").addEventListener("click",async()=>{try{await loadDashboard();notice("dashboardNotice","Dashboard refreshed.","success");}catch(e){notice("dashboardNotice",e.message,"error");}});
   $("cancelEditButton").addEventListener("click",()=>$("editPanel").classList.add("hidden"));
   $("editForm").addEventListener("submit",async e=>{
     e.preventDefault(); if(!me?.canEditProperties){notice("dashboardNotice","Property editing is disabled by ROOMO administration.","error");return;}
