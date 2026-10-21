@@ -2632,15 +2632,26 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   }
 }
 
-/* Keep destination suggestions above the later search fields and submit button. */
+/* Keep the destination field's entire stacking layer above the search CTA. */
+.home-page .home-hero-search,
+.home-page .home-hero-search .monolithic-search-engine,
+.home-page .home-hero-search #staySearchForm,
+.home-page .home-hero-search #staySearchForm > .row {
+  overflow: visible;
+}
 .home-page .home-hero-search #staySearchForm > .row > .col-12:first-child {
   position: relative;
-  z-index: 60;
+  z-index: 2000;
 }
 .home-page .home-hero-search .heritage-input-box:has(#destinationInput) {
   position: relative;
-  z-index: 61;
+  z-index: 2001;
 }
 .home-page .home-hero-search .destination-suggestions {
-  z-index: 1085 !important;
+  position: absolute;
+  z-index: 2002 !important;
+}
+.home-page .home-hero-search #staySearchForm > .row > .col-12.mt-3 {
+  position: relative;
+  z-index: 1;
 }
