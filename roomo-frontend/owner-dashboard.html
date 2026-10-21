@@ -59,7 +59,7 @@
   const TOKEN_KEY = "roomoOwnerToken";
   const $ = (id) => document.getElementById(id);
   let token = sessionStorage.getItem(TOKEN_KEY);
-  let me = null, properties = [], reservations = [];
+  let me = null, properties = [], reservations = [], lastPendingCount = null;
   async function request(path, options = {}) {
     let response;
     try {
@@ -146,6 +146,9 @@
   async function loadDashboard() {
     const [p,r]=await Promise.all([request("/properties/owner"),request("/reservations/owner")]);
     properties=Array.isArray(p.properties)?p.properties:[]; reservations=Array.isArray(r.reservations)?r.reservations:[];
+    const pendingCount = reservations.filter(item => item.status === "REQUESTED").length;
+    if (lastPendingCount !== null && pendingCount > lastPendingCount) notice("dashboardNotice", "You have a new guest enquiry. Review it in Enquiries & room requests.", "info");
+    lastPendingCount = pendingCount;
     renderProperties(); renderEnquiries();
   }
   async function enterDashboard() {
@@ -180,6 +183,12 @@
     finally{button.disabled=false;button.textContent="Save property details";}
   });
   if(token){enterDashboard().catch(error=>{signOut(false);notice("loginNotice",error.message,"error");});}
+  // Refresh owner enquiries while the dashboard is open (no SMS/WhatsApp provider required).
+  setInterval(() => {
+    if (token && me && !$("dashboard").classList.contains("hidden")) {
+      loadDashboard().catch(error => notice("dashboardNotice", error.message, "error"));
+    }
+  }, 60000);
 })();
 </script>
 </body>
