@@ -912,23 +912,26 @@ if (document.body.classList.contains("stay-details-page")) {
         const available = Boolean(data.available);
         availabilityMessage.textContent = available ? "Availability checked successfully." : "There are not enough units available for those dates.";
         availabilityResults.innerHTML = '<div class="availability-results-head"><div><span class="detail-eyebrow">YOUR SEARCH</span><h2>Availability for your stay</h2><p>' + arrival + ' → ' + departure + ' · ' + data.nights + ' night' + (data.nights === 1 ? '' : 's') + ' · ' + guestAdults + ' adult' + (guestAdults === 1 ? '' : 's') + ' · ' + guestChildren + ' children · ' + roomCount + ' room' + (roomCount === 1 ? '' : 's') + '</p></div><span class="availability-search-check ' + (available ? '' : 'is-unavailable') + '"><i class="bi ' + (available ? 'bi-check-circle-fill' : 'bi-x-circle-fill') + '"></i> ' + (available ? 'Available' : 'Unavailable') + '</span></div><article class="availability-option"><div class="availability-option-icon"><i class="bi bi-house-door"></i></div><div class="availability-option-copy"><h3>' + data.property.title + '</h3><p>' + data.property.city + ' · ' + data.availableUnits + ' unit(s) currently available</p><small>' + (available ? 'Your selected dates fit the current reservation inventory.' : 'Try fewer rooms or different dates.') + '</small></div><div class="availability-option-price"><strong>' + money(data.totalAmount) + '</strong><span>estimated total</span><small>' + money(data.nightlyPrice) + ' × ' + data.nights + ' night(s) × ' + roomCount + ' room(s)</small></div></article>' + (available ? '<div class="availability-honesty"><i class="bi bi-info-circle"></i><span>Availability is based on current reservations. Your booking is not held until you submit a reservation request.</span></div><label class="reservation-request-label" for="reservationContactPhone">Mobile number <span aria-hidden="true">*</span></label><input id="reservationContactPhone" class="reservation-contact-phone" type="tel" inputmode="tel" autocomplete="tel" required minlength="7" maxlength="32" pattern="[+()\\-\\s0-9]{7,32}" placeholder="+91 98765 43210" aria-describedby="reservationContactPhoneHelp"><small id="reservationContactPhoneHelp" class="reservation-phone-help">The property will use this number to contact you and confirm your reservation.</small><label class="reservation-request-label" for="reservationSpecialRequests">Special requests (optional)</label><textarea id="reservationSpecialRequests" maxlength="1000" rows="3" placeholder="Arrival time, accessibility needs, or other requests"></textarea><button type="button" class="detail-book-btn reservation-submit-btn" id="createReservation"><i class="bi bi-calendar2-check"></i> Request reservation</button><div id="reservationSubmitMessage" class="availability-message" aria-live="polite"></div>' : '<div class="availability-honesty"><i class="bi bi-info-circle"></i><span>Those dates do not have enough units for your request. Update the dates or reduce the number of rooms.</span></div>');
+        const savedContactPhone = sessionStorage.getItem("roomoReservationContactPhone");
+        if (savedContactPhone && document.getElementById("reservationContactPhone")) document.getElementById("reservationContactPhone").value = savedContactPhone;
         availabilityResults.hidden = false;
         availabilityResults.scrollIntoView({ behavior: "smooth", block: "start" });
         if (available) {
           document.getElementById("createReservation").addEventListener("click", async () => {
             const submit = document.getElementById("createReservation");
             const status = document.getElementById("reservationSubmitMessage");
-            const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
-            if (!token) {
-              const returnTo = location.pathname + location.search + location.hash;
-              location.href = "roomo-login.html?returnTo=" + encodeURIComponent(returnTo);
-              return;
-            }
             const contactPhone = document.getElementById("reservationContactPhone")?.value.trim() || "";
             if (!/^[+()\-\s\d]{7,32}$/.test(contactPhone) || contactPhone.replace(/\D/g, "").length < 7) {
               status.textContent = "Enter a valid mobile number so the property can contact you.";
               status.classList.add("is-error");
               document.getElementById("reservationContactPhone")?.focus();
+              return;
+            }
+            sessionStorage.setItem("roomoReservationContactPhone", contactPhone);
+            const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+            if (!token) {
+              const returnTo = location.pathname + location.search + location.hash;
+              location.href = "roomo-login.html?returnTo=" + encodeURIComponent(returnTo);
               return;
             }
             submit.disabled = true;
@@ -952,6 +955,7 @@ if (document.body.classList.contains("stay-details-page")) {
                 throw bookingError;
               }
               const reservation = bookingData.reservation;
+              sessionStorage.removeItem("roomoReservationContactPhone");
               availabilityResults.innerHTML = '<div class="availability-results-head"><div><span class="detail-eyebrow">RESERVATION REQUESTED</span><h2>Your stay request has been received</h2><p>' + arrival + ' → ' + departure + ' · ' + data.nights + ' night(s)</p></div><span class="availability-search-check">Pending confirmation</span></div><div class="reservation-confirmation"><i class="bi bi-check-circle-fill"></i><div><strong>Reservation reference: ' + reservation.reservationCode + '</strong><p>' + reservation.property.title + ' · ' + money(reservation.totalAmount) + ' estimated total</p><p>The property must confirm this request. No payment has been collected.</p></div></div><a class="detail-book-btn reservation-view-btn" href="roomo-my-bookings.html">View my reservations</a>';
             } catch (error) {
               status.textContent = error.message || "Could not create your reservation.";
