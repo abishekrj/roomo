@@ -67,6 +67,12 @@ model Property {
   maxGuests     Int            @map("max_guests")
   bedrooms      Int            @default(1)
   bathrooms     Int            @default(1)
+  livingRooms   Int            @default(1) @map("living_rooms")
+  kitchens      Int            @default(1)
+  areaSquareMeters Decimal?    @db.Decimal(8, 2) @map("area_square_meters")
+  bedConfiguration Json         @default("[]") @map("bed_configuration")
+  allowPayAtProperty Boolean   @default(false) @map("allow_pay_at_property")
+  availabilityCount Int?        @map("availability_count")
   totalUnits    Int            @default(1) @map("total_units")
   amenities     Json           @default("[]")
   nearbyLandmarks Json         @default("[]") @map("nearby_landmarks")
@@ -261,4 +267,12 @@ model RoomFilter {
   @@index([groupId, isActive, sortOrder])
   @@index([filterType, value])
   @@map("room_filters")
+}
+
+
+model ListingDisplayConfig {
+  id        Int      @id @default(1)
+  settings  Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("listing_display_config")
 }
