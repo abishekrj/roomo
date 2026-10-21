@@ -201,6 +201,7 @@ model Reservation {
   commissionNotes String?           @db.Text @map("commission_notes")
   status          ReservationStatus @default(REQUESTED)
   specialRequests String?           @db.VarChar(1000) @map("special_requests")
+  contactPhone    String?           @db.VarChar(32) @map("contact_phone")
   cancelledAt     DateTime?         @map("cancelled_at")
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
