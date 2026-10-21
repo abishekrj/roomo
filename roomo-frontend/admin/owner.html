@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/admin.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><script src="../js/favicon.js"></script>
 <style>
-.owner-section{display:none}.owner-section.is-active{display:block}.owner-subnav .sidebar-sublink.active{font-weight:700;color:var(--primary,#183B56)}
+.property-search-field{max-width:520px;margin:0 0 16px}.owner-section{display:none}.owner-section.is-active{display:block}.owner-subnav .sidebar-sublink.active{font-weight:700;color:var(--primary,#183B56)}
 .owner-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.owner-form-grid .full{grid-column:1/-1}.owner-permission{display:flex;align-items:center;gap:8px}.owner-permission input{width:18px;height:18px}.inline-select{min-width:220px;max-width:100%}.helper{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
 @media(max-width:640px){.owner-form-grid{grid-template-columns:1fr}.owner-form-grid .full{grid-column:auto}.inline-select{min-width:180px}}
 </style>
@@ -58,7 +58,7 @@
 <section class="panel owner-section" id="owners-list" data-owner-section="owners-list"><div class="section-heading"><div><h2>Owner accounts</h2><p class="muted small">Assign each property to its owner and enable editing only when permitted.</p></div></div>
 <div class="table-wrap"><table><thead><tr><th>Owner</th><th>Email</th><th>Assigned properties</th><th>Property editing</th><th>Login access</th></tr></thead><tbody id="ownersTable"></tbody></table><div id="ownersEmpty" class="empty-state hidden">No owner accounts yet. Create the first owner above.</div></div></section>
 <section class="panel owner-section" id="assign-properties" data-owner-section="assign-properties"><div class="section-heading"><div><h2>Assign properties</h2><p class="muted small">Choose the owner responsible for each existing property.</p></div></div>
-<div class="table-wrap"><table><thead><tr><th>Property</th><th>Location</th><th>Assigned owner</th></tr></thead><tbody id="propertiesTable"></tbody></table><div id="propertiesEmpty" class="empty-state hidden">No properties found.</div></div></section>
+<div class="field property-search-field"><label for="propertySearch">Search properties</label><input id="propertySearch" type="search" placeholder="Search by property, location, or owner…" autocomplete="off" aria-describedby="propertySearchHint"><p id="propertySearchHint" class="helper">Search by property name, city, state, or assigned owner name/email.</p></div><div class="table-wrap"><table><thead><tr><th>Property</th><th>Location</th><th>Assigned owner</th></tr></thead><tbody id="propertiesTable"></tbody></table><div id="propertiesEmpty" class="empty-state hidden">No properties found.</div></div></section>
 </div></div></main>
 <script>
 (() => {
@@ -110,8 +110,12 @@ function renderOwners(){
  }
 }
 function renderProperties(){
- const tbody=$("propertiesTable");tbody.replaceChildren();$("propertiesEmpty").classList.toggle("hidden",properties.length>0);
- for(const property of properties){
+ const tbody=$("propertiesTable");tbody.replaceChildren();
+ const query=($("propertySearch")?.value||"").trim().toLocaleLowerCase();
+ const filtered=properties.filter(property=>[property.title,property.city,property.state,property.owner?.fullName,property.owner?.email].some(value=>String(value||"").toLocaleLowerCase().includes(query)));
+ $("propertiesEmpty").classList.toggle("hidden",filtered.length>0);
+ $("propertiesEmpty").textContent=properties.length===0?"No properties found.":"No properties match your search.";
+ for(const property of filtered){
   const row=document.createElement("tr");cell(row,property.title||"Untitled property");cell(row,[property.city,property.state].filter(Boolean).join(", ")||"—");
   const td=cell(row,""),select=document.createElement("select");select.className="inline-select";select.setAttribute("aria-label","Owner for "+property.title);
   const blank=document.createElement("option");blank.value="";blank.textContent="Select owner";select.appendChild(blank);
@@ -122,6 +126,7 @@ function renderProperties(){
 }
 $("createOwnerForm").addEventListener("submit",async event=>{event.preventDefault();const button=$("createOwnerButton");button.disabled=true;button.textContent="Creating owner…";try{const result=await request("/admin/owners",{method:"POST",body:JSON.stringify({fullName:$("ownerName").value.trim(),email:$("ownerEmail").value.trim(),password:$("ownerPassword").value,phoneNumber:$("ownerPhone").value.trim()})});$("createOwnerForm").reset();notice(result.message||"Owner account created successfully.","success");await load();}catch(error){notice(error.message,"error");}finally{button.disabled=false;button.textContent="Create owner account";}});
 $("refreshButton").addEventListener("click",load);
+$("propertySearch").addEventListener("input",renderProperties);
 $("logoutButton").addEventListener("click",()=>{localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");});
 (async()=>{if(!token){location.replace("../admin.html");return;}try{const result=await request("/admin/properties");if(!Array.isArray(result.properties))throw new Error("Admin access could not be verified.");await load();}catch(error){notice(error.message,"error");if(error.status===401||error.status===403){localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");}}})();
 })();
