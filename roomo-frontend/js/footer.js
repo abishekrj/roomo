@@ -26,6 +26,17 @@
     const footer = document.querySelector("footer.temple-granite-footer");
     if (!footer) return;
     const links = {...defaults, ...(content.footerLinks || {})};
+    const cmsGuideLinks = [
+      {label:"Hotels Near Arunachaleswarar Temple",url:"hotels-near-arunachaleswarar-temple.html"},
+      {label:"Stays Near Sri Ramanasramam",url:"stays-near-sri-ramanasramam.html"},
+      {label:"Budget Rooms in Tiruvannamalai",url:"budget-rooms-in-tiruvannamalai.html"},
+      {label:"Family Stays for Girivalam",url:"family-stays-for-girivalam.html"},
+      {label:"Monthly Stays in Tiruvannamalai",url:"monthly-stays-in-tiruvannamalai.html"}
+    ];
+    links.sanctuaries = [...(links.sanctuaries || [])];
+    cmsGuideLinks.forEach(guide => {
+      if (!links.sanctuaries.some(item => item.url === guide.url)) links.sanctuaries.push(guide);
+    });
     const columns = footer.querySelectorAll(".row.g-4.mb-4 > div");
     if (columns[0]) {
       const social = columns[0].querySelector(".d-flex.gap-3.fs-5.mt-3");
