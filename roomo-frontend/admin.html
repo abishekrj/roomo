@@ -397,6 +397,13 @@
               <input id="address" name="address" required minlength="5" maxlength="250">
             </div>
 
+            <div class="field full">
+              <label for="mapLocation">Google Maps embed URL</label>
+              <input id="mapLocation" name="mapLocation" type="url" maxlength="1000"
+                placeholder="https://www.google.com/maps/embed?pb=…">
+              <span class="field-help">Optional. Paste the property's Google Maps embed URL (Google Maps → Share → Embed a map → Copy HTML, then copy only the URL inside the src attribute). This exact map will appear on the property details page.</span>
+            </div>
+
             <div class="field">
               <label for="city">City *</label>
               <input id="city" name="city" required minlength="2" maxlength="100">
@@ -816,6 +823,7 @@
             nightlyPrice: Number($("nightlyPrice").value),
             description: $("description").value.trim(),
             address: $("address").value.trim(),
+            mapLocation: $("mapLocation").value.trim() || null,
             city: $("city").value.trim(),
             state: $("state").value.trim(),
             country: $("country").value.trim(),
