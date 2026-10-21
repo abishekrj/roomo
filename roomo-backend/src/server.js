@@ -65,6 +65,8 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
         id: true,
         fullName: true,
         email: true,
+        role: true,
+        canEditProperties: true,
       },
     });
 
