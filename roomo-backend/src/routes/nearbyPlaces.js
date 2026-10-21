@@ -27,8 +27,8 @@ const placesSchema = z.object({
 });
 
 const defaultConfig = {
-  title: "Featured Stays",
-  description: "Discover memorable places and scenic escapes to add to your sacred journey."
+  title: "Nearby Locations",
+  description: "Explore familiar landmarks, scenic escapes and memorable destinations around Tiruvannamalai.",
   places: [
     { id: "sathanur-dam", name: "Sathanur Dam", location: "Sathanur, Tiruvannamalai District, Tamil Nadu", description: "A scenic dam and reservoir surrounded by green hills and peaceful countryside.", imageUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80", mapUrl: "https://www.google.com/maps/search/?api=1&query=Sathanur+Dam+Tamil+Nadu", visible: true, sortOrder: 1 },
     { id: "yelagiri-hills", name: "Yelagiri Hills", location: "Yelagiri, Tirupattur District, Tamil Nadu", description: "A hill retreat known for fresh air, scenic viewpoints and outdoor activities.", imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80", mapUrl: "https://www.google.com/maps/search/?api=1&query=Yelagiri+Hills+Tamil+Nadu", visible: true, sortOrder: 2 },
