@@ -1764,3 +1764,17 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .stay-details-page .detail-search-submit:hover{background:#0f2c59}
 @media(max-width:760px){.stay-details-page .detail-search-section{padding:16px}.stay-details-page .detail-search-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}}
 @media(max-width:420px){.stay-details-page .detail-search-form{grid-template-columns:1fr}.stay-details-page .detail-search-submit{grid-column:auto}}
+
+/* Shared ROOMO search component: details-page variant */
+.stay-details-page .detail-search-section{margin:0 0 24px;padding:22px;border:1px solid #d9e2ec;border-radius:18px;background:#f8fbff;box-shadow:0 8px 24px rgba(0,53,128,.06)}
+.stay-details-page .detail-search-heading{margin-bottom:15px}
+.stay-details-page .detail-search-heading h2{margin:4px 0 0;color:#003580;font-size:clamp(20px,2.5vw,26px);font-weight:600}
+.roomo-search-component-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.roomo-search-component-field{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0;color:#34465b;font-size:11px;font-weight:600}
+.roomo-search-component-field span{display:flex;align-items:center;gap:6px;color:#34465b;font-size:11px;font-weight:600}
+.roomo-search-component-field span i{color:#003580}
+.roomo-search-component-field input,.roomo-search-component-field select{width:100%;min-width:0;min-height:44px;padding:10px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#172b4d;font:inherit;font-size:13px}
+.roomo-search-component-submit{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;min-height:47px;padding:12px 18px;border:0;border-radius:9px;background:#003580;color:#fff;font-size:13px;font-weight:600}
+.roomo-search-component-submit:hover{background:#0f2c59;color:#fff}
+@media(max-width:760px){.stay-details-page .detail-search-section{padding:16px}.roomo-search-component-details{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}}
+@media(max-width:420px){.roomo-search-component-details{grid-template-columns:1fr}.roomo-search-component-submit{grid-column:auto}}
