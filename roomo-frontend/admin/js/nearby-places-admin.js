@@ -4,7 +4,7 @@
   const TOKEN_KEY = "roomoAdminToken";
   const $ = id => document.getElementById(id);
   let token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-  let config = { title: "Explore Places Around Tiruvannamalai", description: "Discover scenic hills, peaceful nature escapes and memorable places to visit during your stay.", places: [] };
+  let config = { title: "Featured Stays", description: "Discover memorable places and scenic escapes to add to your sacred journey.", places: [] };
   let editingId = null;
   function notice(message, type = "info") { const el = $("pageNotice"); el.textContent = message; el.className = "notice show " + type; }
   async function request(options = {}) {
