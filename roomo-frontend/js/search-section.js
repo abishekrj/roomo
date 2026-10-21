@@ -45,7 +45,25 @@
       checkout.min = checkin.value || dateValue(0);
       if (checkout.value && checkin.value && checkout.value <= checkin.value) checkout.value = "";
     });
-    if (target.dataset.searchVariant === "details") {\n      const limits = { adults: [1, 8], children: [0, 6], rooms: [1, 5] };\n      target.querySelectorAll("[onclick^=\\\"updateCount\\\"]").forEach(button => {\n        button.removeAttribute("onclick");\n        button.addEventListener("click", () => {\n          const type = (button.getAttribute("aria-label") || "").match(/adults|children|rooms/i)?.[0]?.toLowerCase();\n          const node = target.querySelector(type === "adults" ? "#adultVal" : type === "children" ? "#childrenVal" : "#roomVal");\n          if (!type || !node) return;\n          const delta = /increase/i.test(button.getAttribute("aria-label") || "") ? 1 : -1;\n          node.textContent = String(Math.max(limits[type][0], Math.min(limits[type][1], Number(node.textContent) + delta)));\n          const label = target.querySelector("#guestsLabel");\n          if (label) label.textContent = `${target.querySelector("#adultVal").textContent} Adults · ${target.querySelector("#childrenVal").textContent} Children · ${target.querySelector("#roomVal").textContent} Room${target.querySelector("#roomVal").textContent === "1" ? "" : "s"}`;\n        });\n      });\n      const triggerInput = (id, input) => target.querySelector("#" + id)?.addEventListener("click", () => { if (!input) return; try { if (input.showPicker) input.showPicker(); else input.click(); } catch (_) { input.click(); } });\n      triggerInput("checkinDateTrigger", checkin); triggerInput("checkoutDateTrigger", checkout);\n      const syncDateLabels = () => { const fmt = value => value ? new Date(value + "T12:00:00").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) : "Select date"; const a=target.querySelector("#checkinDateDisplay"), b=target.querySelector("#checkoutDateDisplay"); if(a)a.textContent=fmt(checkin?.value); if(b)b.textContent=fmt(checkout?.value); };\n      checkin?.addEventListener("change", syncDateLabels); checkout?.addEventListener("change", syncDateLabels); syncDateLabels();\n      target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
+    if (target.dataset.searchVariant === "details") {
+      const limits = { adults: [1, 8], children: [0, 6], rooms: [1, 5] };
+      target.querySelectorAll("[onclick^=\\\"updateCount\\\"]").forEach(button => {
+        button.removeAttribute("onclick");
+        button.addEventListener("click", () => {
+          const type = (button.getAttribute("aria-label") || "").match(/adults|children|rooms/i)?.[0]?.toLowerCase();
+          const node = target.querySelector(type === "adults" ? "#adultVal" : type === "children" ? "#childrenVal" : "#roomVal");
+          if (!type || !node) return;
+          const delta = /increase/i.test(button.getAttribute("aria-label") || "") ? 1 : -1;
+          node.textContent = String(Math.max(limits[type][0], Math.min(limits[type][1], Number(node.textContent) + delta)));
+          const label = target.querySelector("#guestsLabel");
+          if (label) label.textContent = `${target.querySelector("#adultVal").textContent} Adults · ${target.querySelector("#childrenVal").textContent} Children · ${target.querySelector("#roomVal").textContent} Room${target.querySelector("#roomVal").textContent === "1" ? "" : "s"}`;
+        });
+      });
+      const triggerInput = (id, input) => target.querySelector("#" + id)?.addEventListener("click", () => { if (!input) return; try { if (input.showPicker) input.showPicker(); else input.click(); } catch (_) { input.click(); } });
+      triggerInput("checkinDateTrigger", checkin); triggerInput("checkoutDateTrigger", checkout);
+      const syncDateLabels = () => { const fmt = value => value ? new Date(value + "T12:00:00").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) : "Select date"; const a=target.querySelector("#checkinDateDisplay"), b=target.querySelector("#checkoutDateDisplay"); if(a)a.textContent=fmt(checkin?.value); if(b)b.textContent=fmt(checkout?.value); };
+      checkin?.addEventListener("change", syncDateLabels); checkout?.addEventListener("change", syncDateLabels); syncDateLabels();
+      target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
       event.preventDefault();
       const checkinValue = checkin?.value || "";
       const checkoutValue = checkout?.value || "";
@@ -59,12 +77,13 @@
         destination: destination?.value.trim() || "Tiruvannamalai",
         checkin: checkinValue,
         checkout: checkoutValue,
-        adults: adults?.value || "2",
-        children: children?.value || "0",
-        rooms: rooms?.value || "1"
+        adults: (adults?.tagName === "SELECT" ? adults.value : adults?.textContent?.trim()) || "2",
+        children: (children?.tagName === "SELECT" ? children.value : children?.textContent?.trim()) || "0",
+        rooms: (rooms?.tagName === "SELECT" ? rooms.value : rooms?.textContent?.trim()) || "1"
       });
       window.location.href = "roomo-search-results.html?" + query.toString();
-    });
+      });
+    }
     checkout?.addEventListener("change", () => checkout.setCustomValidity(""));
   }
 
