@@ -230,3 +230,35 @@ model GuestFavorite {
   @@index([guestId, createdAt])
   @@map("guest_favorites")
 }
+
+
+model RoomFilterGroup {
+  id        String       @id @default(uuid()) @db.Uuid
+  title     String       @db.VarChar(120)
+  icon      String       @default("bi-sliders") @db.VarChar(60)
+  sortOrder Int          @default(0) @map("sort_order")
+  isActive  Boolean      @default(true) @map("is_active")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  filters   RoomFilter[]
+
+  @@index([isActive, sortOrder])
+  @@map("room_filter_groups")
+}
+
+model RoomFilter {
+  id        String         @id @default(uuid()) @db.Uuid
+  groupId   String         @db.Uuid @map("group_id")
+  label     String         @db.VarChar(160)
+  filterType String        @map("filter_type") @db.VarChar(30)
+  value     String         @db.VarChar(160)
+  sortOrder Int            @default(0) @map("sort_order")
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  group     RoomFilterGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, isActive, sortOrder])
+  @@index([filterType, value])
+  @@map("room_filters")
+}
