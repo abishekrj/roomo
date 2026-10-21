@@ -64,3 +64,16 @@
   margin-left: auto;
   flex-shrink: 0;
 }
+
+
+/* Homepage gallery viewer mirrors the property-details full-screen gallery. */
+.gallery-home-stage { flex: 0 1 auto; }
+.gallery-home-media { display:flex; align-items:center; justify-content:center; width:100%; height:100%; min-width:0; min-height:0; }
+.gallery-home-media img,.gallery-home-media video,.gallery-home-media iframe { display:block; max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; border:0; border-radius:5px; }
+.gallery-home-media iframe { width:min(100%,1100px); aspect-ratio:16/9; height:auto; }
+.gallery-home-media video { width:auto; max-width:100%; max-height:100%; }
+.gallery-home-caption { max-width:min(900px,100%); text-align:center; color:#fff; }
+.gallery-home-caption h3 { margin:0 0 4px; font-size:18px; font-weight:600; }
+.gallery-home-caption p { margin:0; color:rgba(255,255,255,.68); font-size:13px; }
+.gallery-home-thumb-fallback { display:grid; width:100%; height:100%; place-items:center; color:#fff; font-size:24px; }
+@media(max-width:640px) { .gallery-home-stage { height:58vh; } .gallery-home-caption h3 { font-size:15px; } .gallery-home-caption p { font-size:12px; } }
