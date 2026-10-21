@@ -2710,3 +2710,24 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+
+/* Correct stacking without hiding the Search button: suggestions overlay it. */
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm:has(#destinationInput[aria-expanded="true"]) > .row > .col-12.mt-3,
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm:has(#destinationInput[aria-expanded="true"]) > .row > .col-12.mt-3 button[type="submit"] {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+.home-page .home-hero-search #staySearchForm:has(#destinationInput[aria-expanded="true"]) > .row > .col-12.mt-3,
+.home-page .home-hero-search #staySearchForm:has(#destinationInput[aria-expanded="true"]) > .row > .col-12.mt-3 button[type="submit"] {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm > .row > .col-12:first-child {
+  position: relative !important;
+  z-index: 100000 !important;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm > .row > .col-12.mt-3 {
+  position: relative !important;
+  z-index: 0 !important;
+}
