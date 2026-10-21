@@ -72,6 +72,7 @@ model Property {
   areaSquareMeters Decimal?    @db.Decimal(8, 2) @map("area_square_meters")
   bedConfiguration Json         @default("[]") @map("bed_configuration")
   allowPayAtProperty Boolean   @default(false) @map("allow_pay_at_property")
+  noCreditCardRequired Boolean @default(false) @map("no_credit_card_required")
   availabilityCount Int?        @map("availability_count")
   totalUnits    Int            @default(1) @map("total_units")
   amenities     Json           @default("[]")
