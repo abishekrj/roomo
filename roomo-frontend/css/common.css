@@ -2362,38 +2362,41 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 }
 
 
-/* Mobile search results: every stay remains a two-column horizontal card.
-   Keep the photo on the left and all property/price/actions in the right column,
-   including on narrow phones where earlier responsive rules use a single column. */
+
+
+/* Mobile listing cards: use a clean two-column grid with photo above details. */
 @media (max-width: 760px) {
+  body.search-page .listing-view-toolbar { display: none !important; }
   body.search-page #listings.view-list,
   body.search-page #listings.view-grid {
-    display: block !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
   body.search-page #listings .listing,
   body.search-page #listings.view-grid .listing {
-    display: grid !important;
-    grid-template-columns: 108px minmax(0, 1fr) !important;
-    grid-template-rows: auto auto !important;
-    align-items: start !important;
-    column-gap: 12px !important;
-    row-gap: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
     height: auto !important;
-    padding: 10px !important;
-    margin: 0 0 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
   }
   body.search-page #listings .listing .photo,
   body.search-page #listings.view-grid .listing .photo {
-    grid-column: 1 !important;
-    grid-row: 1 / span 2 !important;
-    width: 108px !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    min-height: 132px !important;
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
     margin: 0 !important;
-    align-self: stretch !important;
-    aspect-ratio: auto !important;
+    border-radius: 0 !important;
     overflow: hidden !important;
   }
   body.search-page #listings .listing .photo img,
@@ -2401,42 +2404,79 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     display: block !important;
     width: 100% !important;
     height: 100% !important;
-    min-height: 132px !important;
+    min-height: 0 !important;
     max-height: none !important;
-    aspect-ratio: auto !important;
+    aspect-ratio: 1 / 1 !important;
     object-fit: cover !important;
   }
   body.search-page #listings .listing .main,
   body.search-page #listings.view-grid .listing .main {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
+    flex: 1 1 auto !important;
     min-width: 0 !important;
-    padding: 0 !important;
+    padding: 10px !important;
+  }
+  body.search-page #listings .listing .main h3,
+  body.search-page #listings.view-grid .listing .main h3 {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    margin: 0 0 5px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
   }
   body.search-page #listings .listing .side,
   body.search-page #listings.view-grid .listing .side {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
     justify-content: flex-end !important;
-    gap: 7px !important;
+    gap: 8px !important;
     min-width: 0 !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 0 10px 10px !important;
     border: 0 !important;
     text-align: left !important;
   }
   body.search-page #listings .listing .price-box,
   body.search-page #listings.view-grid .listing .price-box {
-    margin: 0 !important;
     min-width: 0 !important;
+    margin: 0 !important;
     text-align: left !important;
   }
+  body.search-page #listings .listing .price,
+  body.search-page #listings.view-grid .listing .price { font-size: 15px !important; }
   body.search-page #listings .listing .details,
   body.search-page #listings.view-grid .listing .details {
     width: 100% !important;
     min-width: 0 !important;
   }
+  body.search-page #listings .listing .details button,
+  body.search-page #listings .listing .details a,
+  body.search-page #listings.view-grid .listing .details button,
+  body.search-page #listings.view-grid .listing .details a {
+    width: 100% !important;
+    white-space: normal !important;
+    font-size: 12px !important;
+    padding: 8px 6px !important;
+  }
+  body.search-page #listings .listing .perks,
+  body.search-page #listings.view-grid .listing .perks {
+    gap: 4px !important;
+  }
+  body.search-page #listings .listing .perks span,
+  body.search-page #listings.view-grid .listing .perks span {
+    font-size: 10px !important;
+  }
+}
+@media (max-width: 360px) {
+  body.search-page #listings.view-list,
+  body.search-page #listings.view-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  body.search-page #listings .listing .main,
+  body.search-page #listings.view-grid .listing .main { padding: 8px !important; }
+  body.search-page #listings .listing .side,
+  body.search-page #listings.view-grid .listing .side { padding: 0 8px 8px !important; }
 }
