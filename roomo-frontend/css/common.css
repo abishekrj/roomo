@@ -2743,3 +2743,56 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
     font-size: 22px;
   }
 }
+
+
+/* Listing results: keep the title full-width, then align Sort by and View on one row. */
+body.search-page .results-head {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  column-gap: 20px !important;
+  row-gap: 14px !important;
+}
+body.search-page .results-head > div:first-child {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+body.search-page .results-head > .sort {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  justify-self: start !important;
+  margin: 0 !important;
+}
+body.search-page .listing-view-toolbar {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-self: end !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+@media (max-width: 480px) {
+  body.search-page .results-head {
+    column-gap: 10px !important;
+  }
+  body.search-page .results-head > .sort {
+    min-width: 0 !important;
+    font-size: 12px !important;
+  }
+  body.search-page .results-head > .sort select {
+    max-width: 145px !important;
+    font-size: 12px !important;
+  }
+  body.search-page .listing-view-toolbar {
+    gap: 6px !important;
+  }
+  body.search-page .listing-view-label {
+    font-size: 12px !important;
+  }
+  body.search-page .listing-view-button {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
