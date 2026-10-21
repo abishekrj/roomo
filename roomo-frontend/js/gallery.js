@@ -53,42 +53,70 @@
     });
   }
   function activeItems() { return state.items.filter(item => item.type === state.type); }
-  function renderViewer() {
+  function renderViewer(scrollThumb = true) {
     const items = activeItems();
     if (!items.length) return;
     const item = items[state.index];
     const media = $("lightboxMedia");
     const title = $("lightboxTitle");
     const desc = $("lightboxDesc");
-    const caption = title && title.closest(".pt-3");
     const counter = $("lightboxCounter");
     if (!media) return;
     if (item.type === "IMAGE") {
       media.innerHTML = '<img alt="' + escapeHtml(item.title) + '" src="' + escapeHtml(item.mediaUrl) + '">';
     } else if (item.sourceType === "YOUTUBE") {
       const id = youtubeId(item.mediaUrl);
-      media.innerHTML = id ? '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0' + '" title="' + escapeHtml(item.title) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="p-4">This YouTube URL is not valid.</p>';
+      media.innerHTML = id ? '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0" title="' + escapeHtml(item.title) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' : '<p class="p-4 text-white">This YouTube URL is not valid.</p>';
     } else {
       media.innerHTML = '<video controls autoplay playsinline preload="metadata"><source src="' + escapeHtml(item.mediaUrl) + '">Your browser does not support this video.</video>';
       const video = media.querySelector("video");
       if (video) video.play().catch(() => {});
     }
+    const caption = $("lightboxCaption");
     if (caption) caption.hidden = item.type === "VIDEO";
     if (title) title.textContent = item.title || "";
     if (desc) desc.textContent = item.description || "";
-    if (counter) counter.textContent = (state.index + 1) + " of " + items.length;
+    if (counter) counter.textContent = (state.index + 1) + " / " + items.length;
     const disabled = items.length < 2;
     $("galleryPrevious").disabled = disabled;
     $("galleryNext").disabled = disabled;
+    const thumbs = $("galleryViewerThumbnails");
+    if (thumbs) {
+      thumbs.querySelectorAll("[data-gallery-thumb-index]").forEach(button => {
+        const active = Number(button.dataset.galleryThumbIndex) === state.index;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-current", active ? "true" : "false");
+      });
+      if (scrollThumb) thumbs.querySelector('[data-gallery-thumb-index="' + state.index + '"]')?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }
   }
   function openViewer(index) {
+    const items = activeItems();
+    if (!items.length) return;
     state.index = index;
+    const modal = $("galleryLightboxModal");
+    const thumbs = $("galleryViewerThumbnails");
+    if (!modal || !thumbs) return;
+    thumbs.innerHTML = items.map((item, i) => {
+      const preview = previewUrl(item);
+      const fallback = item.type === "VIDEO" ? '<span class="gallery-home-thumb-fallback"><i class="bi bi-play-circle"></i></span>' : "";
+      return '<button type="button" class="property-gallery-thumb' + (i === state.index ? ' active' : '') + '" data-gallery-thumb-index="' + i + '" aria-label="Show ' + (item.type === "IMAGE" ? "image " : "video ") + (i + 1) + '">' + (preview ? '<img loading="lazy" src="' + escapeHtml(preview) + '" alt="' + escapeHtml(item.title) + ' thumbnail">' : fallback) + '</button>';
+    }).join("");
+    thumbs.querySelectorAll("[data-gallery-thumb-index]").forEach(button => button.addEventListener("click", () => {
+      state.index = Number(button.dataset.galleryThumbIndex);
+      renderViewer();
+    }));
+    modal.hidden = false;
+    document.body.classList.add("property-gallery-open");
     renderViewer();
-    const modalEl = $("galleryLightboxModal");
-    if (modalEl && window.bootstrap) {
-      state.modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-      state.modal.show();
-    }
+    $("galleryViewerClose").focus();
+  }
+  function closeViewer() {
+    const modal = $("galleryLightboxModal");
+    if (!modal) return;
+    modal.hidden = true;
+    $("lightboxMedia").innerHTML = "";
+    document.body.classList.remove("property-gallery-open");
   }
   function step(delta) {
     const items = activeItems();
@@ -132,10 +160,14 @@
     document.querySelectorAll("[data-gallery-type]").forEach(button => button.addEventListener("click", () => selectTab(button.dataset.galleryType)));
     $("galleryPrevious").addEventListener("click", () => step(-1));
     $("galleryNext").addEventListener("click", () => step(1));
-    $("galleryLightboxModal").addEventListener("hidden.bs.modal", () => { $("lightboxMedia").innerHTML = ""; });
+    $("galleryViewerClose").addEventListener("click", closeViewer);
+    $("galleryThumbPrev").addEventListener("click", () => $("galleryViewerThumbnails").scrollBy({ left: -Math.max(180, $("galleryViewerThumbnails").clientWidth * .7), behavior: "smooth" }));
+    $("galleryThumbNext").addEventListener("click", () => $("galleryViewerThumbnails").scrollBy({ left: Math.max(180, $("galleryViewerThumbnails").clientWidth * .7), behavior: "smooth" }));
+    $("galleryLightboxModal").addEventListener("click", event => { if (event.target === $("galleryLightboxModal")) closeViewer(); });
     document.addEventListener("keydown", event => {
       const modalEl = $("galleryLightboxModal");
-      if (!modalEl || !modalEl.classList.contains("show")) return;
+      if (!modalEl || modalEl.hidden) return;
+      if (event.key === "Escape") closeViewer();
       if (event.key === "ArrowLeft") step(-1);
       if (event.key === "ArrowRight") step(1);
     });
