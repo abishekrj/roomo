@@ -2585,3 +2585,17 @@ body.nearby-place-modal-open { overflow:hidden; }
   .nearby-place-modal-close { top:10px; right:10px; }
 }
 @media(prefers-reduced-motion:reduce) { .nearby-place-modal-dialog { animation:none; } }
+
+
+/* Shared header: hide on downward scroll and reveal on upward scroll. */
+.heritage-navbar {
+  transition: transform 220ms ease;
+}
+.heritage-navbar.roomo-header-hidden {
+  transform: translateY(calc(-100% - 2px));
+}
+@media (prefers-reduced-motion: reduce) {
+  .heritage-navbar {
+    transition: none;
+  }
+}
