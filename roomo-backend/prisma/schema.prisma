@@ -59,6 +59,7 @@ model Property {
   description   String         @db.Text
   propertyType  String         @map("property_type")
   address       String
+  mapLocation   String?        @map("map_location") @db.VarChar(1000)
   city          String
   state         String
   country       String         @default("India")
