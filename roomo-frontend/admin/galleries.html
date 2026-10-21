@@ -30,13 +30,13 @@
 </div></details>
 <a class="sidebar-link" href="destinations.html"><span class="sidebar-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>Destinations</a>
 <a class="sidebar-link" href="testimonials.html"><span class="sidebar-icon"><i class="bi bi-chat-quote-fill" aria-hidden="true"></i></span>Testimonials</a>
-<a class="sidebar-link" href="galleries.html"><span class="sidebar-icon"><i class="bi bi-images" aria-hidden="true"></i></span>Galleries</a>
+<details class="sidebar-accordion" id="galleryMenu"><summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-images" aria-hidden="true"></i></span><span>Gallery</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary><div class="sidebar-subnav"><a class="sidebar-sublink" href="galleries.html#add-gallery">Add Gallery</a><a class="sidebar-sublink" href="galleries.html#gallery-list">Gallery List</a></div></details>
 <a class="sidebar-link" href="reports.html"><span class="sidebar-icon"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>Reports</a>
 <a class="sidebar-link" href="registered-users.html"><span class="sidebar-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>Registered Users</a>
 </nav></aside>
 <div class="admin-content"><div id="pageNotice" class="notice" role="status"></div>
-<div class="page-heading"><div><h1>Galleries</h1><p class="muted">Manage the Visual Archives images and videos shown on the public homepage.</p></div><a class="button button-secondary" href="../index.html#sacredGallery" target="_blank" rel="noopener">View Visual Archives ↗</a></div>
-<section class="panel"><h2 id="formHeading">Add gallery media</h2><p class="muted small">Images support device upload or image URL. Videos support device upload, direct video URL, or YouTube URL. Maximum uploaded video size is 100 MB.</p>
+<div class="page-heading"><div><h1>Galleries</h1><p class="muted">Add and manage the images and videos shown in Visual Archives on the public homepage.</p></div><a class="button button-secondary" href="../index.html#sacredGallery" target="_blank" rel="noopener">View Visual Archives ↗</a></div>
+<section class="panel" id="add-gallery"><h2 id="formHeading">Add gallery media</h2><p class="muted small">Images support device upload or image URL. Videos support device upload, direct video URL, or YouTube URL. Maximum uploaded video size is 100 MB.</p>
 <form id="galleryForm"><input type="hidden" id="editingId" value="">
 <div class="field-grid">
 <div class="field"><label for="mediaType">Media type</label><select id="mediaType" required><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></div>
@@ -52,7 +52,7 @@
 </div>
 <div class="form-actions"><button class="button button-primary" id="saveMediaButton" type="submit">Save gallery item</button><button class="button button-secondary hidden" id="cancelEditButton" type="button">Cancel edit</button></div>
 </form></section>
-<section class="panel"><div class="section-heading"><div><h2>Visual Archives library</h2><p class="muted small">Edit details, publish, archive or remove media items.</p></div><span id="galleryItemCount" class="muted small"></span></div>
+<section class="panel" id="gallery-list"><div class="section-heading"><div><h2>Gallery List</h2><p class="muted small">Edit details, publish, archive or remove media items.</p></div><span id="galleryItemCount" class="muted small"></span></div>
 <div class="gallery-admin-tabs" role="tablist"><button type="button" class="gallery-admin-tab active" data-admin-type="IMAGE">Images</button><button type="button" class="gallery-admin-tab" data-admin-type="VIDEO">Videos</button></div>
 <div id="galleryAdminList" class="gallery-admin-list"><p class="muted">Loading gallery…</p></div>
 </section>
