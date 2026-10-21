@@ -2587,8 +2587,12 @@ body.nearby-place-modal-open { overflow:hidden; }
 @media(prefers-reduced-motion:reduce) { .nearby-place-modal-dialog { animation:none; } }
 
 
-/* Shared header: hide on downward scroll and reveal on upward scroll. */
+/* Shared header: keep it pinned so it can reappear when the user scrolls upward.
+   The earlier shared-header rule sets position: relative, so override it here. */
 .heritage-navbar {
+  position: sticky !important;
+  top: 0;
+  z-index: 1030;
   transition: transform 220ms ease;
 }
 .heritage-navbar.roomo-header-hidden {
