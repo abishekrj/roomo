@@ -2796,3 +2796,26 @@ body.search-page .listing-view-toolbar {
     padding-right: 8px !important;
   }
 }
+
+
+/* Keep Sort by and the List/Grid controls together on a single row. */
+body.search-page .results-head {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+body.search-page .results-head > .sort {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+}
+body.search-page .listing-view-toolbar {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+body.search-page .listing-view-switch {
+  display: inline-flex !important;
+  flex-wrap: nowrap !important;
+}
+body.search-page .listing-view-button {
+  white-space: nowrap !important;
+}
