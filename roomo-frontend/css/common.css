@@ -2480,3 +2480,15 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   body.search-page #listings .listing .side,
   body.search-page #listings.view-grid .listing .side { padding: 0 8px 8px !important; }
 }
+
+
+/* Reduce the Upcoming Festival heading size. */
+#homeFestivalTitle {
+  font-size: clamp(1.65rem, 2.5vw, 2.35rem) !important;
+  line-height: 1.2;
+}
+@media (max-width: 760px) {
+  #homeFestivalTitle {
+    font-size: 1.65rem !important;
+  }
+}
