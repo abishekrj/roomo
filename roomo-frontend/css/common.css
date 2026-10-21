@@ -2295,17 +2295,68 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   .search-page #listings.view-grid,
   .search-page #listings.view-list{display:block}
   .search-page #listings .listing,
-  .search-page #listings.view-grid .listing{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;padding:11px;margin:0 0 12px;height:auto}
+  .search-page #listings.view-grid .listing{
+    display:grid;
+    grid-template-columns:112px minmax(0,1fr);
+    grid-template-rows:auto auto;
+    gap:8px 12px;
+    padding:11px;
+    margin:0 0 12px;
+    height:auto;
+    align-items:start;
+  }
   .search-page #listings .listing .photo,
-  .search-page #listings.view-grid .listing .photo{grid-column:1/-1;width:calc(100% + 22px);height:190px;min-height:190px;max-height:190px;margin:-11px -11px 0;border-radius:0!important}
+  .search-page #listings.view-grid .listing .photo{
+    grid-column:1;
+    grid-row:1 / span 2;
+    align-self:stretch;
+    width:112px;
+    height:100%;
+    min-height:132px;
+    max-height:none;
+    margin:0;
+    border-radius:8px!important;
+    overflow:hidden;
+  }
   .search-page #listings .listing .photo img,
-  .search-page #listings.view-grid .listing .photo img{height:100%;min-height:0;max-height:none;width:100%;object-fit:cover}
+  .search-page #listings.view-grid .listing .photo img{
+    display:block;
+    width:100%;
+    height:100%;
+    min-height:132px;
+    max-height:none;
+    object-fit:cover;
+  }
   .search-page #listings .listing .main,
-  .search-page #listings.view-grid .listing .main{padding:2px 1px}
+  .search-page #listings.view-grid .listing .main{
+    grid-column:2;
+    grid-row:1;
+    min-width:0;
+    padding:0;
+  }
+  .search-page #listings .listing .main h3,
+  .search-page #listings.view-grid .listing .main h3{font-size:15px;line-height:1.35;margin-bottom:5px}
   .search-page #listings .listing .side,
-  .search-page #listings.view-grid .listing .side{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0 0;border-top:1px solid #edf0f2;border-left:0;text-align:left}
+  .search-page #listings.view-grid .listing .side{
+    grid-column:2;
+    grid-row:2;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-end;
+    gap:8px;
+    min-width:0;
+    margin:0;
+    padding:0;
+    border:0;
+    text-align:left;
+  }
   .search-page #listings .listing .price-box,
-  .search-page #listings.view-grid .listing .price-box{margin:0;text-align:left}
+  .search-page #listings.view-grid .listing .price-box{margin:0;text-align:left;min-width:0}
+  .search-page #listings .listing .price,
+  .search-page #listings.view-grid .listing .price{font-size:16px}
   .search-page #listings .listing .details,
-  .search-page #listings.view-grid .listing .details{width:auto;min-width:110px}
+  .search-page #listings.view-grid .listing .details{width:100%;min-width:0}
+  .search-page #listings .listing .perks,
+  .search-page #listings.view-grid .listing .perks{gap:4px}
 }
