@@ -391,9 +391,21 @@ router.post("/owners", async (req, res, next) => {
     fullName: z.string().trim().min(2).max(100),
     email: z.string().trim().email().max(254),
     password: z.string().min(12).max(72),
-    phoneNumber: z.string().trim().regex(/^\\+[1-9]\\d{7,14}$/).optional().or(z.literal("")),
+    phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/).optional().or(z.literal("")),
   }).safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Enter a name, valid email, password of at least 12 characters, and optional phone with country code." });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const fieldMessages = {
+      fullName: "Enter the owner's full name (at least 2 characters).",
+      email: "Enter a valid email address.",
+      password: "Use a password between 12 and 72 characters.",
+      phoneNumber: "Enter the phone with country code, for example +919876543210, or leave it blank.",
+    };
+    return res.status(400).json({
+      message: fieldMessages[issue.path[0]] || "Please check the owner details.",
+      field: issue.path[0] || null,
+    });
+  }
   try {
     const owner = await prisma.owner.create({
       data: {
