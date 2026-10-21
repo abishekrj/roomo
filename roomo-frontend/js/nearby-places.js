@@ -23,7 +23,7 @@
     const next = document.getElementById("nearbyPlacesNext");
     if (!section || !track || !title || !description) return;
     const places = Array.isArray(config?.places) ? config.places.filter(place => place && place.visible !== false).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) : [];
-    title.textContent = config?.title || DEFAULT_CONFIG.title;
+    title.textContent = !config?.title || config.title === "Explore Places Around Tiruvannamalai" ? DEFAULT_CONFIG.title : config.title;
     description.textContent = config?.description || DEFAULT_CONFIG.description;
     if (!places.length) { section.hidden = true; return; }
     section.hidden = false;
@@ -53,7 +53,7 @@
       const card = track.querySelector(".nearby-place-card");
       const styles = getComputedStyle(track);
       const gap = parseFloat(styles.columnGap || styles.gap) || 16;
-      const count = window.innerWidth <= 575 ? 1 : window.innerWidth <= 991 ? 2 : 4;
+      const count = 1;
       track.scrollBy({ left: direction * (card ? (card.getBoundingClientRect().width + gap) * count : track.clientWidth), behavior: "smooth" });
     };
     if (prev) prev.onclick = () => scrollTrack(-1);
