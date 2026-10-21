@@ -278,3 +278,18 @@ model ListingDisplayConfig {
   updatedAt DateTime @updatedAt @map("updated_at")
   @@map("listing_display_config")
 }
+
+
+model CMSPage {
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique @db.VarChar(180)
+  draft          Json
+  published      Json?
+  isPublished    Boolean  @default(false) @map("is_published")
+  publishedAt    DateTime? @map("published_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([isPublished, updatedAt])
+  @@map("cms_pages")
+}

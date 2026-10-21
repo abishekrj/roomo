@@ -47,6 +47,28 @@
     if (legal) { legal.replaceChildren(); (links.legal || []).forEach(item => legal.appendChild(makeLink(item))); }
 
   }
+  async function loadCmsGuideLinks() {
+    try {
+      const response = await fetch(API.replace("/homepage", "/cms-pages"), {cache:"no-store"});
+      if (!response.ok) return;
+      const data = await response.json();
+      const pages = Array.isArray(data.pages) ? data.pages : [];
+      const footer = document.querySelector("footer.temple-granite-footer");
+      const list = footer?.querySelectorAll(".row.g-4.mb-4 > div")[1]?.querySelector("ul");
+      if (!list || !pages.length) return;
+      pages.forEach(page => {
+        if (!page.slug || !page.title) return;
+        const fixedSlugs = new Set(["hotels-near-arunachaleswarar-temple","stays-near-sri-ramanasramam","budget-rooms-in-tiruvannamalai","family-stays-for-girivalam","monthly-stays-in-tiruvannamalai"]);
+        const url = fixedSlugs.has(page.slug) ? page.slug + ".html" : "cms-page.html?slug=" + encodeURIComponent(page.slug);
+        if ([...list.querySelectorAll("a")].some(a => a.getAttribute("href") === url)) return;
+        const li = document.createElement("li");
+        li.appendChild(makeLink({label:page.title,url}));
+        list.appendChild(li);
+      });
+    } catch (error) {
+      console.warn("ROOMO CMS guide links are temporarily unavailable.", error);
+    }
+  }
   async function updateVisitorCount() {
     const container = document.getElementById("visitorCountContainer");
     const value = document.getElementById("visitorCountValue");
@@ -79,6 +101,7 @@
         const response = await fetch(API, {cache:"no-store"});
         if (response.ok) { const data = await response.json(); apply(data.content || {}); }
       } catch (error) { console.warn("ROOMO footer settings unavailable; showing default footer links.", error); }
+      await loadCmsGuideLinks();
     } catch (error) {
       console.error("ROOMO shared footer could not load.", error);
     }
