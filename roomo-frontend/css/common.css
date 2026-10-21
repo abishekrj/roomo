@@ -2480,22 +2480,3 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   body.search-page #listings .listing .side,
   body.search-page #listings.view-grid .listing .side { padding: 0 8px 8px !important; }
 }
-
-
-/* Desktop grid cards: keep the key booking details and hide secondary copy to reduce card height. */
-@media (min-width: 761px) {
-  .search-page #listings.view-grid .listing .desc,
-  .search-page #listings.view-grid .listing .features,
-  .search-page #listings.view-grid .listing .perks {
-    display: none !important;
-  }
-  .search-page #listings.view-grid .listing .location {
-    margin-bottom: 6px;
-  }
-  .search-page #listings.view-grid .listing .rating-line {
-    margin: 6px 0 0;
-  }
-  .search-page #listings.view-grid .listing .main {
-    padding: 12px;
-  }
-}
