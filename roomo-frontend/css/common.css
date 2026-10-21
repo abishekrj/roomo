@@ -2228,3 +2228,14 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .stay-details-page .detail-address-map-link { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 9px 12px; color: #1d4e89; font-size: 12px; font-weight: 700; text-decoration: none; }
 .stay-details-page .detail-address-map-link:hover { background: #f4f8fb; text-decoration: underline; }
 @media (max-width: 760px) { .stay-details-page .detail-address-map iframe { height: 190px; } }
+
+
+/* Keep the booking / “Your sacred stay” card visible while scrolling the property details page. */
+@media (min-width: 761px) {
+  .stay-details-page .detail-sidebar .detail-booking {
+    position: sticky;
+    top: 20px;
+    z-index: 5;
+    align-self: start;
+  }
+}
