@@ -206,8 +206,11 @@ model Reservation {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   guest           GuestUser         @relation(fields: [guestId], references: [id], onDelete: Restrict)
   property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  roomTypeId      String?           @db.Uuid @map("room_type_id")
+  roomType        RoomType?         @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
   notifications   NotificationLog[]
 
+  @@index([roomTypeId, checkIn, checkOut, status])
   @@index([propertyId, checkIn, checkOut, status])
   @@index([guestId, createdAt])
   @@map("reservations")
