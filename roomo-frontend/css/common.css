@@ -2284,3 +2284,28 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   .search-page #listings.view-grid .listing .price-box{margin:0;text-align:left}
   .search-page #listings.view-grid .listing .details{width:auto;min-width:110px}
 }
+
+
+/* Three property cards per row on desktop; mobile always uses list layout. */
+@media(min-width:1081px){
+  .search-page #listings.view-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .search-page .listing-view-toolbar{display:none!important}
+  .search-page #listings.view-grid,
+  .search-page #listings.view-list{display:block}
+  .search-page #listings .listing,
+  .search-page #listings.view-grid .listing{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;padding:11px;margin:0 0 12px;height:auto}
+  .search-page #listings .listing .photo,
+  .search-page #listings.view-grid .listing .photo{grid-column:1/-1;width:calc(100% + 22px);height:190px;min-height:190px;max-height:190px;margin:-11px -11px 0;border-radius:0!important}
+  .search-page #listings .listing .photo img,
+  .search-page #listings.view-grid .listing .photo img{height:100%;min-height:0;max-height:none;width:100%;object-fit:cover}
+  .search-page #listings .listing .main,
+  .search-page #listings.view-grid .listing .main{padding:2px 1px}
+  .search-page #listings .listing .side,
+  .search-page #listings.view-grid .listing .side{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0 0;border-top:1px solid #edf0f2;border-left:0;text-align:left}
+  .search-page #listings .listing .price-box,
+  .search-page #listings.view-grid .listing .price-box{margin:0;text-align:left}
+  .search-page #listings .listing .details,
+  .search-page #listings.view-grid .listing .details{width:auto;min-width:110px}
+}
