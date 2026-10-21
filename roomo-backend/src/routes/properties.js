@@ -26,6 +26,75 @@ const propertyInput = z.object({
   imageUrls: z.array(z.string().url().max(2000)).max(10).default([]),
 });
 
+
+const ownerPropertyEditSchema = z.object({
+  title: z.string().trim().min(5).max(150),
+  description: z.string().trim().min(20).max(5000),
+  address: z.string().trim().min(5).max(250),
+  city: z.string().trim().min(2).max(100),
+  state: z.string().trim().min(2).max(100),
+  postalCode: z.string().trim().max(20).optional().nullable(),
+  mapLocation: z.string().trim().max(1000).optional().nullable(),
+  nightlyPrice: z.coerce.number().positive().max(10000000),
+  maxGuests: z.coerce.number().int().min(1).max(100),
+  bedrooms: z.coerce.number().int().min(1).max(100),
+  bathrooms: z.coerce.number().int().min(1).max(100),
+  amenities: z.array(z.string().trim().min(1).max(100)).max(100).default([]),
+  imageUrls: z.array(z.string().url().max(2000)).max(10).default([]),
+});
+
+// Owners can see only their own properties, including drafts.
+router.get("/owner", authenticateToken, async (req, res, next) => {
+  try {
+    const properties = await prisma.property.findMany({
+      where: { ownerId: req.owner.sub },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json({ properties });
+  } catch (error) { next(error); }
+});
+
+// Owner edits are disabled by default and must be enabled by an administrator.
+router.patch("/owner/:id", authenticateToken, async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const parsed = ownerPropertyEditSchema.safeParse(req.body);
+  if (!id.success || !parsed.success) {
+    return res.status(400).json({ message: "Please check the property details." });
+  }
+  try {
+    const owner = await prisma.owner.findUnique({
+      where: { id: req.owner.sub },
+      select: { role: true, canEditProperties: true },
+    });
+    if (!owner || owner.role !== "OWNER") return res.status(403).json({ message: "Owner account required." });
+    if (!owner.canEditProperties) return res.status(403).json({ message: "Property editing is currently disabled by ROOMO administration." });
+    const existing = await prisma.property.findFirst({ where: { id: id.data, ownerId: req.owner.sub }, select: { id: true } });
+    if (!existing) return res.status(404).json({ message: "Property not found in your owner account." });
+    const data = parsed.data;
+    const property = await prisma.$transaction(async (tx) => {
+      await tx.property.update({
+        where: { id: id.data },
+        data: {
+          title: data.title, description: data.description, address: data.address,
+          city: data.city, state: data.state, postalCode: data.postalCode || null,
+          mapLocation: data.mapLocation || null, nightlyPrice: data.nightlyPrice,
+          maxGuests: data.maxGuests, bedrooms: data.bedrooms, bathrooms: data.bathrooms,
+          amenities: data.amenities,
+        },
+      });
+      await tx.propertyImage.deleteMany({ where: { propertyId: id.data } });
+      if (data.imageUrls.length) {
+        await tx.propertyImage.createMany({
+          data: data.imageUrls.map((imageUrl, index) => ({ propertyId: id.data, imageUrl, sortOrder: index })),
+        });
+      }
+      return tx.property.findUnique({ where: { id: id.data }, include: { images: { orderBy: { sortOrder: "asc" } } } });
+    });
+    res.json({ message: "Property details saved.", property });
+  } catch (error) { next(error); }
+});
+
 // GET /api/properties
 // Publicly show published stays only.
 router.get("/", async (req, res, next) => {

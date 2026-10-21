@@ -521,6 +521,7 @@
                 <th>Guests</th>
                 <th>Status</th>
                 <th>Google Maps URL</th>
+                <th>Assign owner</th>
                 <th>Change status</th>
               </tr>
             </thead>
@@ -529,6 +530,28 @@
           <div id="emptyState" class="empty-state hidden">
             No properties yet. Use the form above to create your first listing.
           </div>
+        </div>
+      </section>
+
+      <section class="panel" id="ownerManagementPanel">
+        <div class="section-heading">
+          <div><h2>Owner accounts</h2><p class="muted small">Control whether each owner may edit their own property details.</p></div>
+          <button class="button button-secondary" id="refreshOwnersButton" type="button">Refresh owners</button>
+        </div>
+
+        <form id="createOwnerForm" class="field-grid" style="margin:18px 0 24px;padding:16px;border:1px solid var(--border);border-radius:9px">
+          <div class="field"><label for="newOwnerName">Owner full name</label><input id="newOwnerName" required minlength="2" maxlength="100"></div>
+          <div class="field"><label for="newOwnerEmail">Owner email</label><input id="newOwnerEmail" type="email" required maxlength="254"></div>
+          <div class="field"><label for="newOwnerPassword">Temporary password</label><input id="newOwnerPassword" type="password" required minlength="12" maxlength="72" autocomplete="new-password"><span class="field-help">At least 12 characters. Share it securely with the owner.</span></div>
+          <div class="field"><label for="newOwnerPhone">Phone (optional, country code)</label><input id="newOwnerPhone" type="tel" placeholder="+919876543210"></div>
+          <div class="field full"><button class="button button-primary" id="createOwnerButton" type="submit">Create owner account</button></div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Owner</th><th>Email</th><th>Properties</th><th>Property editing</th></tr></thead>
+            <tbody id="ownerTableBody"></tbody>
+          </table>
+          <div id="ownersEmptyState" class="empty-state hidden">No owner accounts have registered yet.</div>
         </div>
       </section>
     </section>
@@ -545,6 +568,7 @@
 
       let token = sessionStorage.getItem(TOKEN_KEY);
       let properties = [];
+      let owners = [];
       let noticeTimer;
 
       function showNotice(id, message, type = "info") {
@@ -616,6 +640,7 @@
           $("loginSection").classList.add("hidden");
           $("dashboardSection").classList.remove("hidden");
           $("logoutButton").classList.remove("hidden");
+          await loadOwners();
           return true;
         } catch (error) {
           clearSession();
@@ -777,6 +802,39 @@
           mapCell.append(mapInput, mapSave);
           row.appendChild(mapCell);
 
+
+          const ownerCell = document.createElement("td");
+          const ownerSelect = document.createElement("select");
+          ownerSelect.setAttribute("aria-label", "Assign owner for " + property.title);
+          const unassignedOption = document.createElement("option");
+          unassignedOption.value = "";
+          unassignedOption.textContent = "Select owner";
+          ownerSelect.appendChild(unassignedOption);
+          for (const owner of owners) {
+            const option = document.createElement("option");
+            option.value = owner.id;
+            option.textContent = owner.fullName + " (" + owner.email + ")";
+            option.selected = property.owner?.id === owner.id;
+            ownerSelect.appendChild(option);
+          }
+          ownerSelect.addEventListener("change", async () => {
+            if (!ownerSelect.value) return;
+            ownerSelect.disabled = true;
+            try {
+              const result = await request("/admin/properties/" + encodeURIComponent(property.id) + "/owner", {
+                method: "PATCH", body: JSON.stringify({ ownerId: ownerSelect.value }),
+              });
+              showNotice("dashboardNotice", result.message, "success");
+              await loadProperties();
+              await loadOwners();
+            } catch (error) {
+              showNotice("dashboardNotice", error.message, "error");
+              await loadProperties();
+            } finally { ownerSelect.disabled = false; }
+          });
+          ownerCell.appendChild(ownerSelect);
+          row.appendChild(ownerCell);
+
           const actionCell = document.createElement("td");
           const select = document.createElement("select");
           select.className = "status-select";
@@ -818,6 +876,87 @@
           tbody.appendChild(row);
         }
       }
+
+
+      $("createOwnerForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = $("createOwnerButton");
+        button.disabled = true;
+        try {
+          const result = await request("/admin/owners", {
+            method: "POST",
+            body: JSON.stringify({
+              fullName: $("newOwnerName").value.trim(),
+              email: $("newOwnerEmail").value.trim(),
+              password: $("newOwnerPassword").value,
+              phoneNumber: $("newOwnerPhone").value.trim(),
+            }),
+          });
+          $("createOwnerForm").reset();
+          showNotice("dashboardNotice", result.message, "success");
+          await loadOwners();
+          await loadProperties();
+        } catch (error) {
+          showNotice("dashboardNotice", error.message, "error");
+        } finally { button.disabled = false; }
+      });
+
+      async function loadOwners() {
+        const tbody = $("ownerTableBody");
+        if (!tbody) return;
+        tbody.replaceChildren();
+        try {
+          const result = await request("/admin/owners");
+          owners = Array.isArray(result.owners) ? result.owners : [];
+          $("ownersEmptyState").classList.toggle("hidden", owners.length > 0);
+          for (const owner of owners) {
+            const row = document.createElement("tr");
+            const ownerCell = document.createElement("td");
+            const ownerName = document.createElement("strong");
+            ownerName.textContent = owner.fullName || "Owner";
+            const joined = document.createElement("div");
+            joined.className = "property-location";
+            joined.textContent = owner.phoneNumber || "No phone number";
+            ownerCell.append(ownerName, joined);
+            row.appendChild(ownerCell);
+            appendCell(row, owner.email);
+            appendCell(row, owner._count?.properties ?? 0);
+            const permissionCell = document.createElement("td");
+            const label = document.createElement("label");
+            label.style.cssText = "display:flex;align-items:center;gap:8px;margin:0";
+            const toggle = document.createElement("input");
+            toggle.type = "checkbox";
+            toggle.checked = Boolean(owner.canEditProperties);
+            toggle.style.cssText = "width:18px;height:18px;margin:0";
+            toggle.setAttribute("aria-label", "Allow property editing for " + owner.fullName);
+            const state = document.createElement("span");
+            state.textContent = toggle.checked ? "Enabled" : "View only";
+            toggle.addEventListener("change", async () => {
+              toggle.disabled = true;
+              try {
+                const updated = await request("/admin/owners/" + encodeURIComponent(owner.id) + "/property-edit-permission", {
+                  method: "PATCH",
+                  body: JSON.stringify({ canEditProperties: toggle.checked }),
+                });
+                state.textContent = updated.owner.canEditProperties ? "Enabled" : "View only";
+                showNotice("dashboardNotice", updated.message, "success");
+              } catch (error) {
+                toggle.checked = !toggle.checked;
+                state.textContent = toggle.checked ? "Enabled" : "View only";
+                showNotice("dashboardNotice", error.message, "error");
+              } finally { toggle.disabled = false; }
+            });
+            label.append(toggle, state);
+            permissionCell.appendChild(label);
+            row.appendChild(permissionCell);
+            tbody.appendChild(row);
+          }
+        } catch (error) {
+          showNotice("dashboardNotice", "Unable to load owner accounts: " + error.message, "error");
+        }
+      }
+
+      $("refreshOwnersButton")?.addEventListener("click", loadOwners);
 
       async function loadProperties() {
         $("refreshButton").disabled = true;

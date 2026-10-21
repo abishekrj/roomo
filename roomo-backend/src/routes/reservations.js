@@ -166,7 +166,7 @@ router.get("/owner", authenticateToken, async (req, res, next) => {
     const reservations = await prisma.reservation.findMany({
       where: { property: { ownerId: req.owner.sub } },
       include: {
-        guest: { select: { id: true, fullName: true, email: true } },
+        guest: { select: { id: true, fullName: true, email: true, phoneNumber: true } },
         property: { select: { id: true, title: true, city: true, address: true } },
       },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],

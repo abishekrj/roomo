@@ -4,6 +4,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateToken = require("../middleware/auth");
@@ -381,6 +382,86 @@ router.patch("/properties/:id/status", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+
+
+router.post("/owners", async (req, res, next) => {
+  const parsed = z.object({
+    fullName: z.string().trim().min(2).max(100),
+    email: z.string().trim().email().max(254),
+    password: z.string().min(12).max(72),
+    phoneNumber: z.string().trim().regex(/^\\+[1-9]\\d{7,14}$/).optional().or(z.literal("")),
+  }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ message: "Enter a name, valid email, password of at least 12 characters, and optional phone with country code." });
+  try {
+    const owner = await prisma.owner.create({
+      data: {
+        fullName: parsed.data.fullName,
+        email: parsed.data.email.toLowerCase(),
+        phoneNumber: parsed.data.phoneNumber || null,
+        passwordHash: await bcrypt.hash(parsed.data.password, 12),
+        role: "OWNER",
+        canEditProperties: false,
+      },
+      select: { id: true, fullName: true, email: true, phoneNumber: true, canEditProperties: true, createdAt: true },
+    });
+    res.status(201).json({ message: "Owner account created. Share the sign-in details securely with the owner.", owner });
+  } catch (error) {
+    if (error.code === "P2002") return res.status(409).json({ message: "An account with this email or phone number already exists." });
+    next(error);
+  }
+});
+
+router.patch("/properties/:id/owner", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const body = z.object({ ownerId: z.string().uuid() }).safeParse(req.body);
+  if (!id.success || !body.success) return res.status(400).json({ message: "Choose a valid property and owner." });
+  try {
+    const owner = await prisma.owner.findFirst({ where: { id: body.data.ownerId, role: "OWNER" }, select: { id: true } });
+    if (!owner) return res.status(404).json({ message: "Owner account not found." });
+    const property = await prisma.property.update({
+      where: { id: id.data },
+      data: { ownerId: owner.id },
+      select: { id: true, title: true, owner: { select: { id: true, fullName: true, email: true } } },
+    }).catch(error => error.code === "P2025" ? null : Promise.reject(error));
+    if (!property) return res.status(404).json({ message: "Property not found." });
+    res.json({ message: "Property assigned to " + property.owner.fullName + ".", property });
+  } catch (error) { next(error); }
+});
+
+router.get("/owners", async (req, res, next) => {
+  try {
+    const owners = await prisma.owner.findMany({
+      where: { role: "OWNER" },
+      select: {
+        id: true, fullName: true, email: true, phoneNumber: true,
+        canEditProperties: true, createdAt: true,
+        _count: { select: { properties: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json({ owners });
+  } catch (error) { next(error); }
+});
+
+router.patch("/owners/:id/property-edit-permission", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const body = z.object({ canEditProperties: z.boolean() }).safeParse(req.body);
+  if (!id.success || !body.success) return res.status(400).json({ message: "Choose a valid owner and permission value." });
+  try {
+    const owner = await prisma.owner.findFirst({
+      where: { id: id.data, role: "OWNER" },
+      select: { id: true },
+    });
+    if (!owner) return res.status(404).json({ message: "Owner account not found." });
+    const updated = await prisma.owner.update({
+      where: { id: owner.id },
+      data: { canEditProperties: body.data.canEditProperties },
+      select: { id: true, fullName: true, canEditProperties: true },
+    });
+    res.json({ message: updated.canEditProperties ? "Property editing enabled for this owner." : "Property editing disabled for this owner.", owner: updated });
+  } catch (error) { next(error); }
 });
 
 module.exports = router;
