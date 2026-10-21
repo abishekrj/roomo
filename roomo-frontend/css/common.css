@@ -2075,3 +2075,125 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   .home-page .roomo-hero-content h1 { max-width: 100%; }
   .home-page .roomo-hero-caption { display: none; }
 }
+
+
+/* Homepage-only hero search: stacked controls in a 420px left-side panel. */
+.home-page .roomo-hero-slide {
+  align-items: stretch;
+  min-height: clamp(760px, 66vw, 900px);
+}
+.home-page .roomo-hero-content {
+  width: min(100%, 1320px);
+  max-width: 1320px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 38px;
+  padding-bottom: 64px;
+}
+.home-page .roomo-hero-content > :not(.home-hero-search) {
+  max-width: 420px;
+}
+.home-page .home-hero-search {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 8px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 12px 34px rgba(15,35,50,.18);
+  backdrop-filter: blur(8px);
+}
+.home-page .home-hero-search .monolithic-search-engine {
+  width: 100%;
+  padding: 0 !important;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-page .home-hero-search #staySearchForm > .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+}
+.home-page .home-hero-search #staySearchForm > .row > [class*="col-"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+.home-page .home-hero-search .heritage-input-box {
+  min-height: 62px;
+  padding: 11px 12px !important;
+  border: 1px solid #d6dee7;
+  border-radius: 8px;
+  background: #fff;
+}
+.home-page .home-hero-search .roomo-date-range-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.home-page .home-hero-search .roomo-date-endpoint {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.home-page .home-hero-search .roomo-date-range-divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 5px 0;
+  background: #e2e8f0;
+}
+.home-page .home-hero-search #staySearchForm > .row > .col-12.mt-3 {
+  margin-top: 0 !important;
+}
+.home-page .home-hero-search #staySearchForm button[type="submit"] {
+  min-height: 50px;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+}
+.home-page .home-hero-search .destination-suggestions {
+  z-index: 50;
+}
+@media (max-width: 767.98px) {
+  /* Keep search usable on mobile while honoring the existing mobile hero-hide behavior. */
+  .home-page .roomo-home-hero {
+    display: block;
+    overflow: visible;
+    background: transparent;
+  }
+  .home-page .roomo-hero-slide {
+    min-height: 0;
+    background: none !important;
+  }
+  .home-page .roomo-hero-shade,
+  .home-page .roomo-hero-content > :not(.home-hero-search),
+  .home-page .roomo-hero-caption,
+  .home-page .roomo-hero-slider-controls {
+    display: none !important;
+  }
+  .home-page .roomo-hero-content {
+    display: block;
+    width: 100%;
+    padding: 0 12px 16px;
+  }
+  .home-page .home-hero-search {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 12px;
+    box-shadow: 0 6px 20px rgba(15,35,50,.1);
+  }
+}
