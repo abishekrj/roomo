@@ -26,6 +26,8 @@
     const footer = document.querySelector("footer.temple-granite-footer");
     if (!footer) return;
     const links = {...defaults, ...(content.footerLinks || {})};
+    // These five CMS landing pages replace the legacy sanctuary links, even when older footer settings are saved in the database.
+    links.sanctuaries = defaults.sanctuaries;
     const columns = footer.querySelectorAll(".row.g-4.mb-4 > div");
     if (columns[0]) {
       const social = columns[0].querySelector(".d-flex.gap-3.fs-5.mt-3");
