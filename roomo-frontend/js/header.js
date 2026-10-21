@@ -152,6 +152,36 @@
     }
   }
 
+  // Keep the shared header visible while scrolling up and tuck it away while scrolling down.
+  function initScrollAwareHeader() {
+    if (window.__roomoScrollHeaderInitialized) return;
+    window.__roomoScrollHeaderInitialized = true;
+    let lastScrollY = Math.max(0, window.scrollY || 0);
+    let ticking = false;
+    const updateHeader = () => {
+      const header = document.querySelector(".heritage-navbar");
+      const currentY = Math.max(0, window.scrollY || 0);
+      if (header) {
+        if (currentY <= 80) {
+          header.classList.remove("roomo-header-hidden");
+        } else if (currentY > lastScrollY + 4) {
+          header.classList.add("roomo-header-hidden");
+        } else if (currentY < lastScrollY - 4) {
+          header.classList.remove("roomo-header-hidden");
+        }
+      }
+      lastScrollY = currentY;
+      ticking = false;
+    };
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(updateHeader);
+      }
+    }, { passive: true });
+    window.addEventListener("resize", updateHeader, { passive: true });
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     const placeholder = document.getElementById("roomoHeader");
     if (!placeholder) return;
@@ -160,6 +190,7 @@
       const response = await fetch("components/header.html", { cache: "no-cache" });
       if (!response.ok) throw new Error("Header component returned HTTP " + response.status);
       placeholder.outerHTML = await response.text();
+      initScrollAwareHeader();
       applyConfiguredSiteLogo();
       initRoomoGoogleTranslate();
       setReturnToOnAuthLinks();
