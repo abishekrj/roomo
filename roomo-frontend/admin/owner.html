@@ -6,6 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/admin.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><script src="../js/favicon.js"></script>
 <style>
+.owner-section{display:none}.owner-section.is-active{display:block}.owner-subnav .sidebar-sublink.active{font-weight:700;color:var(--primary,#183B56)}
 .owner-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.owner-form-grid .full{grid-column:1/-1}.owner-permission{display:flex;align-items:center;gap:8px}.owner-permission input{width:18px;height:18px}.inline-select{min-width:220px;max-width:100%}.helper{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
 @media(max-width:640px){.owner-form-grid{grid-template-columns:1fr}.owner-form-grid .full{grid-column:auto}.inline-select{min-width:180px}}
 </style>
@@ -14,7 +15,7 @@
 <header class="topbar"><div class="brand">ROOMO<span>PROPERTY MANAGEMENT</span></div><button id="logoutButton" class="button button-secondary" type="button">Sign out</button></header>
 <main class="page"><div class="admin-shell"><aside class="admin-sidebar"><div class="sidebar-brand">ROOMO</div><div class="sidebar-subtitle">ADMIN PANEL</div><div class="sidebar-label">WORKSPACE</div><nav class="sidebar-nav" aria-label="Admin navigation">
 <a class="sidebar-link" href="dashboard.html"><span class="sidebar-icon"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>Dashboard</a>
-<a class="sidebar-link active" href="owner.html"><span class="sidebar-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>Owners</a>
+<details class="sidebar-accordion" open><summary class="sidebar-link sidebar-accordion-trigger active"><span class="sidebar-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span><span>Owner</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary><div class="sidebar-subnav owner-subnav"><a class="sidebar-sublink" href="owner.html#create-owner" data-owner-view="create-owner">Create Owner</a><a class="sidebar-sublink" href="owner.html#owners-list" data-owner-view="owners-list">Owners List</a><a class="sidebar-sublink" href="owner.html#assign-properties" data-owner-view="assign-properties">Assign Properties</a></div></details>
 <details class="sidebar-accordion">
 <summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-houses-fill" aria-hidden="true"></i></span><span>Rooms</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary>
 <div class="sidebar-subnav">
@@ -44,7 +45,7 @@
 <div class="admin-content">
 <div id="pageNotice" class="notice" role="status"></div>
 <div class="page-heading"><div><h1>Owner management</h1><p class="muted">Create owner logins, assign properties, and control property-editing access.</p></div><button id="refreshButton" class="button button-secondary" type="button">Refresh owners</button></div>
-<section class="panel">
+<section class="panel owner-section" id="create-owner" data-owner-section="create-owner">
 <div class="section-heading"><div><h2>Create an owner account</h2><p class="muted small">The owner can use these credentials to sign in to the Owner Dashboard.</p></div></div>
 <form id="createOwnerForm" class="owner-form-grid">
 <div class="field"><label for="ownerName">Owner full name *</label><input id="ownerName" required minlength="2" maxlength="100" autocomplete="name"></div>
@@ -54,9 +55,9 @@
 <div class="full"><button id="createOwnerButton" class="button button-primary" type="submit">Create owner account</button></div>
 </form>
 </section>
-<section class="panel"><div class="section-heading"><div><h2>Owner accounts</h2><p class="muted small">Assign each property to its owner and enable editing only when permitted.</p></div></div>
+<section class="panel owner-section" id="owners-list" data-owner-section="owners-list"><div class="section-heading"><div><h2>Owner accounts</h2><p class="muted small">Assign each property to its owner and enable editing only when permitted.</p></div></div>
 <div class="table-wrap"><table><thead><tr><th>Owner</th><th>Email</th><th>Assigned properties</th><th>Property editing</th><th>Login access</th></tr></thead><tbody id="ownersTable"></tbody></table><div id="ownersEmpty" class="empty-state hidden">No owner accounts yet. Create the first owner above.</div></div></section>
-<section class="panel"><div class="section-heading"><div><h2>Assign properties</h2><p class="muted small">Choose the owner responsible for each existing property.</p></div></div>
+<section class="panel owner-section" id="assign-properties" data-owner-section="assign-properties"><div class="section-heading"><div><h2>Assign properties</h2><p class="muted small">Choose the owner responsible for each existing property.</p></div></div>
 <div class="table-wrap"><table><thead><tr><th>Property</th><th>Location</th><th>Assigned owner</th></tr></thead><tbody id="propertiesTable"></tbody></table><div id="propertiesEmpty" class="empty-state hidden">No properties found.</div></div></section>
 </div></div></main>
 <script>
@@ -77,6 +78,8 @@ async function load(){
  }catch(error){notice(error.message,"error");if(error.status===401||error.status===403){localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");}}
  finally{$("refreshButton").disabled=false;}
 }
+function setOwnerView(){const allowed=["create-owner","owners-list","assign-properties"];const view=allowed.includes(location.hash.slice(1))?location.hash.slice(1):"owners-list";document.querySelectorAll("[data-owner-section]").forEach(section=>section.classList.toggle("is-active",section.dataset.ownerSection===view));document.querySelectorAll("[data-owner-view]").forEach(link=>{const active=link.dataset.ownerView===view;link.classList.toggle("active",active);if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");});const titles={"create-owner":"Create Owner","owners-list":"Owners List","assign-properties":"Assign Properties"};const heading=document.querySelector(".page-heading h1");if(heading)heading.textContent=titles[view];const description=document.querySelector(".page-heading .muted");if(description)description.textContent={"create-owner":"Create an owner login for the ROOMO Owner Dashboard.","owners-list":"View existing owners and manage their access.","assign-properties":"Assign existing properties to their responsible owners."}[view];}
+window.addEventListener("hashchange",setOwnerView);setOwnerView();
 function renderOwners(){
  const tbody=$("ownersTable");tbody.replaceChildren();$("ownersEmpty").classList.toggle("hidden",owners.length>0);
  for(const owner of owners){
