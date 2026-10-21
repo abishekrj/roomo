@@ -1858,3 +1858,12 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .listing .listing-policy-payment{color:#218838}
 .listing .listing-policy-availability{color:#c62828}
 .listing .listing-policy i{margin-top:2px;flex:0 0 auto}
+
+
+/* Stronger listing-card hierarchy and primary availability action */
+.listing .details{font-size:15px;font-weight:700;letter-spacing:.1px;min-height:44px}
+.listing .main h3{font-size:21px;font-weight:700;line-height:1.3}
+.listing .accommodation-summary,.listing .bed-summary{font-size:14px;font-weight:500;line-height:1.55}
+.listing .listing-policy{font-size:14px;font-weight:700;line-height:1.5}
+.listing .location{font-size:14px;font-weight:500}
+.listing .rating-line{font-size:13px;font-weight:600}
