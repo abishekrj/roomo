@@ -383,4 +383,39 @@ router.patch("/properties/:id/status", async (req, res, next) => {
   }
 });
 
+
+router.get("/owners", async (req, res, next) => {
+  try {
+    const owners = await prisma.owner.findMany({
+      where: { role: "OWNER" },
+      select: {
+        id: true, fullName: true, email: true, phoneNumber: true,
+        canEditProperties: true, createdAt: true,
+        _count: { select: { properties: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json({ owners });
+  } catch (error) { next(error); }
+});
+
+router.patch("/owners/:id/property-edit-permission", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const body = z.object({ canEditProperties: z.boolean() }).safeParse(req.body);
+  if (!id.success || !body.success) return res.status(400).json({ message: "Choose a valid owner and permission value." });
+  try {
+    const owner = await prisma.owner.findFirst({
+      where: { id: id.data, role: "OWNER" },
+      select: { id: true },
+    });
+    if (!owner) return res.status(404).json({ message: "Owner account not found." });
+    const updated = await prisma.owner.update({
+      where: { id: owner.id },
+      data: { canEditProperties: body.data.canEditProperties },
+      select: { id: true, fullName: true, canEditProperties: true },
+    });
+    res.json({ message: updated.canEditProperties ? "Property editing enabled for this owner." : "Property editing disabled for this owner.", owner: updated });
+  } catch (error) { next(error); }
+});
+
 module.exports = router;
