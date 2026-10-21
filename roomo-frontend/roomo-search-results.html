@@ -7,133 +7,7 @@
         <div class="row justify-content-center mt-2">
           <div class="col-12">
             <div class="monolithic-search-engine p-3 p-md-4">
-              <div id="destinationSuggestionNotice" class="destination-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></div>
-              <form id="staySearchForm">
-                <div class="row g-3">
-                  <!-- Location Field -->
-                  <div class="col-12 col-md-12 col-lg-4">
-                    <div class="heritage-input-box p-3 h-100 d-flex align-items-center">
-                      <div class="d-flex align-items-center gap-3 w-100">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center home-inline-24">
-                          <i class="bi bi-geo-alt-fill fs-5"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                          <label class="text-muted small mb-0 d-block home-inline-25" for="destinationInput">SACRED DESTINATION</label>
-                          <input class="form-control border-0 p-0 fw-bold fs-6 text-dark shadow-none bg-transparent" id="destinationInput" name="destination" type="text" placeholder="Where would you like to stay?" autocomplete="off" aria-label="Sacred destination" aria-autocomplete="list" aria-controls="destinationSuggestions" aria-expanded="false" role="combobox" required><div class="destination-suggestions" id="destinationSuggestions" role="listbox" aria-label="Suggested destinations" hidden></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Single-view check-in / check-out range calendar -->
-                  <div class="col-12 col-md-6 col-lg-4 roomo-date-range-wrap">
-                    <div class="heritage-input-box roomo-date-range-field p-3 h-100">
-                      <button class="roomo-date-endpoint" id="checkinDateTrigger" type="button" aria-label="Choose check-in date" aria-haspopup="dialog" aria-expanded="false">
-                        <span class="roomo-date-endpoint-label"><i class="bi bi-calendar4-event"></i> CHECK-IN</span>
-                        <strong id="checkinDateDisplay">Select date</strong>
-                      </button>
-                      <span class="roomo-date-range-divider" aria-hidden="true"></span>
-                      <button class="roomo-date-endpoint" id="checkoutDateTrigger" type="button" aria-label="Choose check-out date" aria-haspopup="dialog" aria-expanded="false">
-                        <span class="roomo-date-endpoint-label"><i class="bi bi-calendar-check"></i> CHECK-OUT</span>
-                        <strong id="checkoutDateDisplay">Select date</strong>
-                      </button>
-                    </div>
-                    <input id="checkinPicker" name="checkin" type="date" hidden>
-                    <input id="checkoutPicker" name="checkout" type="date" hidden>
-                    <div class="roomo-range-calendar" id="roomoRangeCalendar" role="dialog" aria-label="Select check-in and check-out dates" hidden>
-                      <div class="roomo-range-calendar-top">
-                        <div>
-                          <span class="roomo-range-eyebrow">YOUR STAY</span>
-                          <h3>Select your dates</h3>
-                          <p id="roomoCalendarHint">Choose your check-in, then your check-out</p>
-                        </div>
-                        <button class="roomo-calendar-close" id="roomoCalendarClose" type="button" aria-label="Close calendar"><i class="bi bi-x-lg"></i></button>
-                      </div>
-                      <div class="roomo-calendar-monthbar">
-                        <button type="button" id="roomoCalendarPrev" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
-                        <strong id="roomoCalendarMonth">Month Year</strong>
-                        <button type="button" id="roomoCalendarNext" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
-                      </div>
-                      <div class="roomo-calendar-weekdays" aria-hidden="true">
-                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                      </div>
-                      <div class="roomo-calendar-days" id="roomoCalendarDays"></div>
-                      <div class="roomo-calendar-footer">
-                        <div class="roomo-calendar-selection"><span>Selected stay</span><strong id="roomoCalendarSelection">Choose check-in date</strong></div>
-                        <button class="roomo-calendar-done" id="roomoCalendarDone" type="button" disabled>Done</button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Devotees & Rooms Functional Dropdown -->
-                  <div class="col-12 col-md-6 col-lg-4 position-relative home-inline-33" id="devoteeDropdownContainer">
-                    <div class="heritage-input-box p-3 h-100 d-flex align-items-center justify-content-between home-inline-34" id="devoteeTrigger" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="false">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center home-inline-35">
-                          <i class="bi bi-people-fill fs-5"></i>
-                        </div>
-                        <div>
-                          <span class="text-muted small d-block home-inline-36">GUESTS &amp; ROOMS</span>
-                          <span class="fw-bold text-dark fs-6" id="guestsLabel">2 Adults · 0 Children · 1 Room</span>
-                        </div>
-                      </div>
-                      <i class="bi bi-chevron-down text-muted" id="devoteeChevron"></i>
-                    </div>
-                    <!-- Custom Stepper Dropdown Popup with Done button -->
-                    <div class="dropdown-devotee-panel p-3" id="devoteePanel">
-                      <div class="border-bottom pb-2 mb-3">
-                        <h6 class="fw-bold text-dark mb-0 font-cinzel home-inline-37">DEVOTEES &amp; SANCTUARY</h6>
-                        <span class="text-muted home-inline-38">Configure room occupants</span>
-                      </div>
-                      <!-- Adults Stepper (min 1, max 8) -->
-                      <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                          <strong class="d-block text-dark small">Adults</strong>
-                          <span class="text-muted home-inline-39">Age 12+ years</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <button aria-label="Decrease adults" class="stepper-btn" id="adultsMinus" onclick="updateCount('adults', -1)" type="button">-</button>
-                          <span class="fw-bold text-dark px-1 home-inline-40" id="adultVal">2</span>
-                          <button aria-label="Increase adults" class="stepper-btn" id="adultsPlus" onclick="updateCount('adults', 1)" type="button">+</button>
-                        </div>
-                      </div>
-                      <!-- Children Stepper (min 0, max 6) -->
-                      <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                          <strong class="d-block text-dark small">Children</strong>
-                          <span class="text-muted home-inline-41">0 – 12 years</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <button aria-label="Decrease children" class="stepper-btn" id="childrenMinus" onclick="updateCount('children', -1)" type="button" disabled="">-</button>
-                          <span class="fw-bold text-dark px-1 home-inline-42" id="childrenVal">0</span>
-                          <button aria-label="Increase children" class="stepper-btn" id="childrenPlus" onclick="updateCount('children', 1)" type="button">+</button>
-                        </div>
-                      </div>
-                      <!-- Rooms Stepper (min 1, max 5) -->
-                      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                        <div>
-                          <strong class="d-block text-dark small">Rooms / Kutir</strong>
-                          <span class="text-muted home-inline-43">Sanctuary count</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <button aria-label="Decrease rooms" class="stepper-btn" id="roomsMinus" onclick="updateCount('rooms', -1)" type="button" disabled="">-</button>
-                          <span class="fw-bold text-dark px-1 home-inline-44" id="roomVal">1</span>
-                          <button aria-label="Increase rooms" class="stepper-btn" id="roomsPlus" onclick="updateCount('rooms', 1)" type="button">+</button>
-                        </div>
-                      </div>
-                      <!-- Done Button -->
-                      <div class="d-flex justify-content-end pt-1">
-                        <button class="btn btn-sm w-100 py-2 fw-bold text-white rounded-3 font-cinzel home-inline-45" onclick="closeDevoteeDropdown()" type="button"> Apply &amp; Done </button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Search CTA Button -->
-                  <div class="col-12 mt-3">
-                    <button class="btn btn-sacred-primary w-100 py-3 fs-6 d-flex align-items-center justify-content-center gap-2" type="submit">
-                      <i class="bi bi-search"></i>
-                      <span class="">Seek Blessed Stays</span>
-                    </button>
-                  </div>
-                </div>
-              </form></div></div></section>
+              <div data-roomo-search-component data-search-variant="full"></div></div></div></section>
 <section class="hero"><div><h1 id="searchHeroTitle">Find your sacred sanctuary</h1><p>Hand-curated stays for a peaceful pilgrimage near Arunachala.</p><div class="chips"><span class="chip"><i class="bi bi-geo-alt-fill"></i><span id="destination">Tiruvannamalai</span></span><span class="chip"><i class="bi bi-calendar-event"></i><span id="dates">Choose your dates</span></span><span class="chip"><i class="bi bi-people-fill"></i><span id="guests">2 adults · 0 children · 1 room</span></span></div></div><button class="gold-btn" id="editSearchButton" type="button" aria-controls="listingEditSearch" aria-expanded="false"><i class="bi bi-pencil-square"></i> Edit search</button></section><button class="mobile-filter" id="mobileFilter"><i class="bi bi-sliders"></i> Filters & amenities <span id="filterCount"></span></button><div class="layout"><aside class="filters" id="filters"><div class="filter-head"><h2><i class="bi bi-sliders search-inline-11"></i> Filters</h2><button class="clear" id="clear">Clear all</button></div>
 <section class="section"><h3>Price per night <i class="bi bi-currency-rupee"></i></h3><div class="range-labels"><span>₹<span id="minLabel">500</span></span><span>Up to ₹<span id="maxLabel">5,000</span></span></div><input class="range" id="maxRange" type="range" min="500" max="5000" step="100" value="5000" aria-label="Maximum price"><div class="price-fields"><label>Minimum ₹<input type="number" id="minPrice" min="0" value="500"></label><label>Maximum ₹<input type="number" id="maxPrice" min="500" value="5000"></label></div></section>
 <section class="section"><h3>Stay type <i class="bi bi-house-heart"></i></h3><label class="check"><input type="checkbox" name="type" value="Ashrams & Retreats"> Ashrams & Retreats <span class="count">01</span></label><label class="check"><input type="checkbox" name="type" value="Vedic Mathas & Inns"> Vedic Mathas & Inns <span class="count">02</span></label><label class="check"><input type="checkbox" name="type" value="Temple View Suites"> Temple View Suites <span class="count">01</span></label><label class="check"><input type="checkbox" name="type" value="Heritage Haveli Homes"> Heritage Haveli Homes <span class="count">01</span></label></section>
@@ -155,6 +29,7 @@
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/search-section.js"></script>
 <script src="js/common.js"></script>
 <script src="js/homepage-editor.js"></script>
 <script>
