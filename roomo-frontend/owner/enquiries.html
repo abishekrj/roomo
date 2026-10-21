@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     :root{--blue:#2463eb;--blue-dark:#194fc5;--ink:#14243b;--muted:#718096;--border:#e4eaf2;--surface:#f5f8fc;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--surface);font-synthesis:none}*{box-sizing:border-box}body{margin:0;font-size:14px}button,input,textarea{font:inherit}button{cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid #d6deea;background:#fff;color:#263447}button.primary{background:#174ea6;border-color:#174ea6;color:#fff}button.danger{color:#a32626;border-color:#efcaca}button:disabled{opacity:.6;cursor:wait}.topbar{background:#fff;border-bottom:1px solid #e3e8ef;padding:16px max(20px,calc((100% - 1200px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-weight:600;font-size:22px;color:#174ea6}.brand small{display:block;font-size:11px;letter-spacing:1.5px;color:#68778b;font-weight:400}.owner-layout{max-width:1600px;margin:auto;padding:32px 4% 60px;display:grid;grid-template-columns:245px minmax(0,1fr);gap:26px;align-items:start}.sidebar{position:sticky;top:20px;background:#102747;color:#fff;border-radius:16px;padding:22px 14px;min-height:calc(100vh - 130px);border:0}.sidebar-brand{font:800 24px "Manrope",sans-serif;letter-spacing:-1px;padding:0 12px 4px;color:#fff}.sidebar-subtitle{padding:0 12px 22px;color:#9eb6d5;font-size:10px;font-weight:700;letter-spacing:1.5px}.sidebar-label{padding:0 12px;margin:0 0 12px;color:#9eb6d5;font-size:10px;letter-spacing:1.4px;font-weight:700}.sidebar nav{display:grid;gap:7px}.sidebar a{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border-radius:9px;color:#d7e3f4;text-decoration:none;font-weight:600}.sidebar a:hover,.sidebar a.active{background:#2859a5;color:#fff}.sidebar-icon{width:20px;text-align:center;font-size:17px}.dashboard-content{min-width:0}.wrap{max-width:none;margin:auto;padding:0 0 30px}.report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.report-card{border:1px solid #e1e7ef;border-radius:8px;padding:16px}.report-card span{display:block;color:#68778b;font-size:12px}.report-card strong{display:block;font-size:23px;font-weight:600;margin-top:6px}.panel{background:#fff;border:1px solid #e1e7ef;border-radius:8px;padding:22px;margin-bottom:20px}.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}.muted{color:#68778b;line-height:1.6}.hidden{display:none!important}h1{font-size:28px;margin:0 0 6px;font-weight:600}h2{font-size:18px;margin:0 0 6px;font-weight:600}h3{font-size:15px;font-weight:600;margin:0 0 8px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat{background:#fff;border:1px solid #e1e7ef;border-radius:8px;padding:18px}.stat strong{display:block;font-size:25px;font-weight:600}.notice{padding:12px 14px;border-radius:8px;margin-bottom:16px;display:none;overflow-wrap:anywhere}.notice.show{display:block}.notice.error{background:#fff0f0;color:#9d2222}.notice.success{background:#effaf2;color:#176534}.notice.info{background:#eef5ff;color:#174ea6}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:13px 11px;border-bottom:1px solid #e8edf3;vertical-align:top}th{font-size:12px;color:#64748b;font-weight:600;white-space:nowrap}td{line-height:1.55}.pill{display:inline-block;border-radius:8px;padding:4px 8px;background:#eef2f7;font-size:11px;font-weight:600}.pill.REQUESTED{background:#fff5dc;color:#875d00}.pill.CONFIRMED{background:#e7f8ec;color:#176534}.pill.CANCELLED{background:#fff0f0;color:#9d2222}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.property{border:1px solid #e2e8f0;border-radius:8px;padding:16px;min-width:0}.property p{margin:5px 0;color:#68778b}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field label{display:block;font-weight:500;margin-bottom:6px}.field input,.field textarea{width:100%;border:1px solid #d5deea;border-radius:8px;padding:10px 12px;background:#fff}.field textarea{min-height:100px;resize:vertical}.field.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.empty{padding:26px;text-align:center;color:#68778b}.login{max-width:440px;margin:50px auto}.login .field{margin:14px 0}.login input{width:100%;padding:12px;border:1px solid #d5deea;border-radius:8px}.help{font-size:12px;color:#68778b;margin-top:6px}@media(max-width:1100px){.owner-layout{grid-template-columns:210px minmax(0,1fr);gap:18px;padding:28px 20px 50px}.report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.owner-layout{grid-template-columns:1fr;gap:16px;padding:22px 14px 38px}.sidebar{position:static;min-height:0;padding:14px}.sidebar-brand{display:inline-block;padding-bottom:0}.sidebar-subtitle{display:inline-block;padding:0 0 0 10px}.sidebar-label{display:none}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}.sidebar a{justify-content:flex-start;padding:11px 10px;font-size:12px;gap:8px}.sidebar-icon{width:18px}.wrap{padding:0 0 20px}.panel{padding:16px}.stats{grid-template-columns:1fr}.cards,.form-grid,.report-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{padding:14px 16px}h1{font-size:23px}}
-  body[data-owner-page="dashboard"] #myProperties,body[data-owner-page="dashboard"] #ownerEnquiries,body[data-owner-page="dashboard"] #ownerReports,body[data-owner-page="dashboard"] #editPanel{display:none!important}body[data-owner-page="my-properties"] .stats,body[data-owner-page="my-properties"] #ownerEnquiries,body[data-owner-page="my-properties"] #ownerReports{display:none!important}body[data-owner-page="enquiries"] .stats,body[data-owner-page="enquiries"] #myProperties,body[data-owner-page="enquiries"] #ownerReports,body[data-owner-page="enquiries"] #editPanel{display:none!important}body[data-owner-page="reports"] .stats,body[data-owner-page="reports"] #myProperties,body[data-owner-page="reports"] #ownerEnquiries,body[data-owner-page="reports"] #editPanel{display:none!important}
+  .enquiry-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 14px;flex-wrap:wrap}.enquiry-search{display:flex;align-items:center;gap:10px;flex:1;min-width:240px;max-width:620px;border:1px solid #d5deea;background:#fff;border-radius:8px;padding:0 12px;color:#718096}.enquiry-search input{width:100%;min-width:0;border:0;outline:0;padding:12px 0;background:transparent;color:#14243b}.enquiry-search:focus-within{border-color:#2463eb;box-shadow:0 0 0 3px rgba(36,99,235,.10)}.property-group-row td{background:#f0f5fc;color:#173a68;font-weight:700;padding:12px 14px;border-bottom:1px solid #dce6f3}.property-group-row td span{display:inline-flex;align-items:center;gap:8px}.property-group-row td small{font-weight:500;color:#64748b}.stay-lines,.guest-room-lines{display:grid;gap:5px;min-width:130px}.stay-lines span,.guest-room-lines span{display:block;white-space:nowrap}.stay-lines .date-label{color:#718096;font-size:11px;text-transform:uppercase;letter-spacing:.3px;margin-right:5px}.guest-room-lines span{white-space:normal}.no-search-results{padding:24px;text-align:center;color:#68778b}\n  body[data-owner-page="dashboard"] #myProperties,body[data-owner-page="dashboard"] #ownerEnquiries,body[data-owner-page="dashboard"] #ownerReports,body[data-owner-page="dashboard"] #editPanel{display:none!important}body[data-owner-page="my-properties"] .stats,body[data-owner-page="my-properties"] #ownerEnquiries,body[data-owner-page="my-properties"] #ownerReports{display:none!important}body[data-owner-page="enquiries"] .stats,body[data-owner-page="enquiries"] #myProperties,body[data-owner-page="enquiries"] #ownerReports,body[data-owner-page="enquiries"] #editPanel{display:none!important}body[data-owner-page="reports"] .stats,body[data-owner-page="reports"] #myProperties,body[data-owner-page="reports"] #ownerEnquiries,body[data-owner-page="reports"] #editPanel{display:none!important}
   </style>
 <script src="../js/favicon.js"></script>
 </head>
@@ -39,7 +39,7 @@
         <div class="stat"><span class="muted">Confirmed reservations</span><strong id="confirmedCount">0</strong></div>
       </div>
       <section id="myProperties" class="panel"><div class="head"><div><h2>My Properties</h2><p class="muted">Property details are read-only unless ROOMO administration enables editing for your account.</p></div><span id="editPermission" class="pill">View only</span></div><div id="propertiesEmpty" class="empty hidden">No properties have been assigned to this owner account yet. Please contact ROOMO administration.</div><div id="propertyCards" class="cards"></div></section>
-      <section id="ownerEnquiries" class="panel"><div class="head"><div><h2>Enquiries & room requests</h2><p class="muted">Requests submitted by guests for your properties. Review the dates, room count and special requests, then confirm or decline pending requests.</p></div></div><div class="table-wrap"><table><thead><tr><th>Guest</th><th>Property</th><th>Stay dates</th><th>Guests / Rooms</th><th>Request details</th><th>Amount</th><th>Status / Action</th></tr></thead><tbody id="enquiryRows"></tbody></table></div><div id="enquiriesEmpty" class="empty hidden">No guest enquiries yet. New room requests for your properties will appear here.</div></section>
+      <section id="ownerEnquiries" class="panel"><div class="head"><div><h2>Enquiries & room requests</h2><p class="muted">Requests submitted by guests for your properties. Review the dates, room count and special requests, then confirm or decline pending requests.</p></div></div><div class="enquiry-toolbar"><label class="enquiry-search"><i class="bi bi-search" aria-hidden="true"></i><input id="enquirySearch" type="search" placeholder="Search enquiries by guest, property, dates, status or reference…" autocomplete="off" aria-label="Search enquiries"></label><span id="enquirySearchCount" class="muted" aria-live="polite"></span></div><div class="table-wrap"><table><thead><tr><th>Guest</th><th>Stay dates</th><th>Guests / Rooms</th><th>Request details</th><th>Amount</th><th>Status / Action</th></tr></thead><tbody id="enquiryRows"></tbody></table></div><div id="enquiriesEmpty" class="empty hidden">No guest enquiries yet. New room requests for your properties will appear here.</div></section>
       <section id="ownerReports" class="panel"><h2>Reports</h2><p class="muted">A quick summary of enquiries and reservations for your assigned properties.</p><div class="report-grid"><div class="report-card"><span>Total enquiries</span><strong id="reportTotalEnquiries">0</strong></div><div class="report-card"><span>Confirmed reservations</span><strong id="reportConfirmed">0</strong></div><div class="report-card"><span>Requested reservations</span><strong id="reportPending">0</strong></div><div class="report-card"><span>Cancelled reservations</span><strong id="reportCancelled">0</strong></div><div class="report-card"><span>Confirmed reservation value</span><strong id="reportRevenue">₹0</strong></div><div class="report-card"><span>Assigned properties</span><strong id="reportProperties">0</strong></div></div></section>
       <section id="editPanel" class="panel hidden"><h2>Edit property details</h2><p class="muted">Changes update the property details stored in ROOMO. Property ownership, publishing status and commission settings remain managed by ROOMO administration.</p><form id="editForm"><input id="editPropertyId" type="hidden"><div class="form-grid">
         <div class="field"><label for="editTitle">Property name</label><input id="editTitle" required minlength="5" maxlength="150"></div>
@@ -121,30 +121,80 @@
     $("reportProperties").textContent=properties.length;
     $("enquiryCount").textContent=reservations.filter(r=>r.status==="REQUESTED").length;
     $("confirmedCount").textContent=reservations.filter(r=>r.status==="CONFIRMED").length;
-    $("enquiriesEmpty").classList.toggle("hidden",reservations.length>0);
-    for(const r of reservations) {
-      const tr=document.createElement("tr");
-      const guest=document.createElement("td"); const name=document.createElement("strong"); name.textContent=r.guest?.fullName||"Guest"; guest.appendChild(name);
-      const email=document.createElement("div"); email.textContent=r.guest?.email||""; guest.appendChild(email);
-      if(r.guest?.phoneNumber){const phone=document.createElement("div");phone.textContent=r.guest.phoneNumber;guest.appendChild(phone);}
-      tr.appendChild(guest);
-      textCell(tr,r.property?.title);
-      textCell(tr,date(r.checkIn)+" – "+date(r.checkOut)+" ("+r.nights+" night"+(r.nights===1?"":"s")+")");
-      textCell(tr,(r.adults||0)+" adults, "+(r.children||0)+" children · "+(r.roomCount||1)+" room(s)");
-      const req=textCell(tr,r.specialRequests||"No special requests"); req.style.maxWidth="220px"; req.style.whiteSpace="pre-wrap";
-      textCell(tr,money(r.totalAmount));
-      const action=textCell(tr,""); const badge=document.createElement("span"); badge.className="pill "+r.status; badge.textContent=r.status; action.appendChild(badge);
-      const code=document.createElement("div"); code.className="help"; code.textContent=r.reservationCode||""; action.appendChild(code);
-      if(r.status==="REQUESTED") {
-        const buttons=document.createElement("div"); buttons.className="actions";
-        for(const choice of [{status:"CONFIRMED",label:"Confirm",className:"primary"},{status:"CANCELLED",label:"Decline",className:"danger"}]) {
-          const btn=document.createElement("button"); btn.type="button"; btn.className=choice.className; btn.textContent=choice.label;
-          btn.addEventListener("click",async()=>{btn.disabled=true;try{const result=await request("/reservations/owner/"+encodeURIComponent(r.id)+"/decision",{method:"PATCH",body:JSON.stringify({status:choice.status})});notice("dashboardNotice",result.message,"success");await loadDashboard();}catch(e){notice("dashboardNotice",e.message,"error");}finally{btn.disabled=false;}});
-          buttons.appendChild(btn);
+
+    const query=($("enquirySearch")?.value||"").trim().toLocaleLowerCase();
+    const filtered=reservations.filter(r=>{
+      if(!query)return true;
+      const values=[
+        r.guest?.fullName,r.guest?.email,r.guest?.phoneNumber,
+        r.property?.title,r.property?.city,r.property?.address,
+        r.checkIn,r.checkOut,date(r.checkIn),date(r.checkOut),
+        r.adults,r.children,r.roomCount,r.specialRequests,r.reservationCode,
+        r.status,r.totalAmount,r.roomType?.name
+      ];
+      return values.some(value=>value!=null&&String(value).toLocaleLowerCase().includes(query));
+    });
+    $("enquirySearchCount").textContent=query
+      ? `Showing ${filtered.length} of ${reservations.length} enquiries`
+      : `${reservations.length} ${reservations.length===1?"enquiry":"enquiries"}`;
+    $("enquiriesEmpty").classList.toggle("hidden",filtered.length>0);
+    if(!filtered.length && query) $("enquiriesEmpty").textContent="No enquiries match your search. Try a different guest name, property, date or reference.";
+    else $("enquiriesEmpty").textContent="No guest enquiries yet. New room requests for your properties will appear here.";
+
+    const grouped=new Map();
+    for(const r of filtered){
+      const title=r.property?.title||"Property not specified";
+      if(!grouped.has(title))grouped.set(title,[]);
+      grouped.get(title).push(r);
+    }
+    const sortedGroups=[...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{sensitivity:"base"}));
+    for(const [propertyTitle,items] of sortedGroups){
+      const groupRow=document.createElement("tr");groupRow.className="property-group-row";
+      const groupCell=document.createElement("td");groupCell.colSpan=6;
+      const groupLabel=document.createElement("span");
+      const icon=document.createElement("i");icon.className="bi bi-building";icon.setAttribute("aria-hidden","true");
+      const name=document.createElement("span");name.textContent=propertyTitle;
+      const count=document.createElement("small");count.textContent=`${items.length} ${items.length===1?"enquiry":"enquiries"}`;
+      groupLabel.append(icon,name,count);groupCell.appendChild(groupLabel);groupRow.appendChild(groupCell);tbody.appendChild(groupRow);
+      for(const r of items){
+        const tr=document.createElement("tr");
+        const guest=document.createElement("td");const name=document.createElement("strong");name.textContent=r.guest?.fullName||"Guest";guest.appendChild(name);
+        const email=document.createElement("div");email.className="help";email.textContent=r.guest?.email||"";guest.appendChild(email);
+        if(r.guest?.phoneNumber){const phone=document.createElement("div");phone.className="help";phone.textContent=r.guest.phoneNumber;guest.appendChild(phone);}
+        tr.appendChild(guest);
+
+        const dates=textCell(tr,"");dates.textContent="";
+        const dateStack=document.createElement("div");dateStack.className="stay-lines";
+        for(const [label,value] of [["Check-in",r.checkIn],["Check-out",r.checkOut]]){
+          const line=document.createElement("span");const caption=document.createElement("span");caption.className="date-label";caption.textContent=label;
+          line.append(caption,document.createTextNode(date(value)));dateStack.appendChild(line);
         }
-        action.appendChild(buttons);
+        const nights=document.createElement("span");nights.className="help";nights.textContent=`${Number(r.nights)||0} ${Number(r.nights)===1?"night":"nights"}`;dateStack.appendChild(nights);dates.appendChild(dateStack);
+
+        const guests=textCell(tr,"");guests.textContent="";
+        const guestRoomStack=document.createElement("div");guestRoomStack.className="guest-room-lines";
+        const adults=document.createElement("span");adults.textContent=`${Number(r.adults)||0} ${Number(r.adults)===1?"adult":"adults"}`;
+        const children=document.createElement("span");children.textContent=`${Number(r.children)||0} ${Number(r.children)===1?"child":"children"}`;
+        const rooms=document.createElement("span");rooms.textContent=`${Number(r.roomCount)||1} ${Number(r.roomCount)===1?"room":"rooms"}`;
+        guestRoomStack.append(adults,children,rooms);
+        if(r.roomType?.name){const roomType=document.createElement("span");roomType.className="help";roomType.textContent="Type: "+r.roomType.name;guestRoomStack.appendChild(roomType);}
+        guests.appendChild(guestRoomStack);
+
+        const req=textCell(tr,r.specialRequests||"No special requests");req.style.maxWidth="220px";req.style.whiteSpace="pre-wrap";
+        textCell(tr,money(r.totalAmount));
+        const action=textCell(tr,"");const badge=document.createElement("span");badge.className="pill "+r.status;badge.textContent=r.status;action.appendChild(badge);
+        const code=document.createElement("div");code.className="help";code.textContent=r.reservationCode||"";action.appendChild(code);
+        if(r.status==="REQUESTED"){
+          const buttons=document.createElement("div");buttons.className="actions";
+          for(const choice of [{status:"CONFIRMED",label:"Confirm",className:"primary"},{status:"CANCELLED",label:"Decline",className:"danger"}]){
+            const btn=document.createElement("button");btn.type="button";btn.className=choice.className;btn.textContent=choice.label;
+            btn.addEventListener("click",async()=>{btn.disabled=true;try{const result=await request("/reservations/owner/"+encodeURIComponent(r.id)+"/decision",{method:"PATCH",body:JSON.stringify({status:choice.status})});notice("dashboardNotice",result.message,"success");await loadDashboard();}catch(e){notice("dashboardNotice",e.message,"error");}finally{btn.disabled=false;}});
+            buttons.appendChild(btn);
+          }
+          action.appendChild(buttons);
+        }
+        tbody.appendChild(tr);
       }
-      tbody.appendChild(tr);
     }
   }
   function openEdit(p) {
@@ -181,7 +231,7 @@
   });
   document.querySelectorAll("[data-owner-nav]").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll("[data-owner-nav]").forEach(item=>item.classList.toggle("active",item===link));}));
   $("logoutButton").addEventListener("click",()=>signOut());
-  $("refreshButton").addEventListener("click",async()=>{try{await loadDashboard();notice("dashboardNotice","Dashboard refreshed.","success");}catch(e){notice("dashboardNotice",e.message,"error");}});
+  $("enquirySearch").addEventListener("input",renderEnquiries);\n  $("refreshButton").addEventListener("click",async()=>{try{await loadDashboard();notice("dashboardNotice","Dashboard refreshed.","success");}catch(e){notice("dashboardNotice",e.message,"error");}});
   $("cancelEditButton").addEventListener("click",()=>$("editPanel").classList.add("hidden"));
   $("editForm").addEventListener("submit",async e=>{
     e.preventDefault(); if(!me?.canEditProperties){notice("dashboardNotice","Property editing is disabled by ROOMO administration.","error");return;}
