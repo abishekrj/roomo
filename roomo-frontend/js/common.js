@@ -546,7 +546,8 @@ function openRoomoMapModal(address,name){
   document.getElementById("roomoMapModalTitle").textContent=name?name+" — location":"Property location";
   document.getElementById("roomoMapModalAddress").textContent=query;
   document.getElementById("roomoMapFrame").src="https://www.google.com/maps?q="+encodeURIComponent(query)+"&output=embed";
-  document.getElementById("roomoMapExternalLink").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
+  const isGoogleMapsUrl=/^https:\/\/(?:www\.)?(?:google\.[a-z.]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(query);
+  document.getElementById("roomoMapExternalLink").href=isGoogleMapsUrl?query:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
   modal.hidden=false;
   document.body.classList.add("roomo-map-open");
   modal.querySelector(".roomo-map-close").focus();
@@ -591,6 +592,7 @@ processPendingFavorite();
         location: [property.address, property.city, property.state].filter(Boolean).join(", "),
         cityLabel: [property.city, property.state, property.country || "India"].filter(Boolean).join(", "),
         noCreditCardRequired: Boolean(property.noCreditCardRequired),
+        mapLocation: property.mapLocation || "",
         mapAddress: [property.address, property.city, property.state, property.country].filter(Boolean).join(", "),
         rating: Number(property.rating || 0),
         reviews: Number(property.reviews || 0),
