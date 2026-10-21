@@ -2492,3 +2492,8 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     font-size: 1.65rem !important;
   }
 }
+
+/* Footer section heading accent color. */
+.temple-granite-footer .footer-section-heading-gold {
+  color: #ffc107;
+}
