@@ -150,7 +150,7 @@
     const sortedGroups=[...grouped.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{sensitivity:"base"}));
     for(const [propertyTitle,items] of sortedGroups){
       const groupRow=document.createElement("tr");groupRow.className="property-group-row";
-      const groupCell=document.createElement("td");groupCell.colSpan=6;
+      const groupCell=document.createElement("td");groupCell.colSpan=7;
       const groupLabel=document.createElement("span");
       const icon=document.createElement("i");icon.className="bi bi-building";icon.setAttribute("aria-hidden","true");
       const name=document.createElement("span");name.textContent=propertyTitle;
