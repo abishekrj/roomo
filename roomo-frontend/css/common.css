@@ -2548,3 +2548,38 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   .nearby-places-grid > .nearby-place-card { flex-basis:100%; }
   .nearby-places-grid.is-expanded { grid-template-columns:minmax(0,1fr); }
 }
+
+
+/* Nearby Locations cards and place details dialog */
+.nearby-place-card { cursor:pointer; }
+.nearby-place-card:focus-visible { outline:3px solid #6b9dbb; outline-offset:3px; }
+.nearby-place-details-link { display:inline-flex; align-items:center; gap:7px; margin:2px 0 10px; color:#1e5c78; font:600 12px/1.4 Poppins,sans-serif; }
+.nearby-place-modal[hidden] { display:none !important; }
+.nearby-place-modal { position:fixed; inset:0; z-index:1090; display:flex; align-items:center; justify-content:center; padding:24px; }
+.nearby-place-modal-backdrop { position:absolute; inset:0; background:rgba(8,22,34,.72); backdrop-filter:blur(5px); }
+.nearby-place-modal-dialog { position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); width:min(900px,100%); max-height:min(760px,calc(100vh - 48px)); overflow:auto; border-radius:16px; background:#fff; box-shadow:0 24px 80px rgba(0,0,0,.28); animation:nearbyPlaceModalIn .2s ease-out; }
+.nearby-place-modal-close { position:absolute; top:14px; right:14px; z-index:2; display:grid; place-items:center; width:40px; height:40px; border:1px solid rgba(255,255,255,.7); border-radius:50%; background:rgba(255,255,255,.94); color:#183b56; font-size:15px; cursor:pointer; }
+.nearby-place-modal-image { min-height:360px; background:#eaf0f3; }
+.nearby-place-modal-image img { display:block; width:100%; height:100%; min-height:360px; object-fit:cover; }
+.nearby-place-modal-placeholder { display:grid; min-height:360px; place-items:center; color:#6c8a9b; font-size:54px; }
+.nearby-place-modal-body { align-self:center; padding:42px 36px; }
+.nearby-place-modal-eyebrow { color:#8b6b35; font:600 10px/1.4 Poppins,sans-serif; letter-spacing:.16em; }
+.nearby-place-modal-body h2 { margin:12px 0 14px; color:#183b56; font:600 clamp(26px,3vw,36px)/1.2 Poppins,sans-serif; }
+.nearby-place-modal-location { display:flex; gap:8px; align-items:flex-start; margin:0 0 20px; color:#526b7b; font:500 13px/1.6 Poppins,sans-serif; }
+.nearby-place-modal-location:before { content:""; }
+.nearby-place-modal-description { margin:0 0 26px; color:#596b78; font:400 14px/1.9 Poppins,sans-serif; white-space:pre-line; }
+.nearby-place-modal-map { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:46px; padding:0 18px; border-radius:8px; background:#183b56; color:#fff !important; font:600 13px/1 Poppins,sans-serif; text-decoration:none; }
+.nearby-place-modal-map:hover { background:#245573; }
+.nearby-place-modal-map[hidden] { display:none !important; }
+body.nearby-place-modal-open { overflow:hidden; }
+@keyframes nearbyPlaceModalIn { from { opacity:0; transform:translateY(10px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media(max-width:700px) {
+  .nearby-place-modal { padding:14px; }
+  .nearby-place-modal-dialog { grid-template-columns:1fr; max-height:calc(100vh - 28px); border-radius:12px; }
+  .nearby-place-modal-image, .nearby-place-modal-image img, .nearby-place-modal-placeholder { min-height:0; height:230px; }
+  .nearby-place-modal-body { padding:24px 22px 26px; }
+  .nearby-place-modal-body h2 { font-size:26px; }
+  .nearby-place-modal-description { margin-bottom:20px; }
+  .nearby-place-modal-close { top:10px; right:10px; }
+}
+@media(prefers-reduced-motion:reduce) { .nearby-place-modal-dialog { animation:none; } }
