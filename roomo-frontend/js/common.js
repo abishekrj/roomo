@@ -680,17 +680,9 @@ if (document.body.classList.contains("stay-details-page")) {
     const rooms = Math.min(8, Math.max(1, Number(params.get("rooms") || 1)));
     root.innerHTML = `<div class="detail-crumb"><a href="index.html">Home</a><i class="bi bi-chevron-right"></i><a href="roomo-search-results.html${location.search}">Blessed Stays</a><i class="bi bi-chevron-right"></i><span>${stay.name}</span></div>
       <section class="detail-hero"><div><span class="detail-eyebrow"><i class="bi bi-patch-check-fill"></i> ROOMO Sacred · Curated stay</span><h1>${stay.name}</h1><p><i class="bi bi-geo-alt-fill"></i> ${stay.location}</p><div class="detail-rating"><span>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></span> ${stay.reviews} guest reviews · ${stay.type}</div></div><button class="detail-outline" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back to results</button></section>
-      <section class="detail-search-section" aria-labelledby="detailSearchTitle">
-        <div class="detail-search-heading"><span class="detail-eyebrow">PLAN YOUR STAY</span><h2 id="detailSearchTitle">Find your sacred stay</h2></div>
-        <form id="detailSearchForm" class="detail-search-form">
-          <label><span><i class="bi bi-geo-alt"></i> Destination</span><input id="detailSearchDestination" name="destination" type="text" value="Tiruvannamalai" placeholder="Where would you like to stay?" required></label>
-          <label><span><i class="bi bi-calendar-event"></i> Check-in</span><input id="detailSearchCheckin" name="checkin" type="date" min="${today}" value="${checkin}" required></label>
-          <label><span><i class="bi bi-calendar-check"></i> Check-out</span><input id="detailSearchCheckout" name="checkout" type="date" min="${checkin}" value="${checkout}" required></label>
-          <label><span><i class="bi bi-people"></i> Adults</span><select id="detailSearchAdults" name="adults">${Array.from({length:16},(_,i)=>i+1).map(n=>'<option value="' + n + '"' + (n===adults ? ' selected' : '') + '>' + n + '</option>').join("")}</select></label>
-          <label><span><i class="bi bi-person"></i> Children</span><select id="detailSearchChildren" name="children">${Array.from({length:11},(_,i)=>i).map(n=>'<option value="' + n + '"' + (n===children ? ' selected' : '') + '>' + n + '</option>').join("")}</select></label>
-          <label><span><i class="bi bi-door-closed"></i> Rooms</span><select id="detailSearchRooms" name="rooms">${Array.from({length:8},(_,i)=>i+1).map(n=>'<option value="' + n + '"' + (n===rooms ? ' selected' : '') + '>' + n + '</option>').join("")}</select></label>
-          <button type="submit" class="detail-search-submit"><i class="bi bi-search"></i> Search stays</button>
-        </form>
+      <section class="detail-search-section" aria-label="Search stays">
+        <div class="detail-search-heading"><span class="detail-eyebrow">PLAN YOUR STAY</span><h2>Find your sacred stay</h2></div>
+        <div class="monolithic-search-engine p-3 p-md-4" data-roomo-search-component data-search-variant="details"></div>
       </section>
       <div class="detail-gallery"><button class="detail-gallery-main" id="openPropertyGallery" type="button" aria-label="Open all property photos">${((stay.images || []).filter(Boolean)[0]) ? '<img id="detailMainImage" src="' + String((stay.images || []).filter(Boolean)[0]).replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '" alt="' + stay.name + ' accommodation" />' : '<div class="detail-gallery-empty">No property photos have been added yet.</div>'}<span class="detail-gallery-open-label"><i class="bi bi-images"></i> View all photos</span></button><div class="detail-gallery-side">${((stay.images || []).filter(Boolean).slice(1,4).map((image,index)=>'<button class="detail-gallery-thumb" type="button" data-gallery-open-index="'+(index+1)+'" aria-label="View property photo '+(index+2)+'"><img src="'+String(image).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="'+stay.name+' photo '+(index+2)+'" /></button>').join(''))}<button class="detail-gallery-note" id="openPropertyGalleryFromCount" type="button"><i class="bi bi-camera"></i><span>View all photos</span><small>${(stay.images || []).filter(Boolean).length} photo(s)</small></button></div></div>
       <div class="property-gallery-modal" id="propertyGalleryModal" hidden role="dialog" aria-modal="true" aria-label="Property photo gallery"><button type="button" class="property-gallery-close" id="propertyGalleryClose" aria-label="Close gallery"><i class="bi bi-x-lg"></i></button><div class="property-gallery-stage"><button type="button" class="property-gallery-arrow property-gallery-prev" id="propertyGalleryPrev" aria-label="Previous image"><i class="bi bi-chevron-left"></i></button><img id="propertyGalleryImage" alt="${stay.name} photo"><button type="button" class="property-gallery-arrow property-gallery-next" id="propertyGalleryNext" aria-label="Next image"><i class="bi bi-chevron-right"></i></button><div class="property-gallery-counter" id="propertyGalleryCounter"></div></div><div class="property-gallery-thumbnails-wrap"><button type="button" id="propertyGalleryThumbPrev" class="property-gallery-thumb-arrow" aria-label="Scroll thumbnails left"><i class="bi bi-chevron-left"></i></button><div class="property-gallery-thumbnails" id="propertyGalleryThumbnails"></div><button type="button" id="propertyGalleryThumbNext" class="property-gallery-thumb-arrow" aria-label="Scroll thumbnails right"><i class="bi bi-chevron-right"></i></button></div></div>
@@ -700,27 +692,7 @@ if (document.body.classList.contains("stay-details-page")) {
       <section class="detail-section"><span class="detail-eyebrow">GUEST FEEDBACK</span><h2>Guest rating</h2><div class="review-summary"><strong>${stay.rating.toFixed(1)} <i class="bi bi-star-fill"></i></strong><div><b>${stay.rating>=4.7?'Exceptional':stay.rating>=4.5?'Excellent':'Very good'}</b><small>Based on ${stay.reviews} sample guest reviews</small></div></div><p class="detail-muted">Ratings and review counts are demo content for this prototype and are not live review data.</p></section></div>
       <aside class="detail-booking"><div class="booking-label"><i class="bi bi-house-heart"></i> Your sacred stay</div><div class="detail-price">₹${stay.price.toLocaleString('en-IN')} <small>/ night</small></div><p class="detail-muted">Starting price · taxes may apply</p><div class="booking-form"><label>Check-in<input id="detailCheckin" type="date" min="${today}" value="${checkin}" required /></label><label>Check-out<input id="detailCheckout" type="date" min="${checkin}" value="${checkout}" required /></label><label>Adults<select id="detailAdults">${Array.from({length:16},(_,i)=>i+1).map(n=>'<option value="' + n + '"' + (n===adults ? ' selected' : '') + '>' + n + ' adult' + (n===1 ? '' : 's') + '</option>').join("")}</select></label><label>Children<select id="detailChildren">${Array.from({length:11},(_,i)=>i).map(n=>'<option value="' + n + '"' + (n===children ? ' selected' : '') + '>' + n + ' ' + (n===1 ? 'child' : 'children') + '</option>').join("")}</select></label><label class="booking-room-field">Rooms<select id="detailRooms">${Array.from({length:8},(_,i)=>i+1).map(n=>'<option value="' + n + '"' + (n===rooms ? ' selected' : '') + '>' + n + ' room' + (n===1 ? '' : 's') + '</option>').join("")}</select></label></div><button class="detail-book-btn" id="checkAvailability"><i class="bi bi-search"></i> Check availability</button><p class="booking-note"><i class="bi bi-shield-check"></i> No payment is taken at this stage.</p><div id="availabilityMessage" class="availability-message" aria-live="polite"></div></aside></div><section id="availabilityResults" class="availability-results" hidden aria-live="polite"></section>`;
     const propertyGalleryImages = (stay.images || []).filter(Boolean);
-    document.getElementById("detailSearchForm")?.addEventListener("submit", event => {
-      event.preventDefault();
-      const destination = document.getElementById("detailSearchDestination")?.value.trim() || "Tiruvannamalai";
-      const checkinValue = document.getElementById("detailSearchCheckin")?.value || "";
-      const checkoutValue = document.getElementById("detailSearchCheckout")?.value || "";
-      if (checkinValue && checkoutValue && checkoutValue <= checkinValue) {
-        document.getElementById("detailSearchCheckout")?.setCustomValidity("Check-out must be after check-in.");
-        document.getElementById("detailSearchCheckout")?.reportValidity();
-        return;
-      }
-      const query = new URLSearchParams({
-        destination,
-        checkin: checkinValue,
-        checkout: checkoutValue,
-        adults: document.getElementById("detailSearchAdults")?.value || "2",
-        children: document.getElementById("detailSearchChildren")?.value || "0",
-        rooms: document.getElementById("detailSearchRooms")?.value || "1"
-      });
-      window.location.href = "roomo-search-results.html?" + query.toString();
-    });
-    document.getElementById("detailSearchCheckout")?.addEventListener("change", event => event.currentTarget.setCustomValidity(""));
+    window.RoomoSearchSection?.mountAll();
     const galleryModal = document.getElementById("propertyGalleryModal");
     const galleryImage = document.getElementById("propertyGalleryImage");
     const galleryThumbs = document.getElementById("propertyGalleryThumbnails");
