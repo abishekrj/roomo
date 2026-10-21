@@ -2519,3 +2519,32 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .nearby-place-map-link:hover { color: #123b5b; text-decoration: underline; }
 @media (max-width: 991.98px) { .nearby-places-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
 @media (max-width: 575.98px) { .nearby-places-section { padding-top: 32px !important; padding-bottom: 32px !important; } .nearby-places-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; } .nearby-place-image { aspect-ratio: 16 / 9; } .nearby-place-content { padding: 14px; } }
+
+
+/* Featured Stays carousel */
+.nearby-places-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:24px; }
+.nearby-places-heading-copy { min-width:0; }
+.nearby-places-controls { display:flex; flex:0 0 auto; align-items:center; gap:10px; }
+.nearby-places-view-all, .nearby-places-arrow { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid #d7e0e7; border-radius:8px; background:#fff; color:#183b56; font:600 13px/1 Poppins,sans-serif; cursor:pointer; transition:background .2s ease,border-color .2s ease; }
+.nearby-places-view-all { padding:0 16px; }
+.nearby-places-arrow { width:42px; padding:0; font-size:16px; }
+.nearby-places-view-all:hover, .nearby-places-arrow:hover { border-color:#183b56; background:#f2f6f8; }
+.nearby-places-view-all[hidden], .nearby-places-arrow[hidden] { display:none !important; }
+.nearby-places-grid { display:flex; gap:20px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth; scrollbar-width:none; padding:2px 1px 12px; }
+.nearby-places-grid::-webkit-scrollbar { display:none; }
+.nearby-places-grid > .nearby-place-card { flex:0 0 calc((100% - 60px) / 4); scroll-snap-align:start; }
+.nearby-places-grid.is-expanded { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); overflow:visible; }
+@media (max-width:991.98px) {
+  .nearby-places-heading { align-items:flex-start; }
+  .nearby-places-grid { gap:16px; }
+  .nearby-places-grid > .nearby-place-card { flex-basis:calc((100% - 16px) / 2); }
+  .nearby-places-grid.is-expanded { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:575.98px) {
+  .nearby-places-heading { align-items:flex-start; flex-direction:column; gap:16px; margin-bottom:18px; }
+  .nearby-places-controls { align-self:stretch; }
+  .nearby-places-view-all { margin-right:auto; }
+  .nearby-places-grid { gap:14px; }
+  .nearby-places-grid > .nearby-place-card { flex-basis:100%; }
+  .nearby-places-grid.is-expanded { grid-template-columns:minmax(0,1fr); }
+}
