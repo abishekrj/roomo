@@ -1815,3 +1815,12 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
   margin-top: 0 !important;
 }
 
+/* Property details page spacing adjustments. */
+.stay-details-page .detail-section {
+  margin-bottom: 0 !important;
+}
+.stay-detail-page-wrap {
+  margin-bottom: -32px !important;
+  padding-bottom: 32px !important;
+}
+
