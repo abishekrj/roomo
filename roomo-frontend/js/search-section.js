@@ -59,9 +59,9 @@
           if (label) label.textContent = `${target.querySelector("#adultVal").textContent} Adults · ${target.querySelector("#childrenVal").textContent} Children · ${target.querySelector("#roomVal").textContent} Room${target.querySelector("#roomVal").textContent === "1" ? "" : "s"}`;
         });
       });
-      const triggerInput = (id, input) => target.querySelector("#" + id)?.addEventListener("click", () => { if (!input) return; try { if (input.showPicker) input.showPicker(); else input.click(); } catch (_) { input.click(); } });
+      const triggerInput = (id, input) => target.querySelector("#" + id)?.addEventListener("click", () => { if (!input) return; input.hidden = false; input.style.cssText = "position:fixed;opacity:0;width:1px;height:1px;left:50%;top:50%;"; try { if (input.showPicker) input.showPicker(); else input.click(); } catch (_) { input.click(); } });
       triggerInput("checkinDateTrigger", checkin); triggerInput("checkoutDateTrigger", checkout);
-      const syncDateLabels = () => { const fmt = value => value ? new Date(value + "T12:00:00").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) : "Select date"; const a=target.querySelector("#checkinDateDisplay"), b=target.querySelector("#checkoutDateDisplay"); if(a)a.textContent=fmt(checkin?.value); if(b)b.textContent=fmt(checkout?.value); };
+      const syncDateLabels = () => { const fmt = value => value ? new Date(value + "T12:00:00").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) : "Select date"; const a=target.querySelector("#checkinDateDisplay"), b=target.querySelector("#checkoutDateDisplay"); if(a)a.textContent=fmt(checkin?.value); if(b)b.textContent=fmt(checkout?.value); if(checkin){checkin.hidden=true;checkin.style.cssText="";} if(checkout){checkout.hidden=true;checkout.style.cssText="";} };
       checkin?.addEventListener("change", syncDateLabels); checkout?.addEventListener("change", syncDateLabels); syncDateLabels();
       target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
       event.preventDefault();
