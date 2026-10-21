@@ -47,7 +47,7 @@ async function savePage(req, res, next) {
       });
     } else {
       row = await prisma.cMSPage.create({
-        data: { slug: data.slug, draft: data, published: publish ? data : null, isPublished: publish, publishedAt: publish ? new Date() : null }
+        data: { slug: data.slug, draft: data, ...(publish ? { published: data } : {}), isPublished: publish, publishedAt: publish ? new Date() : null }
       });
     }
     res.json({ message: publish ? "Page published successfully." : "Draft saved successfully.", page: { id: row.id, slug: row.slug, draft: row.draft, published: row.published, isPublished: row.isPublished, publishedAt: row.publishedAt, updatedAt: row.updatedAt } });
