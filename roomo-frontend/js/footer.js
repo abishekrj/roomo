@@ -26,17 +26,6 @@
     const footer = document.querySelector("footer.temple-granite-footer");
     if (!footer) return;
     const links = {...defaults, ...(content.footerLinks || {})};
-    const cmsGuideLinks = [
-      {label:"Hotels Near Arunachaleswarar Temple",url:"hotels-near-arunachaleswarar-temple.html"},
-      {label:"Stays Near Sri Ramanasramam",url:"stays-near-sri-ramanasramam.html"},
-      {label:"Budget Rooms in Tiruvannamalai",url:"budget-rooms-in-tiruvannamalai.html"},
-      {label:"Family Stays for Girivalam",url:"family-stays-for-girivalam.html"},
-      {label:"Monthly Stays in Tiruvannamalai",url:"monthly-stays-in-tiruvannamalai.html"}
-    ];
-    links.sanctuaries = [...(links.sanctuaries || [])];
-    cmsGuideLinks.forEach(guide => {
-      if (!links.sanctuaries.some(item => item.url === guide.url)) links.sanctuaries.push(guide);
-    });
     const columns = footer.querySelectorAll(".row.g-4.mb-4 > div");
     if (columns[0]) {
       const social = columns[0].querySelector(".d-flex.gap-3.fs-5.mt-3");
@@ -57,6 +46,27 @@
     const legal = footer.querySelector(".d-flex.flex-column.flex-md-row.align-items-center.justify-content-between > div");
     if (legal) { legal.replaceChildren(); (links.legal || []).forEach(item => legal.appendChild(makeLink(item))); }
 
+  }
+  async function loadCmsGuideLinks() {
+    try {
+      const response = await fetch(API.replace("/homepage", "/cms-pages"), {cache:"no-store"});
+      if (!response.ok) return;
+      const data = await response.json();
+      const pages = Array.isArray(data.pages) ? data.pages : [];
+      const footer = document.querySelector("footer.temple-granite-footer");
+      const list = footer?.querySelectorAll(".row.g-4.mb-4 > div")[1]?.querySelector("ul");
+      if (!list || !pages.length) return;
+      pages.forEach(page => {
+        if (!page.slug || !page.title) return;
+        const url = page.slug + ".html";
+        if ([...list.querySelectorAll("a")].some(a => a.getAttribute("href") === url)) return;
+        const li = document.createElement("li");
+        li.appendChild(makeLink({label:page.title,url}));
+        list.appendChild(li);
+      });
+    } catch (error) {
+      console.warn("ROOMO CMS guide links are temporarily unavailable.", error);
+    }
   }
   async function updateVisitorCount() {
     const container = document.getElementById("visitorCountContainer");
@@ -86,6 +96,7 @@
       if (!component.ok) throw new Error("Footer component returned HTTP " + component.status);
       placeholder.outerHTML = await component.text();
       await updateVisitorCount();
+      await loadCmsGuideLinks();
       try {
         const response = await fetch(API, {cache:"no-store"});
         if (response.ok) { const data = await response.json(); apply(data.content || {}); }
