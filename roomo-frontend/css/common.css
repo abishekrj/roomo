@@ -1897,9 +1897,15 @@ body.search-page .listing .listing-policy-no-card{color:#218838;font-weight:700}
 body.search-page .listing .listing-policy-no-card i{color:#218838}
 
 
-/* Homepage: hide the full hero banner on mobile only; keep desktop unchanged. */
+/* Homepage: hide the hero copy and image on mobile, but retain the search section. */
 @media (max-width: 767.98px) {
-  .home-page .hero-heritage-wrapper {
+  .home-page .hero-heritage-wrapper > .container > .row.align-items-center.g-4.pb-4 {
     display: none !important;
+  }
+  .home-page .hero-heritage-wrapper {
+    display: block !important;
+  }
+  .home-page .hero-heritage-wrapper > .container > .row.justify-content-center.mt-2 {
+    margin-top: 0 !important;
   }
 }
