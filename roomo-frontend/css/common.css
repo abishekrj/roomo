@@ -2217,3 +2217,14 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   .stay-details-page .detail-hero-actions .detail-modify-search,
   .stay-details-page .detail-hero-actions .detail-outline { flex: 0 0 auto; }
 }
+
+
+/* Property details: show the address and Google Map above the booking panel. */
+.stay-details-page .detail-address-map { margin: 0 0 18px; overflow: hidden; border: 1px solid #dce5eb; border-radius: 8px !important; background: #fff; }
+.stay-details-page .detail-address-map-heading { display: flex; align-items: center; gap: 8px; padding: 12px 13px 0; color: #183b56; font-size: 13px; font-weight: 700; }
+.stay-details-page .detail-address-map-heading i { color: #2563a6; font-size: 16px; }
+.stay-details-page .detail-address-map-address { margin: 5px 13px 11px; color: #5f6e7b; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.stay-details-page .detail-address-map iframe { display: block; width: 100%; height: 170px; border: 0; background: #edf2f5; }
+.stay-details-page .detail-address-map-link { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 9px 12px; color: #1d4e89; font-size: 12px; font-weight: 700; text-decoration: none; }
+.stay-details-page .detail-address-map-link:hover { background: #f4f8fb; text-decoration: underline; }
+@media (max-width: 760px) { .stay-details-page .detail-address-map iframe { height: 190px; } }
