@@ -97,11 +97,11 @@
       if (!component.ok) throw new Error("Footer component returned HTTP " + component.status);
       placeholder.outerHTML = await component.text();
       await updateVisitorCount();
-      await loadCmsGuideLinks();
       try {
         const response = await fetch(API, {cache:"no-store"});
         if (response.ok) { const data = await response.json(); apply(data.content || {}); }
       } catch (error) { console.warn("ROOMO footer settings unavailable; showing default footer links.", error); }
+      await loadCmsGuideLinks();
     } catch (error) {
       console.error("ROOMO shared footer could not load.", error);
     }
