@@ -38,7 +38,8 @@ const defaultConfig = {
   ]
 };
 function getConfig(row, key) {
-  return row?.published?.[key] || row?.draft?.[key] || defaultConfig[key];
+  const fallback = key === "nearbyPlaces" ? defaultConfig : defaults[key];
+  return row?.published?.[key] || row?.draft?.[key] || fallback;
 }
 router.get("/", async (req, res, next) => {
   try {
