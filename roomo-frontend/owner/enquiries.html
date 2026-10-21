@@ -126,7 +126,7 @@
     const filtered=reservations.filter(r=>{
       if(!query)return true;
       const values=[
-        r.guest?.fullName,r.guest?.email,r.guest?.phoneNumber,
+        r.guest?.fullName,r.guest?.email,r.contactPhone,r.guest?.phoneNumber,
         r.property?.title,r.property?.city,r.property?.address,
         r.checkIn,r.checkOut,date(r.checkIn),date(r.checkOut),
         r.adults,r.children,r.roomCount,r.specialRequests,r.reservationCode,
@@ -160,7 +160,7 @@
         const tr=document.createElement("tr");
         const guest=document.createElement("td");const name=document.createElement("strong");name.textContent=r.guest?.fullName||"Guest";guest.appendChild(name);
         const email=document.createElement("div");email.className="help";email.textContent=r.guest?.email||"";guest.appendChild(email);
-        if(r.guest?.phoneNumber){const phone=document.createElement("div");phone.className="help";phone.textContent=r.guest.phoneNumber;guest.appendChild(phone);}
+        const contactPhone=r.contactPhone||r.guest?.phoneNumber;if(contactPhone){const phone=document.createElement("div");phone.className="help";phone.textContent="Mobile: "+contactPhone;guest.appendChild(phone);}
         tr.appendChild(guest);
 
         const dates=textCell(tr,"");dates.textContent="";

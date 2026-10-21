@@ -77,6 +77,23 @@ const statusSchema = z.object({
 });
 
 
+// GET /api/admin/reservations — all guest reservation requests for Super Admin.
+router.get("/reservations", async (req, res, next) => {
+  try {
+    const reservations = await prisma.reservation.findMany({
+      include: {
+        guest: { select: { id: true, fullName: true, email: true, phoneNumber: true } },
+        property: { select: { id: true, title: true, city: true, state: true, address: true, owner: { select: { id: true, fullName: true, email: true, phoneNumber: true } } } },
+        roomType: { select: { id: true, name: true } },
+      },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    });
+    res.json({ reservations });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/admin/registered-users
 // Return guest account details only; never expose password hashes or credentials.
 router.get("/registered-users", async (req, res, next) => {
