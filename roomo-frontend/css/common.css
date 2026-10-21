@@ -1939,3 +1939,11 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .home-page #featuredStayControls > a {
   border-radius: 8px !important;
 }
+
+
+/* Homepage hero vertical spacing on mobile. */
+@media (max-width: 767.98px) {
+  .home-page .hero-heritage-wrapper {
+    padding: 32px 0 !important;
+  }
+}
