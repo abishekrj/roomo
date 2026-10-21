@@ -291,24 +291,38 @@
         </div>
       </div>
     </section>
-    <!-- Featured stays / nearby destinations carousel -->
+    <!-- Nearby Locations carousel -->
     <section class="nearby-places-section py-5" id="nearbyPlacesSection" hidden>
       <div class="container">
         <div class="nearby-places-heading">
           <div class="nearby-places-heading-copy">
-            <span class="nearby-places-eyebrow">DISCOVER MORE AROUND TIRUVANNAMALAI</span>
-            <h2 id="nearbyPlacesTitle">Featured Stays</h2>
+            <span class="nearby-places-eyebrow">EXPLORE AROUND TIRUVANNAMALAI</span>
+            <h2 id="nearbyPlacesTitle">Nearby Locations</h2>
             <p id="nearbyPlacesDescription">Discover memorable places and scenic escapes to add to your sacred journey.</p>
           </div>
-          <div class="nearby-places-controls" aria-label="Featured stays controls">
+          <div class="nearby-places-controls" aria-label="Nearby locations controls">
             <button type="button" class="nearby-places-view-all" id="nearbyPlacesViewAll">View all</button>
-            <button type="button" class="nearby-places-arrow" id="nearbyPlacesPrev" aria-label="Previous featured stays"><i class="bi bi-arrow-left"></i></button>
-            <button type="button" class="nearby-places-arrow" id="nearbyPlacesNext" aria-label="Next featured stays"><i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="nearby-places-arrow" id="nearbyPlacesPrev" aria-label="Previous nearby locations"><i class="bi bi-arrow-left"></i></button>
+            <button type="button" class="nearby-places-arrow" id="nearbyPlacesNext" aria-label="Next nearby locations"><i class="bi bi-arrow-right"></i></button>
           </div>
         </div>
         <div class="nearby-places-grid" id="nearbyPlacesGrid" aria-live="polite"></div>
       </div>
     </section>
+    <div class="nearby-place-modal" id="nearbyPlaceModal" hidden aria-hidden="true">
+      <div class="nearby-place-modal-backdrop" data-nearby-modal-close></div>
+      <section class="nearby-place-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="nearbyPlaceModalTitle">
+        <button type="button" class="nearby-place-modal-close" aria-label="Close place details" data-nearby-modal-close><i class="bi bi-x-lg"></i></button>
+        <div class="nearby-place-modal-image" id="nearbyPlaceModalImage"></div>
+        <div class="nearby-place-modal-body">
+          <span class="nearby-place-modal-eyebrow">DISCOVER TAMIL NADU</span>
+          <h2 id="nearbyPlaceModalTitle"></h2>
+          <p class="nearby-place-modal-location" id="nearbyPlaceModalLocation"></p>
+          <p class="nearby-place-modal-description" id="nearbyPlaceModalDescription"></p>
+          <a class="nearby-place-modal-map" id="nearbyPlaceModalMap" href="#" target="_blank" rel="noopener noreferrer"><i class="bi bi-geo-alt"></i> Explore on Google Maps</a>
+        </div>
+      </section>
+    </div>
     <!-- Visual Archives Gallery Component -->
     <div id="roomoGallery"></div>
     <!-- Shared Testimonials Component -->
