@@ -300,6 +300,7 @@
     if ($("areaSquareMeters")) $("areaSquareMeters").value = p.areaSquareMeters ?? "";
     if ($("bedConfiguration")) $("bedConfiguration").value = (Array.isArray(p.bedConfiguration) ? p.bedConfiguration : []).map(bed => `${bed.count} ${bed.type}`).join("\n");
     if ($("allowPayAtProperty")) $("allowPayAtProperty").checked = Boolean(p.allowPayAtProperty);
+    if ($("noCreditCardRequired")) $("noCreditCardRequired").checked = Boolean(p.noCreditCardRequired);
     if ($("availabilityCount")) $("availabilityCount").value = p.availabilityCount ?? "";
     setCheckedValues("amenities", p.amenities);
     setCheckedValues("nearbyLandmarks", p.nearbyLandmarks);
@@ -343,6 +344,7 @@
     if ($("areaSquareMeters")) $("areaSquareMeters").value = "";
     if ($("bedConfiguration")) $("bedConfiguration").value = "";
     if ($("allowPayAtProperty")) $("allowPayAtProperty").checked = false;
+    if ($("noCreditCardRequired")) $("noCreditCardRequired").checked = false;
     if ($("availabilityCount")) $("availabilityCount").value = "";
     setCheckedValues("amenities", [
       "wifi",
@@ -404,6 +406,7 @@
       areaSquareMeters: $("areaSquareMeters")?.value ? Number($("areaSquareMeters").value) : null,
       bedConfiguration: ($("bedConfiguration")?.value || "").split(/\r?\n/).map(line => { const match = line.trim().match(/^(\d+)\s+(.+)$/); return match ? { count: Number(match[1]), type: match[2].trim() } : null; }).filter(Boolean),
       allowPayAtProperty: Boolean($("allowPayAtProperty")?.checked),
+      noCreditCardRequired: Boolean($("noCreditCardRequired")?.checked),
       availabilityCount: $("availabilityCount")?.value !== "" && $("availabilityCount")?.value != null ? Number($("availabilityCount").value) : null,
       amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(input => input.value),
       nearbyLandmarks: Array.from(document.querySelectorAll('input[name="nearbyLandmarks"]:checked')).map(input => input.value),
