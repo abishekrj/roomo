@@ -707,6 +707,33 @@ if (document.body.classList.contains("stay-details-page")) {
   } catch (error) { console.warn("Could not load the latest featured stay details.", error); }
   const root = document.getElementById("stayDetails");
   if (stay && root) {
+    const seoTitle = `${stay.name} in ${stay.location || "Tiruvannamalai"} | ROOMO Sacred`;
+    const plainDescription = String(stay.desc || `Explore ${stay.name}, a place to stay in Tiruvannamalai, Tamil Nadu.`).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const seoDescription = (plainDescription || `Explore ${stay.name} in Tiruvannamalai with ROOMO Sacred.`).slice(0, 155);
+    document.title = seoTitle;
+    const descriptionMeta = document.querySelector('meta[name="description"]');
+    if (descriptionMeta) descriptionMeta.content = seoDescription;
+    [["roomoOgTitle", seoTitle], ["roomoTwitterTitle", seoTitle], ["roomoOgDescription", seoDescription], ["roomoTwitterDescription", seoDescription]].forEach(([id, value]) => {
+      const meta = document.getElementById(id);
+      if (meta) meta.content = value;
+    });
+    const staySchema = document.getElementById("roomoStaySchema");
+    if (staySchema) {
+      staySchema.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        "name": stay.name,
+        "description": seoDescription,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": stay.location || "Tiruvannamalai",
+          "addressRegion": "Tamil Nadu",
+          "addressCountry": "IN"
+        },
+        ...(Array.isArray(stay.images) && stay.images.filter(Boolean).length ? { "image": stay.images.filter(Boolean).slice(0, 5) } : {}),
+        ...(Number(stay.price) > 0 ? { "priceRange": `INR ${Number(stay.price)} per night` } : {})
+      });
+    }
     const amenityLabels = {"wifi":"Free WiFi","parking":"Free parking","breakfast":"Breakfast included","view":"Arunachala / sacred views","hotwater":"24-hour hot water","private":"Private bathroom","quiet":"Quiet / meditation space","family":"Family-friendly options","accessible":"Accessibility features","airport-shuttle":"Airport shuttle","family-rooms":"Family rooms","non-smoking-rooms":"Non-smoking rooms","front-desk-24h":"24-hour front desk","lift":"Lift","heating":"Heating","ac":"Air conditioning","private-bathroom":"Private bathroom","shower":"Shower","luggage-storage":"Luggage storage","flat-screen-tv":"Flat-screen TV","stovetop":"Stovetop","kitchenware":"Kitchenware","electric-kettle":"Electric kettle","microwave":"Microwave","refrigerator":"Refrigerator","linen":"Linen","wardrobe":"Wardrobe or closet","toilet-paper":"Toilet paper","towels":"Towels","toilet":"Toilet","hairdryer":"Hairdryer","satellite-channels":"Satellite channels","radio":"Radio","television":"TV","socket-near-bed":"Socket near the bed","drying-rack":"Drying rack for clothing","clothes-rack":"Clothes rack","hypoallergenic":"Hypoallergenic","hardwood-floors":"Hardwood or parquet floors","tile-marble-floor":"Tile/marble floor","ironing-facilities":"Ironing facilities","iron":"Iron","elevator-access":"Upper floors accessible by elevator","tea-coffee-maker":"Tea/Coffee maker","shuttle-service":"Shuttle service","shuttle-service-extra":"Shuttle service (additional charge)","airport-shuttle-extra":"Airport shuttle (additional charge)","invoice-provided":"Invoice provided","private-checkin":"Private check-in/check-out","express-checkin":"Express check-in/check-out","non-smoking-throughout":"Non-smoking throughout","allergy-free-room":"Allergy-free room","fire-extinguishers":"Fire extinguishers","cctv-outside":"CCTV outside property","cctv-common":"CCTV in common areas","smoke-alarms":"Smoke alarms","security-alarm":"Security alarm","key-card-access":"Key card access","key-access":"Key access","safety-deposit-box":"Safety deposit box","english":"English","polish":"Polish","parking-none":"No parking available","internet-free-room":"WiFi is available in the rooms and is free of charge"};
     const amenityCategories = [["Parking",["parking-none"]],["Internet",["internet-free-room"]],["Kitchen",["stovetop","kitchenware","electric-kettle","microwave","refrigerator"]],["Bedroom",["linen","wardrobe"]],["Bathroom",["toilet-paper","towels","private-bathroom","toilet","hairdryer","shower"]],["Media & Technology",["flat-screen-tv","satellite-channels","radio","television"]],["Room amenities",["socket-near-bed","drying-rack","clothes-rack","hypoallergenic","hardwood-floors","tile-marble-floor","ironing-facilities","iron"]],["Accessibility",["elevator-access"]],["Food & Drink",["tea-coffee-maker"]],["Transport",["shuttle-service","airport-shuttle","shuttle-service-extra","airport-shuttle-extra"]],["Reception services",["invoice-provided","private-checkin","luggage-storage","express-checkin","front-desk-24h"]],["Miscellaneous",["ac","non-smoking-throughout","allergy-free-room","heating","lift","family-rooms","non-smoking-rooms"]],["Safety & security",["fire-extinguishers","cctv-outside","cctv-common","smoke-alarms","security-alarm","key-card-access","key-access","safety-deposit-box"]],["Languages spoken",["english","polish"]],["Other facilities",["parking","breakfast","view","hotwater","private","quiet","family","accessible"]]];
     const selectedAmenities = new Set((stay.amenities || []).filter(key => typeof key === "string"));
