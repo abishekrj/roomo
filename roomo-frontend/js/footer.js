@@ -45,9 +45,27 @@
     if (columns[2]) renderList(columns[2].querySelector("ul"), links.pilgrimCare);
     const legal = footer.querySelector(".d-flex.flex-column.flex-md-row.align-items-center.justify-content-between > div");
     if (legal) { legal.replaceChildren(); (links.legal || []).forEach(item => legal.appendChild(makeLink(item))); }
-    footer.querySelectorAll("span").forEach(span => {
-      if (span.textContent.includes("24/7 Helpline:") && content.contactPhone) span.textContent = "24/7 Helpline: " + content.contactPhone;
-    });
+
+  }
+  async function updateVisitorCount() {
+    const container = document.getElementById("visitorCountContainer");
+    const value = document.getElementById("visitorCountValue");
+    if (!container || !value) return;
+    try {
+      const alreadyCounted = sessionStorage.getItem("roomoVisitorCounted") === "1";
+      const response = await fetch(API + (alreadyCounted ? "/visitor-count" : "/visitor-count/visit"), {
+        method: alreadyCounted ? "GET" : "POST",
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Visitor count request failed.");
+      const stats = await response.json();
+      if (!alreadyCounted) sessionStorage.setItem("roomoVisitorCounted", "1");
+      container.hidden = stats.visible === false;
+      value.textContent = "Visitors: " + Number(stats.count || 0).toLocaleString("en-IN");
+    } catch (error) {
+      container.hidden = true;
+      console.warn("ROOMO visitor count is temporarily unavailable.", error);
+    }
   }
   document.addEventListener("DOMContentLoaded", async () => {
     const placeholder = document.getElementById("roomoFooter");
@@ -56,6 +74,7 @@
       const component = await fetch(FOOTER_URL, {cache:"no-cache"});
       if (!component.ok) throw new Error("Footer component returned HTTP " + component.status);
       placeholder.outerHTML = await component.text();
+      await updateVisitorCount();
       try {
         const response = await fetch(API, {cache:"no-store"});
         if (response.ok) { const data = await response.json(); apply(data.content || {}); }

@@ -375,7 +375,8 @@ router.post("/publish", async (req, res, next) => {
       featuredRooms: row?.draft?.featuredRooms || row?.published?.featuredRooms || defaults.featuredRooms
     };
     const destinationPlaces = row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces;
-    const publishedContent = { ...parsed.data, ...featured, destinationPlaces };
+    const visitorStats = row?.draft?.visitorStats || row?.published?.visitorStats || { count: 0, visible: true };
+    const publishedContent = { ...parsed.data, ...featured, destinationPlaces, visitorStats };
     const updated = await prisma.homepageConfig.upsert({
       where: { id: 1 },
       create: { id: 1, draft: { ...parsed.data, ...featured }, published: publishedContent, publishedAt: new Date() },
