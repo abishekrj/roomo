@@ -2197,3 +2197,23 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     box-shadow: 0 6px 20px rgba(15,35,50,.1);
   }
 }
+
+
+/* Property details: reclaim top whitespace and keep page actions aligned above the photo gallery. */
+.stay-details-page .stay-detail-page-wrap { padding-top: 12px !important; }
+.stay-details-page .detail-crumb { margin-bottom: 12px !important; }
+.stay-details-page .detail-hero { align-items: center !important; gap: 18px; margin-bottom: 12px !important; padding: 0 0 4px !important; }
+.stay-details-page .detail-hero-info { min-width: 0; }
+.stay-details-page .detail-hero-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.stay-details-page .detail-hero-actions .detail-modify-search,
+.stay-details-page .detail-hero-actions .detail-outline { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; margin: 0; padding: 9px 12px; border-radius: 8px !important; font-size: 12px; line-height: 1.2; white-space: nowrap; }
+.stay-details-page .detail-search-section { margin: 0 0 12px !important; }
+.stay-details-page .detail-search-content:not([hidden]) { margin-top: 10px; }
+.stay-details-page .detail-gallery { margin-top: 0 !important; margin-bottom: 24px !important; }
+@media (max-width: 760px) {
+  .stay-details-page .stay-detail-page-wrap { padding-top: 10px !important; }
+  .stay-details-page .detail-hero { align-items: flex-start !important; flex-direction: column; gap: 12px; }
+  .stay-details-page .detail-hero-actions { width: 100%; justify-content: flex-start; }
+  .stay-details-page .detail-hero-actions .detail-modify-search,
+  .stay-details-page .detail-hero-actions .detail-outline { flex: 0 0 auto; }
+}
