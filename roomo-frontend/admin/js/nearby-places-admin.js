@@ -66,9 +66,11 @@
   async function load() {
     const data = await request();
     config = data.draft || config;
+    if (config.title === "Explore Places Around Tiruvannamalai") config.title = "Featured Stays";
+    if (config.description === "Discover scenic hills, peaceful nature escapes and memorable places to visit during your stay.") config.description = "Discover memorable places and scenic escapes to add to your sacred journey.";
     config.places = Array.isArray(config.places) ? config.places : [];
     $("placesTitle").value = config.title; $("placesDescription").value = config.description;
-    render(); notice("Nearby places loaded. Changes are published immediately.", "info");
+    render(); notice("Featured Stays loaded. Changes are published immediately.", "info");
   }
   async function init() {
     $("logoutButton").addEventListener("click", () => { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); location.href = "admin.html"; });
