@@ -165,6 +165,12 @@
   }
 
   async function editFilter(group, filter) {
+    const groupOptions = groups.map((item, index) => (index + 1) + ". " + item.title + (item.isActive ? "" : " (disabled)")).join("\n");
+    const currentGroupIndex = Math.max(0, groups.findIndex(item => item.id === group.id));
+    const groupNumberText = prompt("Choose the subheading number:\n" + groupOptions, String(currentGroupIndex + 1));
+    if (groupNumberText === null) return;
+    const selectedGroup = groups[Number(groupNumberText) - 1];
+    if (!selectedGroup) return notice("Choose a valid subheading number.", "error");
     const label = prompt("Filter label", filter.label);
     if (label === null) return;
     const filterType = prompt("Filter type: type, rating, amenity, distance, room, keyword", filter.filterType);
@@ -178,7 +184,7 @@
     if (!label.trim() || !value.trim() || !allowed.includes(filterType.trim()) || !Number.isInteger(sortOrder) || sortOrder < 0) {
       return notice("Check the label, supported filter type, value, and order.", "error");
     }
-    await saveFilter(filter, { groupId: group.id, label: label.trim(), filterType: filterType.trim(), value: value.trim(), sortOrder });
+    await saveFilter(filter, { groupId: selectedGroup.id, label: label.trim(), filterType: filterType.trim(), value: value.trim(), sortOrder });
   }
 
   async function deleteFilter(filter) {
