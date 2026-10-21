@@ -295,6 +295,12 @@
     $("maxGuests").value = p.maxGuests ?? 2;
     $("bedrooms").value = p.bedrooms ?? 1;
     $("bathrooms").value = p.bathrooms ?? 1;
+    if ($("livingRooms")) $("livingRooms").value = p.livingRooms ?? 1;
+    if ($("kitchens")) $("kitchens").value = p.kitchens ?? 1;
+    if ($("areaSquareMeters")) $("areaSquareMeters").value = p.areaSquareMeters ?? "";
+    if ($("bedConfiguration")) $("bedConfiguration").value = (Array.isArray(p.bedConfiguration) ? p.bedConfiguration : []).map(bed => `${bed.count} ${bed.type}`).join("\n");
+    if ($("allowPayAtProperty")) $("allowPayAtProperty").checked = Boolean(p.allowPayAtProperty);
+    if ($("availabilityCount")) $("availabilityCount").value = p.availabilityCount ?? "";
     setCheckedValues("amenities", p.amenities);
     setCheckedValues("nearbyLandmarks", p.nearbyLandmarks);
     $("perks").value = Array.isArray(p.perks) ? p.perks.join("\n") : "";
@@ -332,6 +338,12 @@
     $("maxGuests").value = 2;
     $("bedrooms").value = 1;
     $("bathrooms").value = 1;
+    if ($("livingRooms")) $("livingRooms").value = 1;
+    if ($("kitchens")) $("kitchens").value = 1;
+    if ($("areaSquareMeters")) $("areaSquareMeters").value = "";
+    if ($("bedConfiguration")) $("bedConfiguration").value = "";
+    if ($("allowPayAtProperty")) $("allowPayAtProperty").checked = false;
+    if ($("availabilityCount")) $("availabilityCount").value = "";
     setCheckedValues("amenities", [
       "wifi",
       "airport-shuttle",
@@ -387,6 +399,12 @@
       maxGuests: Number($("maxGuests").value),
       bedrooms: Number($("bedrooms").value),
       bathrooms: Number($("bathrooms").value),
+      livingRooms: Number($("livingRooms")?.value || 0),
+      kitchens: Number($("kitchens")?.value || 0),
+      areaSquareMeters: $("areaSquareMeters")?.value ? Number($("areaSquareMeters").value) : null,
+      bedConfiguration: ($("bedConfiguration")?.value || "").split(/\r?\n/).map(line => { const match = line.trim().match(/^(\d+)\s+(.+)$/); return match ? { count: Number(match[1]), type: match[2].trim() } : null; }).filter(Boolean),
+      allowPayAtProperty: Boolean($("allowPayAtProperty")?.checked),
+      availabilityCount: $("availabilityCount")?.value !== "" && $("availabilityCount")?.value != null ? Number($("availabilityCount").value) : null,
       amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(input => input.value),
       nearbyLandmarks: Array.from(document.querySelectorAll('input[name="nearbyLandmarks"]:checked')).map(input => input.value),
       perks: $("perks").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean).slice(0, 8),
