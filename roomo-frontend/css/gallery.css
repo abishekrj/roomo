@@ -52,3 +52,15 @@
   border-color: var(--sacred-blue, #0058bc);
   color: #fff;
 }
+
+
+/* Keep the gallery popup close control aligned to the far right. */
+#galleryLightboxModal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#galleryLightboxModal .modal-header [data-bs-dismiss="modal"] {
+  margin-left: auto;
+  flex-shrink: 0;
+}
