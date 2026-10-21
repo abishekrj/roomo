@@ -1749,3 +1749,18 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .property-gallery-thumb.active { border-color:#facc15; opacity:1; }
 .property-gallery-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 @media(max-width:640px) { .property-gallery-modal { gap:12px; padding:58px 10px 14px; } .property-gallery-stage { height:58vh; width:100%; } .property-gallery-arrow { width:38px; height:38px; font-size:18px; } .property-gallery-prev { left:4px; } .property-gallery-next { right:4px; } .property-gallery-thumb { flex-basis:72px; width:72px; height:56px; } .property-gallery-thumbnails-wrap { gap:5px; } .property-gallery-thumb-arrow { flex-basis:30px; width:30px; height:30px; } }
+
+/* Shared category-free search form on property details pages. */
+.stay-details-page .detail-search-section{margin:0 0 24px;padding:22px;border:1px solid #d9e2ec;border-radius:18px;background:#f8fbff;box-shadow:0 8px 24px rgba(0,53,128,.06)}
+.stay-details-page .detail-search-heading{margin-bottom:15px}
+.stay-details-page .detail-search-heading h2{margin:4px 0 0;color:#003580;font-size:clamp(20px,2.5vw,26px);font-weight:600}
+.stay-details-page .detail-search-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.stay-details-page .detail-search-form label{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0;color:#526579;font-size:11px;font-weight:600}
+.stay-details-page .detail-search-form label span{display:flex;align-items:center;gap:6px;color:#34465b;font-size:11px;font-weight:600}
+.stay-details-page .detail-search-form label span i{color:#003580}
+.stay-details-page .detail-search-form input,.stay-details-page .detail-search-form select{width:100%;min-width:0;min-height:44px;padding:10px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#172b4d;font:inherit;font-size:13px}
+.stay-details-page .detail-search-form input:focus,.stay-details-page .detail-search-form select:focus{outline:2px solid #9fc5f8;outline-offset:1px;border-color:#2563a6}
+.stay-details-page .detail-search-submit{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;min-height:47px;padding:12px 18px;border:0;border-radius:9px;background:#003580;color:#fff;font-size:13px;font-weight:600}
+.stay-details-page .detail-search-submit:hover{background:#0f2c59}
+@media(max-width:760px){.stay-details-page .detail-search-section{padding:16px}.stay-details-page .detail-search-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}}
+@media(max-width:420px){.stay-details-page .detail-search-form{grid-template-columns:1fr}.stay-details-page .detail-search-submit{grid-column:auto}}
