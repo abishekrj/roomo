@@ -45,7 +45,7 @@
       checkout.min = checkin.value || dateValue(0);
       if (checkout.value && checkin.value && checkout.value <= checkin.value) checkout.value = "";
     });
-    target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
+    if (target.dataset.searchVariant === "details") target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
       event.preventDefault();
       const checkinValue = checkin?.value || "";
       const checkoutValue = checkout?.value || "";
