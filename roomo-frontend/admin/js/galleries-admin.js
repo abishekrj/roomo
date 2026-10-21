@@ -6,7 +6,14 @@
   const state = { items: [], type: "IMAGE", uploadedUrl: "", uploadedType: "" };
   const token = () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   const escapeHtml = value => String(value || "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
-  function syncGalleryView() {\n    const section = window.location.hash === "#add-gallery" ? "add-gallery" : "gallery-list";\n    $("add-gallery").classList.toggle("hidden", section !== "add-gallery");\n    $("gallery-list").classList.toggle("hidden", section !== "gallery-list");\n    const menu = $("galleryMenu"); if (menu) menu.open = true;\n    document.querySelectorAll("#galleryMenu [data-gallery-view]").forEach(link => link.classList.toggle("active", link.getAttribute("href").endsWith("#" + section)));\n  }\n  function notice(message, type="info") { const el=$("pageNotice"); el.textContent=message; el.className="notice show "+type; }
+  function syncGalleryView() {
+    const section = window.location.hash === "#add-gallery" ? "add-gallery" : "gallery-list";
+    $("add-gallery").classList.toggle("hidden", section !== "add-gallery");
+    $("gallery-list").classList.toggle("hidden", section !== "gallery-list");
+    const menu = $("galleryMenu"); if (menu) menu.open = true;
+    document.querySelectorAll("#galleryMenu [data-gallery-view]").forEach(link => link.classList.toggle("active", link.getAttribute("href").endsWith("#" + section)));
+  }
+  function notice(message, type="info") { const el=$("pageNotice"); el.textContent=message; el.className="notice show "+type; }
   async function request(path, options={}) {
     const headers={...(token()?{Authorization:"Bearer "+token()}:{}),...(options.body && !(options.body instanceof FormData)?{"Content-Type":"application/json"}:{})};
     const response=await fetch(API+path,{...options,headers});
@@ -85,7 +92,8 @@
     state.uploadedUrl=item.sourceType==="UPLOAD"?item.mediaUrl:"";state.uploadedType=item.type;
     $("formHeading").textContent="Edit gallery media";$("saveMediaButton").textContent="Update gallery item";$("cancelEditButton").classList.remove("hidden");updateFields();
     const preview=previewFor(item);if(preview){$("mediaPreview").src=preview;$("mediaPreview").classList.remove("hidden");}
-    window.location.hash = "add-gallery";syncGalleryView();\n    window.scrollTo({top:$("galleryForm").getBoundingClientRect().top+window.scrollY-30,behavior:"smooth"});
+    window.location.hash = "add-gallery";syncGalleryView();
+    window.scrollTo({top:$("galleryForm").getBoundingClientRect().top+window.scrollY-30,behavior:"smooth"});
   }
   async function save(event) {
     event.preventDefault();
@@ -116,7 +124,9 @@
     catch(error) { notice(error.message,"error"); }
   }
   document.addEventListener("DOMContentLoaded",()=>{
-    document.querySelectorAll("#galleryMenu .sidebar-sublink").forEach(link=>link.dataset.galleryView="true");\n    window.addEventListener("hashchange",syncGalleryView);syncGalleryView();\n    $("mediaType").addEventListener("change",updateFields);$("sourceType").addEventListener("change",updateFields);
+    document.querySelectorAll("#galleryMenu .sidebar-sublink").forEach(link=>link.dataset.galleryView="true");
+    window.addEventListener("hashchange",syncGalleryView);syncGalleryView();
+    $("mediaType").addEventListener("change",updateFields);$("sourceType").addEventListener("change",updateFields);
     $("uploadMediaButton").addEventListener("click",uploadFile);$("galleryForm").addEventListener("submit",save);$("cancelEditButton").addEventListener("click",resetForm);
     document.querySelectorAll("[data-admin-type]").forEach(button=>button.addEventListener("click",()=>{state.type=button.dataset.adminType;document.querySelectorAll("[data-admin-type]").forEach(b=>b.classList.toggle("active",b===button));renderList();}));
     $("logoutButton").addEventListener("click",()=>{localStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TOKEN_KEY);window.location.href="admin.html";});
