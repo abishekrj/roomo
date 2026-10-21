@@ -18,3 +18,9 @@
     border-radius: 8px;
   }
 }
+
+/* ROOMO gallery section uses a white background on every device. */
+#sacredGallery,
+.roomoGallery {
+  background-color: #fff !important;
+}
