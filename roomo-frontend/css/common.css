@@ -1947,3 +1947,12 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     padding: 32px 0 !important;
   }
 }
+
+
+/* Homepage sections using Bootstrap py-5 spacing use py-4 spacing on mobile. */
+@media (max-width: 767.98px) {
+  .home-page .py-5 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
