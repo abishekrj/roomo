@@ -1909,3 +1909,13 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     margin-top: 0 !important;
   }
 }
+
+
+/* Homepage mobile: place View All at the left and carousel arrows at the right. */
+@media (max-width: 767.98px) {
+  .home-page #featuredStayControls {
+    width: 100%;
+    align-self: stretch !important;
+    justify-content: space-between;
+  }
+}
