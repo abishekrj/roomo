@@ -18,7 +18,7 @@
 
   function mount(target) {
     if (!target || target.dataset.roomoSearchMounted === "true") return;
-    target.innerHTML = target.dataset.searchVariant === "details" ? detailsTemplate : fullTemplate;
+    target.innerHTML = fullTemplate;
     target.dataset.roomoSearchMounted = "true";
     const params = new URLSearchParams(window.location.search);
     const destination = target.querySelector("#destinationInput");
@@ -28,9 +28,9 @@
     const children = target.querySelector("#childrenVal");
     const rooms = target.querySelector("#roomVal");
     if (destination && params.get("destination")) destination.value = params.get("destination");
-    if (adults && params.get("adults")) adults.value = String(Math.max(1, Math.min(8, Number(params.get("adults")) || 2)));
-    if (children && params.get("children")) children.value = String(Math.max(0, Math.min(6, Number(params.get("children")) || 0)));
-    if (rooms && params.get("rooms")) rooms.value = String(Math.max(1, Math.min(5, Number(params.get("rooms")) || 1)));
+    if (adults && params.get("adults")) { const n = String(Math.max(1, Math.min(8, Number(params.get("adults")) || 2))); if (adults.tagName === "SELECT") adults.value = n; else adults.textContent = n; }
+    if (children && params.get("children")) { const n = String(Math.max(0, Math.min(6, Number(params.get("children")) || 0))); if (children.tagName === "SELECT") children.value = n; else children.textContent = n; }
+    if (rooms && params.get("rooms")) { const n = String(Math.max(1, Math.min(5, Number(params.get("rooms")) || 1))); if (rooms.tagName === "SELECT") rooms.value = n; else rooms.textContent = n; }
     const dateValue = offset => { const date = new Date(); date.setHours(12,0,0,0); date.setDate(date.getDate()+offset); return [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-"); };
     if (checkin) {
       checkin.min = dateValue(0);
@@ -45,7 +45,7 @@
       checkout.min = checkin.value || dateValue(0);
       if (checkout.value && checkin.value && checkout.value <= checkin.value) checkout.value = "";
     });
-    if (target.dataset.searchVariant === "details") target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
+    if (target.dataset.searchVariant === "details") {\n      const limits = { adults: [1, 8], children: [0, 6], rooms: [1, 5] };\n      target.querySelectorAll("[onclick^=\\\"updateCount\\\"]").forEach(button => {\n        button.removeAttribute("onclick");\n        button.addEventListener("click", () => {\n          const type = (button.getAttribute("aria-label") || "").match(/adults|children|rooms/i)?.[0]?.toLowerCase();\n          const node = target.querySelector(type === "adults" ? "#adultVal" : type === "children" ? "#childrenVal" : "#roomVal");\n          if (!type || !node) return;\n          const delta = /increase/i.test(button.getAttribute("aria-label") || "") ? 1 : -1;\n          node.textContent = String(Math.max(limits[type][0], Math.min(limits[type][1], Number(node.textContent) + delta)));\n          const label = target.querySelector("#guestsLabel");\n          if (label) label.textContent = `${target.querySelector("#adultVal").textContent} Adults · ${target.querySelector("#childrenVal").textContent} Children · ${target.querySelector("#roomVal").textContent} Room${target.querySelector("#roomVal").textContent === "1" ? "" : "s"}`;\n        });\n      });\n      const triggerInput = (id, input) => target.querySelector("#" + id)?.addEventListener("click", () => { if (!input) return; try { if (input.showPicker) input.showPicker(); else input.click(); } catch (_) { input.click(); } });\n      triggerInput("checkinDateTrigger", checkin); triggerInput("checkoutDateTrigger", checkout);\n      const syncDateLabels = () => { const fmt = value => value ? new Date(value + "T12:00:00").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"}) : "Select date"; const a=target.querySelector("#checkinDateDisplay"), b=target.querySelector("#checkoutDateDisplay"); if(a)a.textContent=fmt(checkin?.value); if(b)b.textContent=fmt(checkout?.value); };\n      checkin?.addEventListener("change", syncDateLabels); checkout?.addEventListener("change", syncDateLabels); syncDateLabels();\n      target.querySelector("#staySearchForm")?.addEventListener("submit", event => {
       event.preventDefault();
       const checkinValue = checkin?.value || "";
       const checkoutValue = checkout?.value || "";
