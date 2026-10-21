@@ -285,6 +285,40 @@ router.patch("/properties/:id", async (req, res, next) => {
   }
 });
 
+// PATCH /api/admin/properties/:id/map-location
+// Save the dedicated Google Maps embed URL for an existing property.
+router.patch("/properties/:id/map-location", async (req, res, next) => {
+  try {
+    const idResult = z.string().uuid().safeParse(req.params.id);
+    const bodyResult = z.object({
+      mapLocation: z.string().trim().max(1000).optional().nullable()
+    }).safeParse(req.body);
+    if (!idResult.success) return res.status(400).json({ message: "Invalid property ID." });
+    if (!bodyResult.success) return res.status(400).json({ message: "Please provide a valid Google Maps embed URL." });
+
+    const mapLocation = bodyResult.data.mapLocation || null;
+    if (mapLocation) {
+      let parsed;
+      try { parsed = new URL(mapLocation); } catch {
+        return res.status(400).json({ message: "Enter a valid Google Maps embed URL." });
+      }
+      if (parsed.protocol !== "https:" || parsed.hostname !== "www.google.com" || parsed.pathname !== "/maps/embed") {
+        return res.status(400).json({ message: "Use the HTTPS Google Maps embed URL copied from Google Maps → Share → Embed a map." });
+      }
+    }
+
+    const existing = await prisma.property.findUnique({ where: { id: idResult.data }, select: { id: true } });
+    if (!existing) return res.status(404).json({ message: "Property not found." });
+
+    const property = await prisma.property.update({
+      where: { id: idResult.data },
+      data: { mapLocation },
+      select: { id: true, mapLocation: true }
+    });
+    res.json({ message: "Google Maps URL saved successfully.", property });
+  } catch (error) { next(error); }
+});
+
 // PATCH /api/admin/properties/:id/featured
 router.patch("/properties/:id/featured", async (req, res, next) => {
   try {

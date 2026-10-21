@@ -397,6 +397,13 @@
               <input id="address" name="address" required minlength="5" maxlength="250">
             </div>
 
+            <div class="field full">
+              <label for="mapLocation">Google Maps embed URL</label>
+              <input id="mapLocation" name="mapLocation" type="url" maxlength="1000"
+                placeholder="https://www.google.com/maps/embed?pb=…">
+              <span class="field-help">Optional. Paste the property's Google Maps embed URL (Google Maps → Share → Embed a map → Copy HTML, then copy only the URL inside the src attribute). This exact map will appear on the property details page.</span>
+            </div>
+
             <div class="field">
               <label for="city">City *</label>
               <input id="city" name="city" required minlength="2" maxlength="100">
@@ -513,6 +520,7 @@
                 <th>Nightly price</th>
                 <th>Guests</th>
                 <th>Status</th>
+                <th>Google Maps URL</th>
                 <th>Change status</th>
               </tr>
             </thead>
@@ -721,6 +729,54 @@
           statusCell.appendChild(badge);
           row.appendChild(statusCell);
 
+          const mapCell = document.createElement("td");
+          mapCell.style.minWidth = "290px";
+          const mapInput = document.createElement("input");
+          mapInput.type = "url";
+          mapInput.maxLength = 1000;
+          mapInput.placeholder = "Google Maps embed URL";
+          mapInput.value = property.mapLocation || "";
+          mapInput.setAttribute("aria-label", `Google Maps embed URL for ${property.title}`);
+          mapInput.style.cssText = "width:100%;min-width:260px;padding:8px;border:1px solid #d8e0ea;border-radius:8px;font:inherit;font-size:12px";
+          const mapSave = document.createElement("button");
+          mapSave.type = "button";
+          mapSave.className = "button button-secondary";
+          mapSave.textContent = "Save map";
+          mapSave.style.cssText = "margin-top:6px;padding:6px 10px;font-size:12px";
+          mapSave.addEventListener("click", async () => {
+            const value = mapInput.value.trim();
+            if (value) {
+              let parsed;
+              try { parsed = new URL(value); } catch {
+                showNotice("dashboardNotice", "Enter a valid Google Maps embed URL.", "error");
+                mapInput.focus();
+                return;
+              }
+              if (parsed.protocol !== "https:" || parsed.hostname !== "www.google.com" || parsed.pathname !== "/maps/embed") {
+                showNotice("dashboardNotice", "Paste the HTTPS URL from Google Maps → Share → Embed a map.", "error");
+                mapInput.focus();
+                return;
+              }
+            }
+            mapSave.disabled = true;
+            mapSave.textContent = "Saving…";
+            try {
+              await request(`/admin/properties/${encodeURIComponent(property.id)}/map-location`, {
+                method: "PATCH",
+                body: JSON.stringify({ mapLocation: value || null }),
+              });
+              showNotice("dashboardNotice", "Google Maps URL saved for " + property.title + ".", "success");
+              await loadProperties();
+            } catch (error) {
+              showNotice("dashboardNotice", error.message, "error");
+            } finally {
+              mapSave.disabled = false;
+              mapSave.textContent = "Save map";
+            }
+          });
+          mapCell.append(mapInput, mapSave);
+          row.appendChild(mapCell);
+
           const actionCell = document.createElement("td");
           const select = document.createElement("select");
           select.className = "status-select";
@@ -816,6 +872,7 @@
             nightlyPrice: Number($("nightlyPrice").value),
             description: $("description").value.trim(),
             address: $("address").value.trim(),
+            mapLocation: $("mapLocation").value.trim() || null,
             city: $("city").value.trim(),
             state: $("state").value.trim(),
             country: $("country").value.trim(),
