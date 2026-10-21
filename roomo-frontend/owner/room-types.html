@@ -22,4 +22,7 @@ $("property").onchange=async()=>{clear();try{await loadTypes()}catch(e){notice(e
 $("form").onsubmit=async e=>{e.preventDefault();const propertyId=$("property").value;if(!propertyId){notice("Choose a property first.","error");return}const id=$("id").value;const data={propertyId,name:$("name").value.trim(),description:$("description").value.trim(),nightlyPrice:+$("price").value,maxGuests:+$("guests").value,quantity:+$("quantity").value,bedConfiguration:beds($("beds").value),facilities:lines($("facilities").value),imageUrls:lines($("images").value),sortOrder:+$("order").value||0,isActive:$("active").checked};if(data.imageUrls.length>10)return notice("Use no more than 10 image URLs.","error");$("save").disabled=true;try{const d=await request(id?"/room-types/owner/"+id:"/room-types/owner",{method:id?"PATCH":"POST",body:JSON.stringify(id?Object.fromEntries(Object.entries(data).filter(([k])=>k!=="propertyId")):data)});notice(d.message||"Room type saved.","success");clear();await loadTypes()}catch(e){notice(e.message,"error")}finally{$("save").disabled=false}};
 $("logout").onclick=()=>{sessionStorage.removeItem(KEY);location.replace("admin.html")};
 (async()=>{if(!token){location.replace("admin.html");return}try{await loadProperties();await loadTypes()}catch(e){notice(e.message,"error");if(e.status===401){sessionStorage.removeItem(KEY);location.replace("admin.html")}}})();
-})();</script></body></html>
+})();
+</script>
+</body>
+</html>
