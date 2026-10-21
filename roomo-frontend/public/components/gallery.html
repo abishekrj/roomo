@@ -15,21 +15,18 @@
     <div class="row g-4" id="galleryGrid" aria-live="polite"><div class="col-12 text-center py-5 text-muted">Loading Visual Archives…</div></div>
   </div>
 </section>
-<div class="modal fade" id="galleryLightboxModal" tabindex="-1" aria-hidden="true" aria-label="Gallery media viewer">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content gallery-viewer-shell text-white border-0 shadow-lg">
-      <div class="modal-header border-0 pb-0">
-        <div class="d-flex align-items-center gap-2 flex-wrap"><span class="badge rounded-pill px-3 py-2 font-cinzel">Visual Archives</span><span class="badge rounded-pill border text-white-50" id="lightboxCounter">1 of 1</span></div>
-        <button aria-label="Close gallery viewer" class="btn btn-sm rounded-circle text-white border" data-bs-dismiss="modal" type="button"><i class="bi bi-x-lg"></i></button>
-      </div>
-      <div class="modal-body p-3 p-md-4 text-center">
-        <div class="gallery-viewer-media position-relative d-flex align-items-center justify-content-center">
-          <div id="lightboxMedia" class="gallery-viewer-content"></div>
-          <button aria-label="Previous media" class="gallery-nav gallery-nav-prev" id="galleryPrevious" type="button"><i class="bi bi-chevron-left"></i></button>
-          <button aria-label="Next media" class="gallery-nav gallery-nav-next" id="galleryNext" type="button"><i class="bi bi-chevron-right"></i></button>
-        </div>
-        <div class="pt-3"><h3 class="fw-bold mb-1 font-serif-sacred" id="lightboxTitle">Sacred Glimpse</h3><p class="small text-white-50 mb-0" id="lightboxDesc"></p></div>
-      </div>
-    </div>
+<div class="property-gallery-modal" id="galleryLightboxModal" hidden role="dialog" aria-modal="true" aria-label="Gallery media viewer">
+  <button type="button" class="property-gallery-close" id="galleryViewerClose" aria-label="Close gallery"><i class="bi bi-x-lg"></i></button>
+  <div class="property-gallery-stage gallery-home-stage">
+    <button type="button" class="property-gallery-arrow property-gallery-prev" id="galleryPrevious" aria-label="Previous media"><i class="bi bi-chevron-left"></i></button>
+    <div id="lightboxMedia" class="gallery-home-media"></div>
+    <button type="button" class="property-gallery-arrow property-gallery-next" id="galleryNext" aria-label="Next media"><i class="bi bi-chevron-right"></i></button>
+    <div class="property-gallery-counter" id="lightboxCounter">1 / 1</div>
+  </div>
+  <div class="gallery-home-caption" id="lightboxCaption"><h3 id="lightboxTitle">Sacred Glimpse</h3><p id="lightboxDesc"></p></div>
+  <div class="property-gallery-thumbnails-wrap">
+    <button type="button" id="galleryThumbPrev" class="property-gallery-thumb-arrow" aria-label="Scroll thumbnails left"><i class="bi bi-chevron-left"></i></button>
+    <div class="property-gallery-thumbnails" id="galleryViewerThumbnails"></div>
+    <button type="button" id="galleryThumbNext" class="property-gallery-thumb-arrow" aria-label="Scroll thumbnails right"><i class="bi bi-chevron-right"></i></button>
   </div>
 </div>
