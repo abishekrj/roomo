@@ -544,8 +544,11 @@ document.querySelectorAll("[data-listing-view]").forEach(button=>{
   button.addEventListener("click",()=>setListingView(button.dataset.listingView));
 });
 let savedListingView="list";
-try{savedListingView=localStorage.getItem("roomoListingView")==="grid"?"grid":"list";}catch(error){}
+try{savedListingView=window.matchMedia("(max-width: 760px)").matches?"list":(localStorage.getItem("roomoListingView")==="grid"?"grid":"list");}catch(error){}
 setListingView(savedListingView,false);
+const listingViewMedia=window.matchMedia("(max-width: 760px)");
+function enforceMobileListingView(){if(listingViewMedia.matches)setListingView("list",false);}
+if(listingViewMedia.addEventListener)listingViewMedia.addEventListener("change",enforceMobileListingView);else listingViewMedia.addListener(enforceMobileListingView);
 
 function ensureRoomoMapModal(){
   if(document.getElementById("roomoMapModal")) return;
