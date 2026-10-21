@@ -9,3 +9,12 @@
   #sacredGallery .container > .row:first-child p,
   #sacredGallery .container > .row:first-child .col-lg-4 { display: none; }
 }
+
+/* Keep gallery images square on mobile screens. */
+@media (max-width: 575px) {
+  .gallery-card-button {
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+  }
+}
