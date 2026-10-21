@@ -21,6 +21,7 @@
     ".gallery-item",
     ".card",
     ".popular-stays-track > *",
+    "#testimonialTrack > *",
     ".nearby-places-grid > *",
     "#listings > *"
   ].join(",");
@@ -41,6 +42,13 @@
 
   function revealCards(root = document) {
     const candidates = new Set(root.querySelectorAll(CARD_SELECTOR));
+
+    // Reveal these section headings line by line instead of as one block.
+    root.querySelectorAll(
+      ".arunachala-editorial-section .row.align-items-center.mb-4 > .col-md-8 > *, " +
+      "#testimonials .container > .d-flex > div:first-child > *, " +
+      "#testimonials .container > .d-flex > div:nth-child(2) > *"
+    ).forEach((element) => candidates.add(element));
 
     // For Bootstrap-style grids without a dedicated card class, animate each
     // column as a single unit instead of animating every nested element.
