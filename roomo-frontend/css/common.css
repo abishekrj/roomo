@@ -1934,3 +1934,8 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
     min-height: 110px;
   }
 }
+
+/* Use consistent 8px corners for the homepage View All button. */
+.home-page #featuredStayControls > a {
+  border-radius: 8px !important;
+}
