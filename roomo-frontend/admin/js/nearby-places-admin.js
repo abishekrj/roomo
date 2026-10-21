@@ -4,7 +4,7 @@
   const TOKEN_KEY = "roomoAdminToken";
   const $ = id => document.getElementById(id);
   let token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-  let config = { title: "Featured Stays", description: "Discover memorable places and scenic escapes to add to your sacred journey.", places: [] };
+  let config = { title: "Nearby Locations", description: "Discover memorable places and scenic escapes to add to your sacred journey.", places: [] };
   let editingId = null;
   function notice(message, type = "info") { const el = $("pageNotice"); el.textContent = message; el.className = "notice show " + type; }
   async function request(options = {}) {
@@ -18,7 +18,7 @@
   function formValue() {
     return { id: $("placeId").value.trim(), name: $("placeName").value.trim(), location: $("placeLocation").value.trim(), imageUrl: $("placeImage").value.trim(), mapUrl: $("placeMap").value.trim(), description: $("placeDescription").value.trim(), visible: $("placeVisible").checked, sortOrder: Number($("placeOrder").value || 0) };
   }
-  function resetForm() { editingId = null; $("placeForm").reset(); $("placeId").value = ""; $("placeVisible").checked = true; $("placeOrder").value = String(config.places.length + 1); $("formHeading").textContent = "Add nearby place"; $("savePlaceButton").textContent = "Add place"; $("cancelEditButton").hidden = true; }
+  function resetForm() { editingId = null; $("placeForm").reset(); $("placeId").value = ""; $("placeVisible").checked = true; $("placeOrder").value = String(config.places.length + 1); $("formHeading").textContent = "Add nearby location"; $("savePlaceButton").textContent = "Add place"; $("cancelEditButton").hidden = true; }
   function openEdit(place) {
     editingId = place?.id || null;
     $("placeId").value = place?.id || "";
@@ -29,7 +29,7 @@
     $("placeDescription").value = place?.description || "";
     $("placeVisible").checked = place ? place.visible !== false : true;
     $("placeOrder").value = String(place?.sortOrder ?? config.places.length + 1);
-    $("formHeading").textContent = place ? "Edit nearby place" : "Add nearby place";
+    $("formHeading").textContent = place ? "Edit nearby location" : "Add nearby place";
     $("savePlaceButton").textContent = place ? "Save changes" : "Add place";
     $("cancelEditButton").hidden = !place;
     $("placeFormPanel").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -40,7 +40,7 @@
     const list = $("nearbyPlacesList"); list.replaceChildren();
     const places = [...config.places].sort((a, b) => a.sortOrder - b.sortOrder);
     $("placesCount").textContent = places.length + " place" + (places.length === 1 ? "" : "s");
-    if (!places.length) { const empty = document.createElement("p"); empty.className = "empty-state"; empty.textContent = "No nearby places yet. Add the first place above."; list.append(empty); return; }
+    if (!places.length) { const empty = document.createElement("p"); empty.className = "empty-state"; empty.textContent = "No nearby locations yet. Add the first location above."; list.append(empty); return; }
     places.forEach(place => {
       const card = document.createElement("article"); card.className = "nearby-admin-card" + (place.visible ? "" : " is-hidden");
       const image = document.createElement("div"); image.className = "nearby-admin-thumb";
@@ -57,7 +57,7 @@
       actions.append(edit, toggle, del); card.append(image, copy, actions); list.append(card);
     });
   }
-  async function saveAll(message = "Nearby places saved and published.") {
+  async function saveAll(message = "Nearby locations saved and published.") {
     try {
       const data = await request({ method: "PUT", body: JSON.stringify(config) });
       config = data.draft; render(); notice(data.message || message, "success");
@@ -66,11 +66,11 @@
   async function load() {
     const data = await request();
     config = data.draft || config;
-    if (config.title === "Explore Places Around Tiruvannamalai") config.title = "Featured Stays";
+    if (config.title === "Explore Places Around Tiruvannamalai" || config.title === "Featured Stays") config.title = "Nearby Locations";
     if (config.description === "Discover scenic hills, peaceful nature escapes and memorable places to visit during your stay.") config.description = "Discover memorable places and scenic escapes to add to your sacred journey.";
     config.places = Array.isArray(config.places) ? config.places : [];
     $("placesTitle").value = config.title; $("placesDescription").value = config.description;
-    render(); notice("Featured Stays loaded. Changes are published immediately.", "info");
+    render(); notice("Nearby Locations loaded. Changes are published immediately.", "info");
   }
   async function init() {
     $("logoutButton").addEventListener("click", () => { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); location.href = "admin.html"; });
