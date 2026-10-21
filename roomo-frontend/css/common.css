@@ -1800,3 +1800,18 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
 .stay-details-page .detail-search-content .heritage-input-box { padding: .65rem !important; border-radius: 11px; }
 .stay-details-page .detail-search-content .row.g-3 { --bs-gutter-x: .65rem; --bs-gutter-y: .65rem; }
 .stay-details-page .roomo-date-endpoint strong { font-weight: 700 !important; }
+
+/* Global search-field spacing and date emphasis across ROOMO pages. */
+.monolithic-search-engine .heritage-input-box {
+  padding: .65rem !important;
+}
+.monolithic-search-engine .roomo-date-endpoint strong {
+  font-weight: 700 !important;
+}
+.stay-details-page .detail-hero {
+  padding-top: 0 !important;
+}
+.stay-detail-page-wrap {
+  margin-top: 0 !important;
+}
+
