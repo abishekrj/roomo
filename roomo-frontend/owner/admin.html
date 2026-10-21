@@ -1,109 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<title>ROOMO Admin | Owners</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../admin/css/admin.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><script src="../js/favicon.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Owner Sign In | ROOMO Sacred</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-.owner-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.owner-form-grid .full{grid-column:1/-1}.owner-permission{display:flex;align-items:center;gap:8px}.owner-permission input{width:18px;height:18px}.inline-select{min-width:220px;max-width:100%}.helper{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
-@media(max-width:640px){.owner-form-grid{grid-template-columns:1fr}.owner-form-grid .full{grid-column:auto}.inline-select{min-width:180px}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:#f6f8fb;color:#263447;font:14px Poppins,sans-serif}.card{width:min(100%,440px);padding:28px;background:#fff;border:1px solid #e1e7ef;border-radius:8px}.brand{font-size:23px;font-weight:600;color:#174ea6}.brand small{display:block;font-size:11px;letter-spacing:1.5px;color:#68778b;font-weight:400}h1{font-size:24px;margin:26px 0 6px;font-weight:600}.muted{color:#68778b;line-height:1.6}.field{margin:18px 0}.field label{display:block;font-weight:500;margin-bottom:7px}.field input{width:100%;padding:12px;border:1px solid #d5deea;border-radius:8px;font:inherit}.field input:focus{outline:2px solid #b8d0fa;border-color:#174ea6}button{width:100%;padding:12px 14px;border:1px solid #174ea6;border-radius:8px;background:#174ea6;color:white;font:600 14px Poppins,sans-serif;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.notice{display:none;margin:14px 0;padding:12px;border-radius:8px;overflow-wrap:anywhere}.notice.show{display:block}.notice.error{background:#fff0f0;color:#9d2222}.notice.info{background:#eef5ff;color:#174ea6}.foot{margin-top:18px;font-size:12px}
 </style>
 </head>
-<body data-page="owners">
-<header class="topbar"><div class="brand">ROOMO<span>PROPERTY MANAGEMENT</span></div><button id="logoutButton" class="button button-secondary" type="button">Sign out</button></header>
-<main class="page"><div class="admin-shell"><aside class="admin-sidebar"><div class="sidebar-brand">ROOMO</div><div class="sidebar-subtitle">ADMIN PANEL</div><div class="sidebar-label">WORKSPACE</div><nav class="sidebar-nav" aria-label="Admin navigation">
-<a class="sidebar-link" href="../admin/dashboard.html"><span class="sidebar-icon"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>Dashboard</a>
-<a class="sidebar-link active" href="admin.html"><span class="sidebar-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>Owners</a>
-<details class="sidebar-accordion">
-<summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-houses-fill" aria-hidden="true"></i></span><span>Rooms</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary>
-<div class="sidebar-subnav">
-<a class="sidebar-sublink" href="../admin/rooms-listings.html#add-room">Add Rooms</a>
-<a class="sidebar-sublink" href="../admin/rooms-listings.html#room-listings">Room Listings</a>
-<a class="sidebar-sublink" href="../admin/room-filters.html">Room Filters</a>
-<a class="sidebar-sublink" href="../admin/featured-rooms.html">Featured Rooms</a>
-<a class="sidebar-sublink" href="../admin/listing-display.html">Listing Display Settings</a>
-</div></details>
-<details class="sidebar-accordion">
-<summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-window-stack" aria-hidden="true"></i></span><span>Home CMS</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary>
-<div class="sidebar-subnav">
-<a class="sidebar-sublink" href="../admin/homepage.html#header">Header</a>
-<a class="sidebar-sublink" href="../admin/homepage.html#hero-banner">Hero Banner</a>
-<a class="sidebar-sublink" href="../admin/homepage.html#upcoming-festival">Upcoming Festival</a>
-<a class="sidebar-sublink" href="../admin/homepage.html#footer">Footer</a>
-</div></details>
-<a class="sidebar-link" href="../admin/cms-pages.html"><span class="sidebar-icon"><i class="bi bi-file-earmark-richtext-fill" aria-hidden="true"></i></span>CMS Pages</a>
-<a class="sidebar-link" href="../admin/destinations.html"><span class="sidebar-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>Destinations</a>
-<a class="sidebar-link" href="../admin/nearby-places.html"><span class="sidebar-icon"><i class="bi bi-signpost-2-fill" aria-hidden="true"></i></span>Nearby Locations</a>
-<a class="sidebar-link" href="../admin/testimonials.html"><span class="sidebar-icon"><i class="bi bi-chat-quote-fill" aria-hidden="true"></i></span>Testimonials</a>
-<details class="sidebar-accordion"><summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-images" aria-hidden="true"></i></span><span>Gallery</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary><div class="sidebar-subnav"><a class="sidebar-sublink" href="../admin/galleries.html#add-gallery">Add Gallery</a><a class="sidebar-sublink" href="../admin/galleries.html#gallery-list">Gallery List</a></div></details>
-<a class="sidebar-link" href="../admin/reports.html"><span class="sidebar-icon"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>Reports</a>
-<a class="sidebar-link" href="../admin/registered-users.html"><span class="sidebar-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>Registered Users</a>
-</nav></aside>
-<div class="admin-content">
-<div id="pageNotice" class="notice" role="status"></div>
-<div class="page-heading"><div><h1>Owner management</h1><p class="muted">Create owner logins, assign properties, and control property-editing access.</p></div><button id="refreshButton" class="button button-secondary" type="button">Refresh owners</button></div>
-<section class="panel">
-<div class="section-heading"><div><h2>Create an owner account</h2><p class="muted small">The owner can use these credentials to sign in to the Owner Dashboard.</p></div></div>
-<form id="createOwnerForm" class="owner-form-grid">
-<div class="field"><label for="ownerName">Owner full name *</label><input id="ownerName" required minlength="2" maxlength="100" autocomplete="name"></div>
-<div class="field"><label for="ownerEmail">Email address *</label><input id="ownerEmail" type="email" required maxlength="254" autocomplete="email"></div>
-<div class="field"><label for="ownerPassword">Temporary password *</label><input id="ownerPassword" type="password" required minlength="12" maxlength="72" autocomplete="new-password"><p class="helper">At least 12 characters. Share it securely with the owner.</p></div>
-<div class="field"><label for="ownerPhone">Phone number</label><input id="ownerPhone" type="tel" placeholder="+919876543210"><p class="helper">Optional, with country code.</p></div>
-<div class="full"><button id="createOwnerButton" class="button button-primary" type="submit">Create owner account</button></div>
+<body>
+<main class="card">
+<div class="brand">ROOMO<small>PROPERTY OWNER PORTAL</small></div>
+<h1>Owner sign in</h1><p class="muted">Sign in to view your property details and manage guest enquiries.</p>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+<form id="loginForm">
+<div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" required></div>
+<div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+<button id="loginButton" type="submit">Sign in</button>
 </form>
-</section>
-<section class="panel"><div class="section-heading"><div><h2>Owner accounts</h2><p class="muted small">Assign each property to its owner and enable editing only when permitted.</p></div></div>
-<div class="table-wrap"><table><thead><tr><th>Owner</th><th>Email</th><th>Assigned properties</th><th>Property editing</th></tr></thead><tbody id="ownersTable"></tbody></table><div id="ownersEmpty" class="empty-state hidden">No owner accounts yet. Create the first owner above.</div></div></section>
-<section class="panel"><div class="section-heading"><div><h2>Assign properties</h2><p class="muted small">Choose the owner responsible for each existing property.</p></div></div>
-<div class="table-wrap"><table><thead><tr><th>Property</th><th>Location</th><th>Assigned owner</th></tr></thead><tbody id="propertiesTable"></tbody></table><div id="propertiesEmpty" class="empty-state hidden">No properties found.</div></div></section>
-</div></div></main>
+<p class="muted foot">Use the credentials provided by ROOMO administration. If you need access, contact ROOMO support.</p>
+</main>
 <script>
-(() => {
-"use strict";
-const API="http://localhost:5001/api", KEY="roomoAdminToken";
-const $=id=>document.getElementById(id);
-let token=localStorage.getItem(KEY)||sessionStorage.getItem(KEY), owners=[], properties=[];
-function notice(message,type="info"){const el=$("pageNotice");el.textContent=message;el.className="notice show "+type;el.scrollIntoView({behavior:"smooth",block:"nearest"});}
-async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{...(options.body?{"Content-Type":"application/json"}:{}),...(token?{Authorization:"Bearer "+token}:{}),...options.headers}});const data=await response.json().catch(()=>({}));if(!response.ok){const error=new Error(data.message||"Request failed ("+response.status+").");error.status=response.status;throw error;}return data;}
-function cell(row,value){const td=document.createElement("td");td.textContent=value==null?"":String(value);row.appendChild(td);return td;}
-async function load(){
- $("refreshButton").disabled=true;
- try{
-  const [ownerResult,propertyResult]=await Promise.all([request("/admin/owners"),request("/admin/properties")]);
-  owners=Array.isArray(ownerResult.owners)?ownerResult.owners:[];properties=Array.isArray(propertyResult.properties)?propertyResult.properties:[];
-  renderOwners();renderProperties();
- }catch(error){notice(error.message,"error");if(error.status===401||error.status===403){localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");}}
- finally{$("refreshButton").disabled=false;}
-}
-function renderOwners(){
- const tbody=$("ownersTable");tbody.replaceChildren();$("ownersEmpty").classList.toggle("hidden",owners.length>0);
- for(const owner of owners){
-  const row=document.createElement("tr"),name=cell(row,"");
-  const strong=document.createElement("strong");strong.textContent=owner.fullName||"Owner";
-  const phone=document.createElement("div");phone.className="property-location";phone.textContent=owner.phoneNumber||"No phone number";name.append(strong,phone);
-  cell(row,owner.email);cell(row,owner._count?.properties??0);
-  const td=cell(row,""),label=document.createElement("label");label.className="owner-permission";
-  const toggle=document.createElement("input");toggle.type="checkbox";toggle.checked=Boolean(owner.canEditProperties);toggle.setAttribute("aria-label","Allow property editing for "+owner.fullName);
-  const state=document.createElement("span");state.textContent=toggle.checked?"Enabled":"View only";
-  toggle.addEventListener("change",async()=>{const next=toggle.checked;toggle.disabled=true;try{const result=await request("/admin/owners/"+encodeURIComponent(owner.id)+"/property-edit-permission",{method:"PATCH",body:JSON.stringify({canEditProperties:next})});state.textContent=result.owner.canEditProperties?"Enabled":"View only";notice(result.message||"Owner permission updated.","success");}catch(error){toggle.checked=!next;state.textContent=toggle.checked?"Enabled":"View only";notice(error.message,"error");}finally{toggle.disabled=false;}});
-  label.append(toggle,state);td.appendChild(label);tbody.appendChild(row);
- }
-}
-function renderProperties(){
- const tbody=$("propertiesTable");tbody.replaceChildren();$("propertiesEmpty").classList.toggle("hidden",properties.length>0);
- for(const property of properties){
-  const row=document.createElement("tr");cell(row,property.title||"Untitled property");cell(row,[property.city,property.state].filter(Boolean).join(", ")||"—");
-  const td=cell(row,""),select=document.createElement("select");select.className="inline-select";select.setAttribute("aria-label","Owner for "+property.title);
-  const blank=document.createElement("option");blank.value="";blank.textContent="Select owner";select.appendChild(blank);
-  owners.forEach(owner=>{const option=document.createElement("option");option.value=owner.id;option.textContent=owner.fullName+" ("+owner.email+")";option.selected=property.owner?.id===owner.id;select.appendChild(option);});
-  select.addEventListener("change",async()=>{if(!select.value){notice("To change an assignment, choose the new owner. Unassigning is not available from this control.","info");select.value=property.owner?.id||"";return;}select.disabled=true;try{const result=await request("/admin/properties/"+encodeURIComponent(property.id)+"/owner",{method:"PATCH",body:JSON.stringify({ownerId:select.value})});notice(result.message||"Property owner assigned.","success");await load();}catch(error){notice(error.message,"error");select.value=property.owner?.id||"";}finally{select.disabled=false;}});
-  td.appendChild(select);tbody.appendChild(row);
- }
-}
-$("createOwnerForm").addEventListener("submit",async event=>{event.preventDefault();const button=$("createOwnerButton");button.disabled=true;button.textContent="Creating owner…";try{const result=await request("/admin/owners",{method:"POST",body:JSON.stringify({fullName:$("ownerName").value.trim(),email:$("ownerEmail").value.trim(),password:$("ownerPassword").value,phoneNumber:$("ownerPhone").value.trim()})});$("createOwnerForm").reset();notice(result.message||"Owner account created successfully.","success");await load();}catch(error){notice(error.message,"error");}finally{button.disabled=false;button.textContent="Create owner account";}});
-$("refreshButton").addEventListener("click",load);
-$("logoutButton").addEventListener("click",()=>{localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");});
-(async()=>{if(!token){location.replace("../admin.html");return;}try{const result=await request("/admin/properties");if(!Array.isArray(result.properties))throw new Error("Admin access could not be verified.");await load();}catch(error){notice(error.message,"error");if(error.status===401||error.status===403){localStorage.removeItem(KEY);sessionStorage.removeItem(KEY);location.replace("../admin.html");}}})();
+(()=>{"use strict";
+const API="http://localhost:5001/api",KEY="roomoOwnerToken",form=document.getElementById("loginForm"),button=document.getElementById("loginButton"),notice=document.getElementById("notice");
+function show(message,type="error"){notice.textContent=message;notice.className="notice show "+type;}
+async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{...(options.body?{"Content-Type":"application/json"}:{}),...(options.token?{Authorization:"Bearer "+options.token}:{})}});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||"Request failed ("+response.status+").");return data;}
+form.addEventListener("submit",async event=>{event.preventDefault();button.disabled=true;button.textContent="Signing in…";notice.className="notice";
+try{
+ const result=await request("/auth/login",{method:"POST",body:JSON.stringify({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value})});
+ const profile=await request("/auth/me",{token:result.token});
+ if(profile.owner?.role!=="OWNER")throw new Error("This sign-in is for property owners only. Please use the Super Admin login.");
+ sessionStorage.setItem(KEY,result.token);
+ location.replace("dashboard.html");
+}catch(error){sessionStorage.removeItem(KEY);show(error.message);}
+finally{button.disabled=false;button.textContent="Sign in";}
+});
+const existing=sessionStorage.getItem(KEY);
+if(existing){request("/auth/me",{token:existing}).then(result=>{if(result.owner?.role==="OWNER")location.replace("dashboard.html");else sessionStorage.removeItem(KEY);}).catch(()=>sessionStorage.removeItem(KEY));}
 })();
-</script></body></html>
+</script>
+</body></html>
