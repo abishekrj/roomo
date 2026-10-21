@@ -1887,3 +1887,11 @@ body.roomo-map-open{overflow:hidden}
 .roomo-map-footer a{font:600 13px Poppins,sans-serif;color:#0058bc;text-decoration:none}
 .roomo-map-footer a:hover{text-decoration:underline}
 @media(max-width:600px){.roomo-map-modal{padding:10px}.roomo-map-dialog{width:100%}.roomo-map-frame-wrap{height:55vh;min-height:240px}.roomo-map-header{padding:15px}.roomo-map-footer{padding:12px 15px}}
+
+
+/* Booking-style location row and property payment reassurance */
+body.search-page .listing-location-label{display:inline-flex;align-items:flex-start;gap:5px;color:#1d3550;font-weight:600}
+body.search-page .listing-location-label .bi{margin-top:2px;color:#52677d}
+body.search-page .listing-map-link{font-size:12px;font-weight:700}
+body.search-page .listing .listing-policy-no-card{color:#218838;font-weight:700}
+body.search-page .listing .listing-policy-no-card i{color:#218838}
