@@ -24,3 +24,31 @@
 .roomoGallery {
   background-color: #fff !important;
 }
+
+/* Gallery controls follow the homepage View All button styling. */
+#sacredGallery .gallery-tab-heritage,
+#sacredGallery button,
+#galleryLightboxModal button {
+  border-radius: 8px !important;
+}
+
+#sacredGallery #galleryVideosTab {
+  background: transparent;
+  border: 1px solid var(--sacred-blue, #0058bc);
+  color: var(--sacred-blue, #0058bc);
+  font-weight: 600;
+  font-size: .875rem;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+
+#sacredGallery #galleryVideosTab:hover,
+#sacredGallery #galleryVideosTab.active {
+  background: var(--sacred-blue, #0058bc);
+  border-color: var(--sacred-blue, #0058bc);
+  color: #fff;
+}
