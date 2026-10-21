@@ -103,6 +103,9 @@
     if(heading) heading.textContent=view==="add"?"Add Rooms":view==="list"?"Room Listings":"Rooms";
     var addButton=document.getElementById("addPropertyButton");
     if(addButton){addButton.hidden=view==="add";addButton.onclick=function(){location.hash="add-room";};}
+    document.querySelectorAll(".sidebar-sublink[href*='rooms-listings.html']").forEach(function(link){
+      link.classList.toggle("active",(view==="add"&&link.hash==="#add-room")||(view==="list"&&link.hash==="#room-listings"));
+    });
   }
   window.addEventListener("hashchange",applyRoomView);
   document.addEventListener("DOMContentLoaded",applyRoomView);
