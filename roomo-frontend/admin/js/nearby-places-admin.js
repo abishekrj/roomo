@@ -11,8 +11,17 @@
     let response;
     try { response = await fetch(API, { ...options, headers: { "Content-Type": "application/json", Authorization: "Bearer " + token } }); }
     catch { throw new Error("Cannot connect to ROOMO API. Start the backend on port 5001."); }
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) { const error = new Error(data.message || "Request failed."); error.status = response.status; throw error; }
+    const responseText = await response.text();
+    let data = {};
+    try { data = responseText ? JSON.parse(responseText) : {}; } catch { data = {}; }
+    if (!response.ok) {
+      const fallback = response.status >= 500
+        ? "ROOMO API server error (HTTP " + response.status + "). Check the backend terminal for the error."
+        : "Request failed (HTTP " + response.status + "). Check your admin login and API URL.";
+      const error = new Error(data.message || fallback);
+      error.status = response.status;
+      throw error;
+    }
     return data;
   }
   function formValue() {
