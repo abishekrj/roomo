@@ -58,7 +58,8 @@
       if (!list || !pages.length) return;
       pages.forEach(page => {
         if (!page.slug || !page.title) return;
-        const url = page.slug + ".html";
+        const fixedSlugs = new Set(["hotels-near-arunachaleswarar-temple","stays-near-sri-ramanasramam","budget-rooms-in-tiruvannamalai","family-stays-for-girivalam","monthly-stays-in-tiruvannamalai"]);
+        const url = fixedSlugs.has(page.slug) ? page.slug + ".html" : "cms-page.html?slug=" + encodeURIComponent(page.slug);
         if ([...list.querySelectorAll("a")].some(a => a.getAttribute("href") === url)) return;
         const li = document.createElement("li");
         li.appendChild(makeLink({label:page.title,url}));
