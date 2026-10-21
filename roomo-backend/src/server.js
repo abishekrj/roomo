@@ -21,6 +21,7 @@ const galleryRoutes = require("./routes/gallery");
 const adminGalleryRoutes = require("./routes/adminGallery");
 const roomFilterRoutes = require("./routes/roomFilters");
 const adminRoomFilterRoutes = require("./routes/adminRoomFilters");
+const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
 const authenticateToken = require("./middleware/auth");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -78,6 +79,7 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
 app.use("/api/homepage", homepageRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/room-filters", roomFilterRoutes);
+app.use("/api/listing-display-settings", listingDisplaySettingsRoutes);
 app.use("/api/admin/room-filters", adminRoomFilterRoutes);
 app.use("/api/admin/gallery", adminGalleryRoutes);
 app.use("/api/properties", propertyRoutes);
