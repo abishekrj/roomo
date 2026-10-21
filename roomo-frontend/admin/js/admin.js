@@ -288,6 +288,7 @@
     $("nightlyPrice").value = p.nightlyPrice ?? "";
     $("description").value = p.description || "";
     $("address").value = p.address || "";
+    if ($("mapLocation")) $("mapLocation").value = p.mapLocation || "";
     $("city").value = p.city || "";
     $("state").value = p.state || "";
     $("country").value = p.country || "India";
@@ -394,6 +395,7 @@
       nightlyPrice: Number($("nightlyPrice").value),
       description: $("description").value.trim(),
       address: $("address").value.trim(),
+      mapLocation: $("mapLocation")?.value.trim() || null,
       city: $("city").value.trim(),
       state: $("state").value.trim(),
       country: $("country").value.trim(),
