@@ -2632,26 +2632,30 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   }
 }
 
-/* Keep the destination field's entire stacking layer above the search CTA. */
+/* Keep destination autocomplete above the CTA, including the button hover layer. */
 .home-page .home-hero-search,
 .home-page .home-hero-search .monolithic-search-engine,
 .home-page .home-hero-search #staySearchForm,
 .home-page .home-hero-search #staySearchForm > .row {
-  overflow: visible;
+  position: relative;
+  overflow: visible !important;
 }
 .home-page .home-hero-search #staySearchForm > .row > .col-12:first-child {
-  position: relative;
-  z-index: 2000;
+  position: relative !important;
+  z-index: 99999 !important;
+  isolation: isolate;
 }
 .home-page .home-hero-search .heritage-input-box:has(#destinationInput) {
-  position: relative;
-  z-index: 2001;
+  position: relative !important;
+  z-index: 99999 !important;
 }
 .home-page .home-hero-search .destination-suggestions {
-  position: absolute;
-  z-index: 2002 !important;
+  position: absolute !important;
+  z-index: 100000 !important;
+  pointer-events: auto;
 }
-.home-page .home-hero-search #staySearchForm > .row > .col-12.mt-3 {
+.home-page .home-hero-search #staySearchForm > .row > .col-12.mt-3,
+.home-page .home-hero-search #staySearchForm button[type="submit"] {
   position: relative;
-  z-index: 1;
+  z-index: 0 !important;
 }
