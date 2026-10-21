@@ -2677,3 +2677,36 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
 .home-page .home-hero-search #staySearchForm > .row > .col-12:first-child {
   z-index: 100000 !important;
 }
+
+
+/* The homepage search is mounted inside .monolithic-search-engine directly
+   (not .home-hero-search). Stack the destination column above the CTA column. */
+.home-page .hero-heritage-wrapper .monolithic-search-engine,
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm,
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm > .row {
+  overflow: visible !important;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm > .row > .col-12:first-child {
+  position: relative !important;
+  z-index: 100000 !important;
+  isolation: isolate;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine .heritage-input-box:has(#destinationInput) {
+  position: relative !important;
+  z-index: 100001 !important;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine .destination-suggestions {
+  position: absolute !important;
+  z-index: 100002 !important;
+  pointer-events: auto;
+}
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm > .row > .col-12.mt-3,
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm button[type="submit"] {
+  position: relative !important;
+  z-index: 0 !important;
+}
+/* Keep the blue CTA from painting over the open suggestions. */
+.home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm:has(#destinationInput[aria-expanded="true"]) > .row > .col-12.mt-3 {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
