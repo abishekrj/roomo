@@ -81,5 +81,5 @@
 
 /* Slightly transparent overlay for the homepage gallery popup. */
 #galleryLightboxModal.property-gallery-modal {
-  background: rgba(5, 12, 24, 0.84);
+  background: rgba(5, 12, 24, 0.85);
 }
