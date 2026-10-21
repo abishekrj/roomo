@@ -2370,7 +2370,7 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
   body.search-page #listings.view-list,
   body.search-page #listings.view-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     align-items: stretch !important;
     gap: 12px !important;
   }
