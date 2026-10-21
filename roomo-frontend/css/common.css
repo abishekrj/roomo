@@ -1848,3 +1848,13 @@ body.search-page .listing .heart:disabled{opacity:.65;cursor:wait}
   }
 }
 
+
+
+/* Configurable search-result listing information */
+.listing .accommodation-summary,.listing .bed-summary{font-size:13px;line-height:1.55;color:var(--muted,#59666f);margin-top:8px}
+.listing .bed-summary{color:var(--text,#202b33)}
+.listing .bed-summary i{margin-right:4px}
+.listing .listing-policy{display:flex;align-items:flex-start;gap:7px;margin-top:9px;font-size:13px;font-weight:600;line-height:1.45}
+.listing .listing-policy-payment{color:#218838}
+.listing .listing-policy-availability{color:#c62828}
+.listing .listing-policy i{margin-top:2px;flex:0 0 auto}
