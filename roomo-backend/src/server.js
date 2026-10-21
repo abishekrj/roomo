@@ -24,6 +24,8 @@ const adminGalleryRoutes = require("./routes/adminGallery");
 const roomFilterRoutes = require("./routes/roomFilters");
 const adminRoomFilterRoutes = require("./routes/adminRoomFilters");
 const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
+const cmsPagesRoutes = require("./routes/cmsPages");
+const adminCmsPagesRoutes = require("./routes/adminCmsPages");
 const authenticateToken = require("./middleware/auth");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
@@ -84,6 +86,8 @@ app.use("/api/homepage/nearby-places", nearbyPlacesRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/room-filters", roomFilterRoutes);
 app.use("/api/listing-display-settings", listingDisplaySettingsRoutes);
+app.use("/api/cms-pages", cmsPagesRoutes);
+app.use("/api/admin/cms-pages", adminCmsPagesRoutes);
 app.use("/api/admin/room-filters", adminRoomFilterRoutes);
 app.use("/api/admin/gallery", adminGalleryRoutes);
 app.use("/api/properties", propertyRoutes);
