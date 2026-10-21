@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const API = "http://localhost:5001/api/admin/nearby-places/admin";
+  const API = "http://localhost:5001/api/homepage/nearby-places/admin";
   const TOKEN_KEY = "roomoAdminToken";
   const $ = id => document.getElementById(id);
   let token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
