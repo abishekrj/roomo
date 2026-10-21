@@ -2528,7 +2528,9 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .nearby-places-view-all, .nearby-places-arrow { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid #d7e0e7; border-radius:8px; background:#fff; color:#183b56; font:600 13px/1 Poppins,sans-serif; cursor:pointer; transition:background .2s ease,border-color .2s ease; }
 .nearby-places-view-all { padding:0 16px; }
 .nearby-places-arrow { width:42px; padding:0; font-size:16px; }
-.nearby-places-view-all:hover, .nearby-places-arrow:hover { border-color:#183b56; background:#f2f6f8; }
+.nearby-places-view-all:hover { background:#0058bc; border-color:#0058bc; color:#FACC15; }
+.nearby-places-view-all:focus-visible { outline:2px solid #0058bc; outline-offset:3px; }
+.nearby-places-arrow:hover { border-color:#183b56; background:#f2f6f8; }
 .nearby-places-view-all[hidden], .nearby-places-arrow[hidden] { display:none !important; }
 .nearby-places-grid { display:flex; gap:20px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth; scrollbar-width:none; padding:2px 1px 12px; }
 .nearby-places-grid::-webkit-scrollbar { display:none; }
