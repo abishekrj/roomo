@@ -4,14 +4,14 @@
   const TOKEN_KEY = "roomoAdminToken";
   const $ = id => document.getElementById(id);
   const state = { items: [], type: "IMAGE", uploadedUrl: "", uploadedType: "" };
-  const token = () => sessionStorage.getItem(TOKEN_KEY);
+  const token = () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
   const escapeHtml = value => String(value || "").replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
   function notice(message, type="info") { const el=$("pageNotice"); el.textContent=message; el.className="notice show "+type; }
   async function request(path, options={}) {
     const headers={...(token()?{Authorization:"Bearer "+token()}:{}),...(options.body && !(options.body instanceof FormData)?{"Content-Type":"application/json"}:{})};
     const response=await fetch(API+path,{...options,headers});
     const data=await response.json().catch(()=>({}));
-    if(!response.ok) { if(response.status===401||response.status===403) { sessionStorage.removeItem(TOKEN_KEY); } throw new Error(data.message||"Request failed ("+response.status+")."); }
+    if(!response.ok) { if(response.status===401||response.status===403) { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } throw new Error(data.message||"Request failed ("+response.status+")."); }
     return data;
   }
   function youtubeId(value) {
@@ -119,7 +119,7 @@
     $("mediaType").addEventListener("change",updateFields);$("sourceType").addEventListener("change",updateFields);
     $("uploadMediaButton").addEventListener("click",uploadFile);$("galleryForm").addEventListener("submit",save);$("cancelEditButton").addEventListener("click",resetForm);
     document.querySelectorAll("[data-admin-type]").forEach(button=>button.addEventListener("click",()=>{state.type=button.dataset.adminType;document.querySelectorAll("[data-admin-type]").forEach(b=>b.classList.toggle("active",b===button));renderList();}));
-    $("logoutButton").addEventListener("click",()=>{sessionStorage.removeItem(TOKEN_KEY);window.location.href="admin.html";});
+    $("logoutButton").addEventListener("click",()=>{localStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TOKEN_KEY);window.location.href="admin.html";});
     updateFields();load();
   });
 })();
