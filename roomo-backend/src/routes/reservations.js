@@ -18,7 +18,7 @@ const searchSchema = z.object({
   rooms: z.coerce.number().int().min(1).max(100).default(1),
 });
 const reservationSchema = searchSchema.extend({
-  contactPhone: z.string().trim().min(7).max(32).regex(/^[+()\\-\\s\\d]{7,32}$/),
+  contactPhone: z.string().trim().min(7).max(32).regex(/^[+()\-\s\d]{7,32}$/),
   specialRequests: z.string().trim().max(1000).optional().default(""),
 });
 
