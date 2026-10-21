@@ -30,7 +30,7 @@ router.get("/", async (req, res, next) => {
     res.json({ pages: rows.map(row => ({ id: row.id, slug: row.slug, draft: row.draft, published: row.published, isPublished: row.isPublished, publishedAt: row.publishedAt, updatedAt: row.updatedAt })) });
   } catch (error) { next(error); }
 });
-router.put("/:id?", async (req, res, next) => {
+async function savePage(req, res, next) {
   try {
     const parsed = pageSchema.safeParse(req.body.page);
     if (!parsed.success) return res.status(400).json({ message: "Please check the page fields.", errors: parsed.error.issues.map(issue => ({ field: issue.path.join("."), message: issue.message })) });
@@ -52,7 +52,9 @@ router.put("/:id?", async (req, res, next) => {
     }
     res.json({ message: publish ? "Page published successfully." : "Draft saved successfully.", page: { id: row.id, slug: row.slug, draft: row.draft, published: row.published, isPublished: row.isPublished, publishedAt: row.publishedAt, updatedAt: row.updatedAt } });
   } catch (error) { next(error); }
-});
+}
+router.put("/", savePage);
+router.put("/:id", savePage);
 router.post("/:id/publish", async (req, res, next) => {
   try {
     const row = await prisma.cMSPage.findUnique({ where: { id: req.params.id } });
