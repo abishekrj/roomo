@@ -8,18 +8,6 @@
           <div class="col-12">
             <div class="monolithic-search-engine p-3 p-md-4">
               <div id="destinationSuggestionNotice" class="destination-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></div>
-              <!-- Stay categories tabs -->
-              <div class="d-flex align-items-center border-bottom pb-3 mb-3 gap-2 flex-wrap home-inline-22">
-                <button class="stay-category-pill-btn" data-listing-all-stays><i class="bi bi-grid"></i> All stays</button>
-                <button class="stay-category-pill-btn active">
-                  <i class="bi bi-flower1 home-inline-23"></i> Ashrams &amp; Retreats </button>
-                <button class="stay-category-pill-btn">
-                  <i class="bi bi-houses"></i> Vedic Mathas &amp; Inns </button>
-                <button class="stay-category-pill-btn">
-                  <i class="bi bi-bank2"></i> Temple View Suites </button>
-                <button class="stay-category-pill-btn">
-                  <i class="bi bi-house-heart"></i> Heritage Haveli Homes </button>
-              </div>
               <form id="staySearchForm">
                 <div class="row g-3">
                   <!-- Location Field -->
@@ -146,7 +134,7 @@
                   </div>
                 </div>
               </form></div></div></section>
-<section class="hero"><div><h1 id="searchHeroTitle">Find your sacred sanctuary</h1><p>Hand-curated stays for a peaceful pilgrimage near Arunachala.</p><div class="chips"><span class="chip"><i class="bi bi-geo-alt-fill"></i><span id="destination">Tiruvannamalai</span></span><span class="chip"><i class="bi bi-calendar-event"></i><span id="dates">Choose your dates</span></span><span class="chip"><i class="bi bi-people-fill"></i><span id="guests">2 adults · 0 children · 1 room</span></span><span class="chip"><i class="bi bi-house-fill"></i><span id="category">All stays</span></span></div></div><button class="gold-btn" id="editSearchButton" type="button" aria-controls="listingEditSearch" aria-expanded="false"><i class="bi bi-pencil-square"></i> Edit search</button></section><button class="mobile-filter" id="mobileFilter"><i class="bi bi-sliders"></i> Filters & amenities <span id="filterCount"></span></button><div class="layout"><aside class="filters" id="filters"><div class="filter-head"><h2><i class="bi bi-sliders search-inline-11"></i> Filters</h2><button class="clear" id="clear">Clear all</button></div>
+<section class="hero"><div><h1 id="searchHeroTitle">Find your sacred sanctuary</h1><p>Hand-curated stays for a peaceful pilgrimage near Arunachala.</p><div class="chips"><span class="chip"><i class="bi bi-geo-alt-fill"></i><span id="destination">Tiruvannamalai</span></span><span class="chip"><i class="bi bi-calendar-event"></i><span id="dates">Choose your dates</span></span><span class="chip"><i class="bi bi-people-fill"></i><span id="guests">2 adults · 0 children · 1 room</span></span></div></div><button class="gold-btn" id="editSearchButton" type="button" aria-controls="listingEditSearch" aria-expanded="false"><i class="bi bi-pencil-square"></i> Edit search</button></section><button class="mobile-filter" id="mobileFilter"><i class="bi bi-sliders"></i> Filters & amenities <span id="filterCount"></span></button><div class="layout"><aside class="filters" id="filters"><div class="filter-head"><h2><i class="bi bi-sliders search-inline-11"></i> Filters</h2><button class="clear" id="clear">Clear all</button></div>
 <section class="section"><h3>Price per night <i class="bi bi-currency-rupee"></i></h3><div class="range-labels"><span>₹<span id="minLabel">500</span></span><span>Up to ₹<span id="maxLabel">5,000</span></span></div><input class="range" id="maxRange" type="range" min="500" max="5000" step="100" value="5000" aria-label="Maximum price"><div class="price-fields"><label>Minimum ₹<input type="number" id="minPrice" min="0" value="500"></label><label>Maximum ₹<input type="number" id="maxPrice" min="500" value="5000"></label></div></section>
 <section class="section"><h3>Stay type <i class="bi bi-house-heart"></i></h3><label class="check"><input type="checkbox" name="type" value="Ashrams & Retreats"> Ashrams & Retreats <span class="count">01</span></label><label class="check"><input type="checkbox" name="type" value="Vedic Mathas & Inns"> Vedic Mathas & Inns <span class="count">02</span></label><label class="check"><input type="checkbox" name="type" value="Temple View Suites"> Temple View Suites <span class="count">01</span></label><label class="check"><input type="checkbox" name="type" value="Heritage Haveli Homes"> Heritage Haveli Homes <span class="count">01</span></label></section>
 <section class="section"><h3>Guest rating <i class="bi bi-star-fill"></i></h3><label class="check"><input type="checkbox" name="rating" value="4.5"> Excellent 4.5+ <span class="count">3</span></label><label class="check"><input type="checkbox" name="rating" value="4"> Very good 4.0+ <span class="count">4</span></label><label class="check"><input type="checkbox" name="rating" value="3"> Good 3.0+ <span class="count">4</span></label></section>
@@ -182,7 +170,7 @@
     const dateLabel=value=>value?new Date(value+"T12:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"Select date";
     const checkinDisplay=document.getElementById("checkinDateDisplay");if(checkinDisplay)checkinDisplay.textContent=dateLabel(checkin?.value);
     const checkoutDisplay=document.getElementById("checkoutDateDisplay");if(checkoutDisplay)checkoutDisplay.textContent=dateLabel(checkout?.value);
-    const category=params.get("category")||"All stays";const tabs=[...document.querySelectorAll(".stay-category-pill-btn")];const match=tabs.find(tab=>tab.textContent.trim().replace(/\s+/g," ")===category);if(match)window.switchCategory?.(match);
+    
     const desired={adults:Math.max(1,Math.min(8,Number(params.get("adults"))||2)),children:Math.max(0,Math.min(6,Number(params.get("children"))||0)),rooms:Math.max(1,Math.min(5,Number(params.get("rooms"))||1))};
     for(const type of ["adults","children","rooms"]){const id=type==="adults"?"adultVal":type==="children"?"childrenVal":"roomVal";let current=Number(document.getElementById(id)?.textContent)||({adults:2,children:0,rooms:1}[type]);while(current!==desired[type]){const step=current<desired[type]?1:-1;window.updateCount?.(type,step);current+=step;}}
     const notice=document.getElementById("destinationSuggestionNotice");if(notice)notice.id="listingDestinationSuggestionNotice";
