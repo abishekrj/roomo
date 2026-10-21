@@ -72,6 +72,6 @@
     document.querySelectorAll("[data-roomo-search-component]").forEach(mount);
   }
   window.RoomoSearchSection = { mount, mountAll };
+  mountAll();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountAll);
-  else mountAll();
 })();
