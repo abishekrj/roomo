@@ -52,9 +52,14 @@
     const value = document.getElementById("visitorCountValue");
     if (!container || !value) return;
     try {
-      const response = await fetch(API + "/visitor-count/visit", { method: "POST", cache: "no-store" });
+      const alreadyCounted = sessionStorage.getItem("roomoVisitorCounted") === "1";
+      const response = await fetch(API + (alreadyCounted ? "/visitor-count" : "/visitor-count/visit"), {
+        method: alreadyCounted ? "GET" : "POST",
+        cache: "no-store"
+      });
       if (!response.ok) throw new Error("Visitor count request failed.");
       const stats = await response.json();
+      if (!alreadyCounted) sessionStorage.setItem("roomoVisitorCounted", "1");
       container.hidden = stats.visible === false;
       value.textContent = "Visitors: " + Number(stats.count || 0).toLocaleString("en-IN");
     } catch (error) {
