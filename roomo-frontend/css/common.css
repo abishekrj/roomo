@@ -1895,3 +1895,11 @@ body.search-page .listing-location-label .bi{margin-top:2px;color:#52677d}
 body.search-page .listing-map-link{font-size:12px;font-weight:700}
 body.search-page .listing .listing-policy-no-card{color:#218838;font-weight:700}
 body.search-page .listing .listing-policy-no-card i{color:#218838}
+
+
+/* Homepage: hide the full hero banner on mobile only; keep desktop unchanged. */
+@media (max-width: 767.98px) {
+  .home-page .hero-heritage-wrapper {
+    display: none !important;
+  }
+}
