@@ -134,7 +134,7 @@
     }, 250);
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
+  async function applyConfiguredSiteLogo() {\n    const logo = document.querySelector(".roomo-brand-logo");\n    if (!logo) return;\n    try {\n      const response = await fetch("http://localhost:5001/api/homepage", { cache: "no-store" });\n      if (!response.ok) return;\n      const payload = await response.json();\n      const url = String(payload?.content?.logoUrl || "").trim();\n      if (!url) return;\n      const parsed = new URL(url, window.location.href);\n      if (!["https:", "http:"].includes(parsed.protocol)) return;\n      logo.src = parsed.href;\n      logo.onerror = () => { logo.onerror = null; };\n    } catch (error) {\n      console.warn("ROOMO configured site logo could not be loaded.", error);\n    }\n  }\n\n  document.addEventListener("DOMContentLoaded", async () => {
     const placeholder = document.getElementById("roomoHeader");
     if (!placeholder) return;
 
@@ -142,6 +142,7 @@
       const response = await fetch("components/header.html", { cache: "no-cache" });
       if (!response.ok) throw new Error("Header component returned HTTP " + response.status);
       placeholder.outerHTML = await response.text();
+      applyConfiguredSiteLogo();
       initRoomoGoogleTranslate();
       setReturnToOnAuthLinks();
       await initGuestAccountMenu();
