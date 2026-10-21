@@ -2631,3 +2631,16 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
     transition: none;
   }
 }
+
+/* Keep destination suggestions above the later search fields and submit button. */
+.home-page .home-hero-search #staySearchForm > .row > .col-12:first-child {
+  position: relative;
+  z-index: 60;
+}
+.home-page .home-hero-search .heritage-input-box:has(#destinationInput) {
+  position: relative;
+  z-index: 61;
+}
+.home-page .home-hero-search .destination-suggestions {
+  z-index: 1085 !important;
+}
