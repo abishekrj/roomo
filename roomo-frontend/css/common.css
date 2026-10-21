@@ -2504,7 +2504,7 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .nearby-places-eyebrow { display: block; margin-bottom: 8px; color: #9a7132; font: 600 11px/1.5 Poppins, sans-serif; letter-spacing: .14em; }
 .nearby-places-heading h2 { margin: 0 0 8px; color: #183b56; font: 600 clamp(27px, 3vw, 38px)/1.2 Poppins, sans-serif; }
 .nearby-places-heading p { max-width: 720px; margin: 0; color: #61717e; font: 400 14px/1.7 Poppins, sans-serif; }
-.nearby-places-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.nearby-places-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .nearby-place-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid #e0e7ed; border-radius: 8px; background: #fff; box-shadow: 0 4px 14px rgba(18, 43, 61, .045); transition: transform .2s ease, box-shadow .2s ease; }
 .nearby-place-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(18, 43, 61, .1); }
 .nearby-place-image { width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: #eaf0f4; }
