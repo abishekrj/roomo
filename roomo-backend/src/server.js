@@ -17,6 +17,7 @@ const reservationRoutes = require("./routes/reservations");
 const favoriteRoutes = require("./routes/favorites");
 const adminCommissionRoutes = require("./routes/adminCommissions");
 const homepageRoutes = require("./routes/homepage");
+const nearbyPlacesRoutes = require("./routes/nearbyPlaces");
 const galleryRoutes = require("./routes/gallery");
 const adminGalleryRoutes = require("./routes/adminGallery");
 const roomFilterRoutes = require("./routes/roomFilters");
@@ -77,6 +78,7 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
 });
 
 app.use("/api/homepage", homepageRoutes);
+app.use("/api/homepage/nearby-places", nearbyPlacesRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/room-filters", roomFilterRoutes);
 app.use("/api/listing-display-settings", listingDisplaySettingsRoutes);
