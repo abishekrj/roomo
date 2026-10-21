@@ -97,7 +97,10 @@
     sectionObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
+        // Keep the revealed state for the rest of this page session. Never
+        // remove this class or observe the same element for a second reveal.
         entry.target.classList.add("is-roomo-visible");
+        entry.target.dataset.roomoRevealed = "true";
         observer.unobserve(entry.target);
       });
     }, { threshold: 0.08, rootMargin: "0px 0px -7% 0px" });
