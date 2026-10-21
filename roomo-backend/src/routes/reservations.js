@@ -10,6 +10,7 @@ const router = express.Router();
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const searchSchema = z.object({
   propertyId: z.string().uuid(),
+  roomTypeId: z.string().uuid().optional(),
   checkIn: z.string().regex(datePattern),
   checkOut: z.string().regex(datePattern),
   adults: z.coerce.number().int().min(1).max(100).default(2),
@@ -56,20 +57,36 @@ async function getAvailability(client, input) {
     select: { id: true, title: true, nightlyPrice: true, maxGuests: true, totalUnits: true, city: true },
   });
   if (!property) return { notFound: true };
-  if (input.adults + input.children > property.maxGuests * input.rooms) {
-    return { error: `This property accommodates up to ${property.maxGuests} guest(s) per unit. Choose more rooms or fewer guests.` };
+
+  let roomType = null;
+  let inventory = property.totalUnits;
+  let maxGuests = property.maxGuests;
+  let nightlyPrice = Number(property.nightlyPrice);
+  let bookingWhere = overlappingWhere(property.id, checkIn, checkOut);
+  if (input.roomTypeId) {
+    roomType = await client.roomType.findFirst({
+      where: { id: input.roomTypeId, propertyId: property.id, isActive: true },
+      select: { id: true, name: true, nightlyPrice: true, maxGuests: true, quantity: true },
+    });
+    if (!roomType) return { error: "Choose an active room type belonging to this property." };
+    inventory = roomType.quantity;
+    maxGuests = roomType.maxGuests;
+    nightlyPrice = Number(roomType.nightlyPrice);
+    bookingWhere = { ...bookingWhere, roomTypeId: roomType.id };
+  }
+  if (input.adults + input.children > maxGuests * input.rooms) {
+    return { error: `This room accommodates up to ${maxGuests} guest(s) per unit. Choose more rooms or fewer guests.` };
   }
 
   const bookings = await client.reservation.aggregate({
-    where: overlappingWhere(property.id, checkIn, checkOut),
+    where: bookingWhere,
     _sum: { roomCount: true },
   });
   const reservedUnits = bookings._sum.roomCount || 0;
-  const availableUnits = Math.max(0, property.totalUnits - reservedUnits);
+  const availableUnits = Math.max(0, inventory - reservedUnits);
   const nights = nightsBetween(checkIn, checkOut);
-  const nightlyPrice = Number(property.nightlyPrice);
   return {
-    property: { id: property.id, title: property.title, city: property.city, maxGuests: property.maxGuests, totalUnits: property.totalUnits },
+    property: { id: property.id, title: property.title, city: property.city, maxGuests, totalUnits: inventory, ...(roomType ? { roomTypeId: roomType.id, roomTypeName: roomType.name } : {}) },
     checkIn: input.checkIn,
     checkOut: input.checkOut,
     nights,
@@ -127,6 +144,7 @@ router.post("/", authenticateGuest, async (req, res, next) => {
           reservationCode: reservationCode(),
           guestId: req.guest.id,
           propertyId: input.propertyId,
+          roomTypeId: input.roomTypeId || null,
           checkIn,
           checkOut,
           adults: input.adults,
@@ -143,6 +161,7 @@ router.post("/", authenticateGuest, async (req, res, next) => {
         },
         include: {
           property: { select: { id: true, title: true, city: true, address: true } },
+          roomType: { select: { id: true, name: true } },
         },
       });
       return { reservation: created };
@@ -168,6 +187,7 @@ router.get("/owner", authenticateToken, async (req, res, next) => {
       include: {
         guest: { select: { id: true, fullName: true, email: true, phoneNumber: true } },
         property: { select: { id: true, title: true, city: true, address: true } },
+        roomType: { select: { id: true, name: true } },
       },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     });
@@ -214,7 +234,7 @@ router.get("/mine", authenticateGuest, async (req, res, next) => {
   try {
     const reservations = await prisma.reservation.findMany({
       where: { guestId: req.guest.id },
-      include: { property: { select: { id: true, title: true, city: true, address: true, images: { orderBy: { sortOrder: "asc" }, take: 1 } } } },
+      include: { property: { select: { id: true, title: true, city: true, address: true, images: { orderBy: { sortOrder: "asc" }, take: 1 } } }, roomType: { select: { id: true, name: true } } },
       orderBy: { createdAt: "desc" },
     });
     res.json({ reservations });

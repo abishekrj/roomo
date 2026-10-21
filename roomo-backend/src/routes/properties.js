@@ -196,6 +196,24 @@ router.get("/", async (req, res, next) => {
 
 // GET /api/properties/:id
 // Publicly show one published stay.
+// GET /api/properties/:id/room-types — active room categories for a published property.
+router.get("/:id/room-types", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  if (!id.success) return res.status(400).json({ message: "Invalid property ID." });
+  try {
+    const property = await prisma.property.findFirst({
+      where: { id: id.data, status: "PUBLISHED" },
+      select: { id: true, title: true, city: true, state: true }
+    });
+    if (!property) return res.status(404).json({ message: "Property not found." });
+    const roomTypes = await prisma.roomType.findMany({
+      where: { propertyId: property.id, isActive: true, quantity: { gt: 0 } },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }]
+    });
+    res.json({ property, roomTypes });
+  } catch (error) { next(error); }
+});
+
 router.get("/:id", async (req, res, next) => {
   try {
     const idSchema = z.string().uuid().safeParse(req.params.id);

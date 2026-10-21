@@ -88,10 +88,35 @@ model Property {
   owner         Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   images        PropertyImage[]
   reservations  Reservation[]
+  roomTypes     RoomType[]
 
   @@index([ownerId])
   @@index([city, status])
   @@map("properties")
+}
+
+
+model RoomType {
+  id               String        @id @default(uuid()) @db.Uuid
+  propertyId       String        @db.Uuid @map("property_id")
+  name             String        @db.VarChar(120)
+  description      String        @default("") @db.Text
+  nightlyPrice     Decimal       @db.Decimal(10, 2) @map("nightly_price")
+  maxGuests        Int           @default(2) @map("max_guests")
+  quantity         Int           @default(1)
+  bedConfiguration Json          @default("[]") @map("bed_configuration")
+  facilities       Json          @default("[]")
+  imageUrls        Json          @default("[]") @map("image_urls")
+  isActive         Boolean       @default(true) @map("is_active")
+  sortOrder        Int           @default(0) @map("sort_order")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reservations     Reservation[]
+
+  @@unique([propertyId, name])
+  @@index([propertyId, isActive, sortOrder])
+  @@map("room_types")
 }
 
 model PropertyImage {
@@ -181,8 +206,11 @@ model Reservation {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   guest           GuestUser         @relation(fields: [guestId], references: [id], onDelete: Restrict)
   property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  roomTypeId      String?           @db.Uuid @map("room_type_id")
+  roomType        RoomType?         @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
   notifications   NotificationLog[]
 
+  @@index([roomTypeId, checkIn, checkOut, status])
   @@index([propertyId, checkIn, checkOut, status])
   @@index([guestId, createdAt])
   @@map("reservations")
