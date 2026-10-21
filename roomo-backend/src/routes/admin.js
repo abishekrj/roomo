@@ -457,6 +457,27 @@ router.get("/owners", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// POST /api/admin/owners/:id/reset-password
+// Allows an authenticated super admin to set a fresh temporary password for an owner.
+router.post("/owners/:id/reset-password", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const body = z.object({ password: z.string().min(12).max(72) }).safeParse(req.body);
+  if (!id.success) return res.status(400).json({ message: "Invalid owner ID." });
+  if (!body.success) return res.status(400).json({ message: "Use a temporary password between 12 and 72 characters." });
+  try {
+    const owner = await prisma.owner.findFirst({
+      where: { id: id.data, role: "OWNER" },
+      select: { id: true },
+    });
+    if (!owner) return res.status(404).json({ message: "Owner account not found." });
+    const passwordHash = await bcrypt.hash(body.data.password, 12);
+    await prisma.owner.update({ where: { id: owner.id }, data: { passwordHash } });
+    return res.json({ message: "Owner password reset successfully. Sign in using the new temporary password." });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/owners/:id/property-edit-permission", async (req, res, next) => {
   const id = z.string().uuid().safeParse(req.params.id);
   const body = z.object({ canEditProperties: z.boolean() }).safeParse(req.body);
