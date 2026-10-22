@@ -3,9 +3,31 @@
   const API = "http://localhost:5001/api/homepage/shops";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const mapUrl = shop => shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([shopName(shop), shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
-  const poojaPhoto = "https://images.unsplash.com/photo-1742984039016-4b34a90a0fe6?auto=format&fit=crop&fm=jpg&q=85&w=1400";
+  const shopPhotos = [
+    { terms: /pooja|spiritual|temple|flower|incense|puja|religious/i, url: "https://images.unsplash.com/photo-1606293926075-69a00db143d5?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /silk|saree|textile|cloth|dress|fashion|garment|boutique/i, url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /sweet|snack|food|bakery|restaurant|grocery|provision|fruit|spice/i, url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /handicraft|craft|souvenir|wood|brass|pottery|handloom|artisan/i, url: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /jewel|gold|silver|ornament/i, url: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /book|stationery|print|gift/i, url: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=85" },
+    { terms: /ayur|herbal|organic|wellness|health/i, url: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1400&q=85" }
+  ];
+  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\\s*[—–-]\\s*/i, "").trim();
+  const shopImage = shop => {
+    if (shop.imageUrl) return shop.imageUrl;
+    const text = [shop.name, shop.category, shop.specialties, shop.description].filter(Boolean).join(" ");
+    const match = shopPhotos.find(item => item.terms.test(text));
+    const fallbackPhotos = [
+      "https://images.unsplash.com/photo-1606293926075-69a00db143d5?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1400&q=85"
+    ];
+    const index = Array.from(String(shop.id || shop.name || "shop")).reduce((sum, char) => sum + char.charCodeAt(0), 0) % fallbackPhotos.length;
+    return (match ? match.url : fallbackPhotos[index]);
+  };
   const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
-  const shopImage = shop => shop.imageUrl || (shop.id === "sample-pooja-store" ? poojaPhoto : "");
+  
   function offerLabel(value) { const label = String(value ?? "").trim(); return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label; }
   function card(shop) {
     const name = shopName(shop);
