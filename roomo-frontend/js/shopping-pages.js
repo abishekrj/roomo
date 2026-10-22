@@ -26,13 +26,11 @@
     const index = Array.from(String(shop.id || shop.name || "shop")).reduce((sum, char) => sum + char.charCodeAt(0), 0) % fallbackPhotos.length;
     return (match ? match.url : fallbackPhotos[index]);
   };
-  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
-  
   function offerLabel(value) { const label = String(value ?? "").trim(); return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label; }
   function card(shop) {
     const name = shopName(shop);
     const imageUrl = shopImage(shop);
-    const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
+    const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '" loading="lazy" onerror="var f=[\'https://images.unsplash.com/photo-1606293926075-69a00db143d5?auto=format&fit=crop&w=1000&q=80\',\'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80\',\'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1000&q=80\'];var i=Number(this.dataset.fallbackIndex||0);if(i<f.length){this.dataset.fallbackIndex=i+1;this.src=f[i]}else{this.onerror=null;this.parentElement.classList.add(\'shopping-image-failed\');this.style.display=\'none\'}">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
     return '<article class="shopping-card"><a class="shopping-card-main" href="shop-details.html?id=' + encodeURIComponent(shop.id) + '"><div class="shopping-card-image">' + img + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(offerLabel(shop.offerTag)) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' + (shop.openingHours ? '<p><i class="bi bi-clock"></i> ' + esc(shop.openingHours) + '</p>' : '') + '</div></a><a class="shopping-directions" href="' + esc(mapUrl(shop)) + '" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Directions</a></article>';
   }
   async function init() {
@@ -48,7 +46,7 @@
       const name = shopName(shop);
       document.title = name + " | ROOMO Sacred Shopping Guide";
       const imageUrl = shopImage(shop);
-      const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
+      const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '" onerror="var f=[\'https://images.unsplash.com/photo-1606293926075-69a00db143d5?auto=format&fit=crop&w=1000&q=80\',\'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80\',\'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1000&q=80\'];var i=Number(this.dataset.fallbackIndex||0);if(i<f.length){this.dataset.fallbackIndex=i+1;this.src=f[i]}else{this.onerror=null;this.parentElement.classList.add(\'shopping-image-failed\');this.style.display=\'none\'}">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
       root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
         (shop.address ? '<p><strong>Address:</strong> ' + esc(shop.address) + '</p>' : '') +
         (shop.description ? '<section class="shopping-detail-section"><h2>About this shop</h2><p class="shopping-detail-description">' + esc(shop.description) + '</p></section>' : '') +
