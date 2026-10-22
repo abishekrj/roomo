@@ -4,7 +4,7 @@
   const TOKEN_KEY = "roomoAdminToken";
   const $ = id => document.getElementById(id);
   let token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-  let config = { title: "Nearby Locations", description: "Discover memorable places and scenic escapes to add to your sacred journey.", places: [] };
+  let config = { enabled: true, title: "Nearby Locations", description: "Discover memorable places and scenic escapes to add to your sacred journey.", places: [] };
   let editingId = null;
   function notice(message, type = "info") { const el = $("pageNotice"); el.textContent = message; el.className = "notice show " + type; }
   async function request(options = {}) {
@@ -44,6 +44,7 @@
     $("placeFormPanel").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function render() {
+    $("placesEnabled").checked = config.enabled !== false;
     $("placesTitle").value = config.title || "";
     $("placesDescription").value = config.description || "";
     const list = $("nearbyPlacesList"); list.replaceChildren();
@@ -78,7 +79,7 @@
     if (config.title === "Explore Places Around Tiruvannamalai" || config.title === "Featured Stays") config.title = "Nearby Locations";
     if (config.description === "Discover scenic hills, peaceful nature escapes and memorable places to visit during your stay.") config.description = "Discover memorable places and scenic escapes to add to your sacred journey.";
     config.places = Array.isArray(config.places) ? config.places : [];
-    $("placesTitle").value = config.title; $("placesDescription").value = config.description;
+    $("placesEnabled").checked = config.enabled !== false; $("placesTitle").value = config.title; $("placesDescription").value = config.description;
     render(); notice("Nearby Locations loaded. Changes are published immediately.", "info");
   }
   async function init() {
@@ -99,7 +100,7 @@
       await saveAll(); resetForm();
     });
     $("cancelEditButton").addEventListener("click", resetForm);
-    $("sectionForm").addEventListener("submit", async event => { event.preventDefault(); config.title = $("placesTitle").value.trim(); config.description = $("placesDescription").value.trim(); await saveAll(); });
+    $("sectionForm").addEventListener("submit", async event => { event.preventDefault(); config.enabled = $("placesEnabled").checked; config.title = $("placesTitle").value.trim(); config.description = $("placesDescription").value.trim(); await saveAll(); });
     try { await load(); } catch (error) { notice(error.message, "error"); if (error.status === 401) { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); setTimeout(() => location.replace("admin.html"), 900); } }
   }
   document.addEventListener("DOMContentLoaded", init);
