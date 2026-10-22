@@ -27,7 +27,7 @@
       document.title = name + " | ROOMO Sacred Shopping Guide";
       const imageUrl = shopImage(shop);
       const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
-      root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(shop.name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
+      root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
         (shop.address ? '<p><strong>Address:</strong> ' + esc(shop.address) + '</p>' : '') +
         (shop.description ? '<section class="shopping-detail-section"><h2>About this shop</h2><p class="shopping-detail-description">' + esc(shop.description) + '</p></section>' : '') +
         (shop.offerTag ? '<div class="shopping-detail-offer"><i class="bi bi-tag-fill"></i><div><strong>' + esc(shop.offerTag) + '</strong>' + (shop.offerDetails ? '<p>' + esc(shop.offerDetails) + '</p>' : '') + '</div></div>' : '') +
