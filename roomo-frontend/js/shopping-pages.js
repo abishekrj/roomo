@@ -2,11 +2,16 @@
   "use strict";
   const API = "http://localhost:5001/api/homepage/shops";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-  const mapUrl = shop => shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([shop.name, shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
+  const mapUrl = shop => shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([shopName(shop), shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
+  const poojaPhoto = "https://images.unsplash.com/photo-1742984039016-4b34a90a0fe6?auto=format&fit=crop&fm=jpg&q=85&w=1400";
+  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
+  const shopImage = shop => shop.imageUrl || (shop.id === "sample-pooja-store" ? poojaPhoto : "");
   function offerLabel(value) { const label = String(value ?? "").trim(); return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label; }
   function card(shop) {
-    const img = shop.imageUrl ? '<img src="' + esc(shop.imageUrl) + '" alt="' + esc(shop.name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
-    return '<article class="shopping-card"><a class="shopping-card-main" href="shop-details.html?id=' + encodeURIComponent(shop.id) + '"><div class="shopping-card-image">' + img + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(offerLabel(shop.offerTag)) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(shop.name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' + (shop.openingHours ? '<p><i class="bi bi-clock"></i> ' + esc(shop.openingHours) + '</p>' : '') + '</div></a><a class="shopping-directions" href="' + esc(mapUrl(shop)) + '" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Directions</a></article>';
+    const name = shopName(shop);
+    const imageUrl = shopImage(shop);
+    const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
+    return '<article class="shopping-card"><a class="shopping-card-main" href="shop-details.html?id=' + encodeURIComponent(shop.id) + '"><div class="shopping-card-image">' + img + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(offerLabel(shop.offerTag)) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' + (shop.openingHours ? '<p><i class="bi bi-clock"></i> ' + esc(shop.openingHours) + '</p>' : '') + '</div></a><a class="shopping-directions" href="' + esc(mapUrl(shop)) + '" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Directions</a></article>';
   }
   async function init() {
     const response = await fetch(API, {cache:"no-store"});
@@ -18,9 +23,11 @@
       const shop = shops.find(s => s.id === detail);
       const root = document.getElementById("shopDetail");
       if (!shop) { root.innerHTML = '<p class="shopping-empty">This shop is unavailable or is no longer published.</p>'; return; }
-      document.title = shop.name + " | ROOMO Sacred Shopping Guide";
-      const img = shop.imageUrl ? '<img src="' + esc(shop.imageUrl) + '" alt="' + esc(shop.name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
-      root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(shop.name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
+      const name = shopName(shop);
+      document.title = name + " | ROOMO Sacred Shopping Guide";
+      const imageUrl = shopImage(shop);
+      const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
+      root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
         (shop.address ? '<p><strong>Address:</strong> ' + esc(shop.address) + '</p>' : '') +
         (shop.description ? '<section class="shopping-detail-section"><h2>About this shop</h2><p class="shopping-detail-description">' + esc(shop.description) + '</p></section>' : '') +
         (shop.offerTag ? '<div class="shopping-detail-offer"><i class="bi bi-tag-fill"></i><div><strong>' + esc(shop.offerTag) + '</strong>' + (shop.offerDetails ? '<p>' + esc(shop.offerDetails) + '</p>' : '') + '</div></div>' : '') +

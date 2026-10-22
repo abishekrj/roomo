@@ -2,12 +2,16 @@
   "use strict";
   const API = "http://localhost:5001/api/homepage/shops";
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  const poojaPhoto = "https://images.unsplash.com/photo-1742984039016-4b34a90a0fe6?auto=format&fit=crop&fm=jpg&q=85&w=1400";
+  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
   function offerLabel(value) { const label = String(value ?? "").trim(); return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label; }
   function card(shop) {
-    const image = shop.imageUrl ? '<img src="' + esc(shop.imageUrl) + '" alt="' + esc(shop.name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
-    const map = shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([shop.name, shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
+    const imageUrl = shop.imageUrl || (shop.id === "sample-pooja-store" ? poojaPhoto : "");
+    const name = shopName(shop);
+    const image = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
+    const map = shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([name, shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
     return '<article class="shopping-card"><a class="shopping-card-main" href="shop-details.html?id=' + encodeURIComponent(shop.id) + '">' +
-      '<div class="shopping-card-image">' + image + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(offerLabel(shop.offerTag)) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(shop.name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
+      '<div class="shopping-card-image">' + image + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(offerLabel(shop.offerTag)) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
       (shop.openingHours ? '<p><i class="bi bi-clock"></i> ' + esc(shop.openingHours) + '</p>' : '') + '</div></a><a class="shopping-directions" href="' + esc(map) + '" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Directions</a></article>';
   }
   async function init() {
