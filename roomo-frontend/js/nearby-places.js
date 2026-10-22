@@ -25,7 +25,7 @@
     const places = Array.isArray(config?.places) ? config.places.filter(place => place && place.visible !== false).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) : [];
     title.textContent = !config?.title || config.title === "Explore Places Around Tiruvannamalai" ? DEFAULT_CONFIG.title : (config.title === "Featured Stays" ? DEFAULT_CONFIG.title : config.title);
     description.textContent = config?.description || DEFAULT_CONFIG.description;
-    if (!places.length) { section.hidden = true; return; }
+    if (config?.enabled === false || !places.length) { section.hidden = true; return; }
     section.hidden = false;
     track.classList.remove("is-expanded");
     if (viewAll) { viewAll.textContent = "View all"; viewAll.setAttribute("aria-expanded", "false"); viewAll.hidden = places.length <= 4; }
