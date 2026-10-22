@@ -50,5 +50,14 @@
       finally{button.disabled=false;button.textContent="Upload image";}
     });
   }
-  document.addEventListener("DOMContentLoaded",init);
+  document.addEventListener("DOMContentLoaded",()=>{
+    init();
+    const section=new URLSearchParams(window.location.search).get("section");
+    if(section){
+      requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView({behavior:"smooth",block:"start"}));
+      document.querySelectorAll('.sidebar-subnav a[href^="homepage.html?section="]').forEach(link=>{
+        link.classList.toggle("active",new URL(link.href).searchParams.get("section")===section);
+      });
+    }
+  });
 })();
