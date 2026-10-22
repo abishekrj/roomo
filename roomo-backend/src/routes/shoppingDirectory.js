@@ -31,7 +31,8 @@ const configSchema = z.object({
   if (new Set(ids).size !== ids.length) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["shops"], message: "Each shop must have a unique ID." });
 });
 function getConfig(row, key) {
-  return row?.published?.[key] || row?.draft?.[key] || emptyConfig;
+  // Admin must edit the latest draft, even when an older published config exists.
+  return row?.draft?.[key] || row?.published?.[key] || emptyConfig;
 }
 router.get("/", async (req, res, next) => {
   try {
