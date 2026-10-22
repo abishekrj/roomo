@@ -1,4 +1,15 @@
 const homepageDefaults = {
+  pilgrimGuide: {
+    enabled: true,
+    eyebrow: "Pilgrim Compendium",
+    title: "Sacred Traditions of Tiruvannamalai",
+    description: "Practical instructions for sacred circumambulation, cave meditation, and Agni darshan.",
+    cards: [
+      { label: "Holy Pradakshina", icon: "bi-compass", title: "14 km Girivalam Path", description: "Circumambulate holy Mount Arunachala barefoot in a clockwise path. Visit the eight guardian Shiva Shrines (Ashta Lingams) aligned with cardinal cosmic directions.", badge: "Duration: 3.5 to 4.5 hours", badgeIcon: "bi-clock-history" },
+      { label: "Cave Meditation", icon: "bi-flower1", title: "Sacred Caves & Ashrams", description: "Explore the quiet meditation spaces around Arunachala, including Virupaksha Cave, Skandashramam and Sri Ramanasramam.", badge: "Keep the silence", badgeIcon: "bi-heart" },
+      { label: "Agni Darshan", icon: "bi-brightness-high", title: "Annamalaiyar Temple", description: "Plan a respectful temple visit and learn about the sacred significance of Arunachala, the Agni Sthalam.", badge: "Check temple timings", badgeIcon: "bi-calendar-check" }
+    ]
+  },
   featuredSectionTitle: "Revered Pilgrim Sanctuaries",
   featuredSectionDescription: "Peaceful sanctuaries vetted for silence, cleanliness, and proximity to divine spots.",
   featuredRooms: [

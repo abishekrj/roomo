@@ -346,6 +346,42 @@ router.put("/featured-rooms", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+const pilgrimGuideSchema = z.object({
+  enabled: z.boolean(),
+  eyebrow: z.string().trim().min(1).max(100),
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().min(1).max(1000),
+  cards: z.array(z.object({
+    label: z.string().trim().min(1).max(100),
+    icon: z.string().trim().min(1).max(80).regex(/^bi-[a-z0-9-]+$/),
+    title: z.string().trim().min(1).max(160),
+    description: z.string().trim().min(1).max(1200),
+    badge: z.string().trim().min(1).max(160),
+    badgeIcon: z.string().trim().min(1).max(80).regex(/^bi-[a-z0-9-]+$/)
+  })).length(3)
+});
+router.get("/pilgrim-guide", async (req, res, next) => {
+  try {
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    res.set("Cache-Control", "no-store");
+    res.json({ draft: row?.draft?.pilgrimGuide || defaults.pilgrimGuide, published: row?.published?.pilgrimGuide || defaults.pilgrimGuide, hasPublished: Boolean(row?.published) });
+  } catch (error) { next(error); }
+});
+router.put("/pilgrim-guide", async (req, res, next) => {
+  try {
+    const parsed = pilgrimGuideSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Please check the Pilgrim Guide fields.", errors: parsed.error.flatten() });
+    const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
+    const draft = { ...(row?.draft || defaults), pilgrimGuide: parsed.data };
+    const updated = await prisma.homepageConfig.upsert({
+      where: { id: 1 },
+      create: { id: 1, draft },
+      update: { draft }
+    });
+    res.json({ message: "Pilgrim Guide draft saved. Publish Homepage to make the changes visible to visitors.", draft: updated.draft.pilgrimGuide });
+  } catch (error) { next(error); }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
@@ -376,7 +412,8 @@ router.post("/publish", async (req, res, next) => {
     };
     const destinationPlaces = row?.draft?.destinationPlaces || row?.published?.destinationPlaces || defaultDestinationPlaces;
     const visitorStats = row?.draft?.visitorStats || row?.published?.visitorStats || { count: 0, visible: true };
-    const publishedContent = { ...parsed.data, ...featured, destinationPlaces, visitorStats };
+    const pilgrimGuide = row?.draft?.pilgrimGuide || row?.published?.pilgrimGuide || defaults.pilgrimGuide;
+    const publishedContent = { ...parsed.data, ...featured, destinationPlaces, visitorStats, pilgrimGuide };
     const updated = await prisma.homepageConfig.upsert({
       where: { id: 1 },
       create: { id: 1, draft: { ...parsed.data, ...featured }, published: publishedContent, publishedAt: new Date() },
