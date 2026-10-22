@@ -21,7 +21,7 @@
 /* Allow the sticky admin sidebar to scroll independently when its menu exceeds the viewport. */
 @media(min-width:761px){
   .admin-sidebar{
-    height:calc(100vh - 40px);
+    height:calc(100vh - 116px);
     min-height:0;
     overflow-y:auto;
     overflow-x:hidden;
