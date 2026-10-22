@@ -25,7 +25,8 @@
       if (!shop) { root.innerHTML = '<p class="shopping-empty">This shop is unavailable or is no longer published.</p>'; return; }
       const name = shopName(shop);
       document.title = name + " | ROOMO Sacred Shopping Guide";
-      const img = shop.imageUrl ? '<img src="' + esc(shop.imageUrl) + '" alt="' + esc(shop.name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
+      const imageUrl = shopImage(shop);
+      const img = imageUrl ? '<img src="' + esc(imageUrl) + '" alt="' + esc(name) + '">' : '<div class="shopping-detail-placeholder"><i class="bi bi-shop"></i></div>';
       root.innerHTML = '<div class="shopping-detail-image">' + img + '</div><div class="shopping-detail-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h1>' + esc(shop.name) + '</h1><p class="shopping-detail-location"><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
         (shop.address ? '<p><strong>Address:</strong> ' + esc(shop.address) + '</p>' : '') +
         (shop.description ? '<section class="shopping-detail-section"><h2>About this shop</h2><p class="shopping-detail-description">' + esc(shop.description) + '</p></section>' : '') +
