@@ -48,8 +48,16 @@
     });
   }
   async function saveAll() {
-    try { const data = await request({method:"PUT",body:JSON.stringify(config)}); config = data.draft || config; render(); notice(data.message || "Shopping directory saved.", "success"); }
-    catch (error) { notice(error.message, "error"); }
+    try {
+      const data = await request({method:"PUT",body:JSON.stringify(config)});
+      config = data.draft || config;
+      render();
+      notice(data.message || "Shopping directory saved.", "success");
+      return true;
+    } catch (error) {
+      notice(error.message + " Your changes have been kept in the form; please correct the issue and try again.", "error");
+      return false;
+    }
   }
   async function load() { const data = await request(); config = data.draft || config; config.shops = Array.isArray(config.shops) ? config.shops : []; render(); notice("Shopping directory loaded. Changes are published immediately.", "info"); }
   async function init() {
@@ -64,7 +72,8 @@
         let id = base, n = 2; while (config.shops.some(s => s.id === id)) id = base + "-" + n++;
         shop.id = id; shop.sortOrder = shop.sortOrder || config.shops.length + 1; config.shops.push(shop);
       } else { const index = config.shops.findIndex(s => s.id === shop.id); if (index >= 0) config.shops[index] = shop; }
-      await saveAll(); reset();
+      const saved = await saveAll();
+      if (saved) reset();
     };
     $("cancelEditButton").onclick = reset;
     try { await load(); } catch (error) { notice(error.message, "error"); if (error.status === 401) setTimeout(() => location.replace("admin.html"), 900); }
