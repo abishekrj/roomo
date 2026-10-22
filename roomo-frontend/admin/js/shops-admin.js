@@ -15,14 +15,14 @@
     return data;
   }
   function values() {
-    return { id: $("shopId").value.trim(), name: $("shopName").value.trim(), category: $("shopCategory").value.trim(), location: $("shopLocation").value.trim(), address: $("shopAddress").value.trim(), openingHours: $("shopHours").value.trim(), contactNumber: $("shopPhone").value.trim(), imageUrl: $("shopImage").value.trim(), directionsUrl: $("shopDirections").value.trim(), description: $("shopDescription").value.trim(), sortOrder: Number($("shopOrder").value || 0), visible: $("shopVisible").checked };
+    return { id: $("shopId").value.trim(), name: $("shopName").value.trim(), category: $("shopCategory").value.trim(), location: $("shopLocation").value.trim(), address: $("shopAddress").value.trim(), openingHours: $("shopHours").value.trim(), contactNumber: $("shopPhone").value.trim(), imageUrl: $("shopImage").value.trim(), directionsUrl: $("shopDirections").value.trim(), description: $("shopDescription").value.trim(), offerTag: $("shopOfferTag").value.trim(), offerDetails: $("shopOfferDetails").value.trim(), specialties: $("shopSpecialties").value.trim(), priceRange: $("shopPriceRange").value.trim(), sortOrder: Number($("shopOrder").value || 0), visible: $("shopVisible").checked };
   }
   function reset() {
     $("shopForm").reset(); $("shopId").value = ""; $("shopOrder").value = String(config.shops.length + 1);
     $("formHeading").textContent = "Add a shop"; $("saveShopButton").textContent = "Save shop"; $("cancelEditButton").hidden = true;
   }
   function edit(shop) {
-    $("shopId").value = shop.id; $("shopName").value = shop.name || ""; $("shopCategory").value = shop.category || ""; $("shopLocation").value = shop.location || ""; $("shopAddress").value = shop.address || ""; $("shopHours").value = shop.openingHours || ""; $("shopPhone").value = shop.contactNumber || ""; $("shopImage").value = shop.imageUrl || ""; $("shopDirections").value = shop.directionsUrl || ""; $("shopDescription").value = shop.description || ""; $("shopOrder").value = String(shop.sortOrder || 0); $("shopVisible").checked = shop.visible === true;
+    $("shopId").value = shop.id; $("shopName").value = shop.name || ""; $("shopCategory").value = shop.category || ""; $("shopLocation").value = shop.location || ""; $("shopAddress").value = shop.address || ""; $("shopHours").value = shop.openingHours || ""; $("shopPhone").value = shop.contactNumber || ""; $("shopImage").value = shop.imageUrl || ""; $("shopDirections").value = shop.directionsUrl || ""; $("shopDescription").value = shop.description || ""; $("shopOfferTag").value = shop.offerTag || ""; $("shopOfferDetails").value = shop.offerDetails || ""; $("shopSpecialties").value = shop.specialties || ""; $("shopPriceRange").value = shop.priceRange || ""; $("shopOrder").value = String(shop.sortOrder || 0); $("shopVisible").checked = shop.visible === true;
     $("formHeading").textContent = "Edit shop"; $("saveShopButton").textContent = "Save changes"; $("cancelEditButton").hidden = false; $("shopFormPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
   function render() {
@@ -38,7 +38,7 @@
       const copy = document.createElement("div"); copy.className = "shop-copy";
       const title = document.createElement("strong"); title.textContent = shop.name;
       const info = document.createElement("p"); info.textContent = shop.category + " · " + shop.location;
-      const status = document.createElement("small"); status.textContent = shop.visible ? "Published · Order " + shop.sortOrder : "Unpublished";
+      const status = document.createElement("small"); status.textContent = (shop.visible ? "Published · Order " + shop.sortOrder : "Unpublished") + (shop.offerTag ? " · Offer: " + shop.offerTag : "");
       copy.append(title, info, status);
       const actions = document.createElement("div"); actions.className = "shop-actions";
       const editButton = document.createElement("button"); editButton.type = "button"; editButton.className = "button button-secondary"; editButton.textContent = "Edit"; editButton.onclick = () => edit(shop);
