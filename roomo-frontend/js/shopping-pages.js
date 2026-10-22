@@ -12,7 +12,7 @@
     { terms: /book|stationery|print|gift/i, url: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=85" },
     { terms: /ayur|herbal|organic|wellness|health/i, url: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1400&q=85" }
   ];
-  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\\s*[—–-]\\s*/i, "").trim();
+  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
   const shopImage = shop => {
     if (shop.imageUrl) return shop.imageUrl;
     const text = [shop.name, shop.category, shop.specialties, shop.description].filter(Boolean).join(" ");
