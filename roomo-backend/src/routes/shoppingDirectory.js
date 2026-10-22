@@ -17,7 +17,7 @@ const shopSchema = z.object({
   contactNumber: z.string().trim().max(40).default(""),
   imageUrl: z.string().trim().max(2000).refine(v => !v || /^https?:\/\//i.test(v), "Use a valid image URL.").default(""),
   directionsUrl: z.string().trim().max(2000).refine(v => !v || /^https?:\/\//i.test(v), "Use a valid directions URL.").default(""),
-  description: z.string().trim().max(2000).default(""),
+  description: z.string().trim().max(2000).default(""),\n  offerTag: z.string().trim().max(80).default(""),\n  offerDetails: z.string().trim().max(500).default(""),\n  specialties: z.string().trim().max(1200).default(""),\n  priceRange: z.string().trim().max(100).default(""),
   visible: z.boolean().default(false),
   sortOrder: z.coerce.number().int().min(0).max(10000).default(0)
 });
