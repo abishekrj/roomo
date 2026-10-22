@@ -17,3 +17,20 @@
 /* Keep the active Home CMS submenu readable; active sublinks use the previous blue text color. */
 .admin-sidebar .sidebar-subnav a.sidebar-sublink.active,
 .admin-sidebar .sidebar-subnav a.sidebar-sublink.active:visited{color:var(--blue)!important;background:#eaf1ff!important}
+
+/* Allow the sticky admin sidebar to scroll independently when its menu exceeds the viewport. */
+@media(min-width:761px){
+  .admin-sidebar{
+    height:calc(100vh - 40px);
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior-y:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#54749b #102747;
+  }
+  .admin-sidebar::-webkit-scrollbar{width:6px}
+  .admin-sidebar::-webkit-scrollbar-track{background:#102747;border-radius:8px}
+  .admin-sidebar::-webkit-scrollbar-thumb{background:#54749b;border-radius:8px}
+  .admin-sidebar::-webkit-scrollbar-thumb:hover{background:#8da8c8}
+}
