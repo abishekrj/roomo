@@ -13,3 +13,7 @@
 .sidebar-sublink:hover{background:#f1f5f9;color:var(--ink)}
 .sidebar-sublink.active{background:#eaf1ff;color:var(--blue);font-weight:800}
 @media(max-width:760px){.sidebar-accordion{grid-column:span 3}.sidebar-subnav{margin-left:18px}.sidebar-accordion-trigger{justify-content:flex-start}}
+
+/* Keep the active Home CMS submenu readable; active sublinks use the previous blue text color. */
+.admin-sidebar .sidebar-subnav a.sidebar-sublink.active,
+.admin-sidebar .sidebar-subnav a.sidebar-sublink.active:visited{color:var(--blue)!important;background:#eaf1ff!important}
