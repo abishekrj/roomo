@@ -38,7 +38,7 @@
 
 
 
-<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/common.css"><link rel="stylesheet" href="css/shopping.css">
 <link rel="stylesheet" href="css/gallery.css">
     <script src="js/favicon.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -375,6 +375,15 @@
         </div>
       </div>
     </div>
+    <section class="shopping-section py-5" id="shoppingDirectorySection" hidden>
+      <div class="container">
+        <div class="shopping-heading">
+          <div><span class="shopping-eyebrow">LOCAL SHOPPING GUIDE</span><h2 id="shoppingSectionTitle">Best Shops for Shopping</h2><p id="shoppingSectionDescription">Discover verified local shops in Tiruvannamalai.</p></div>
+          <div class="shopping-controls"><a class="shopping-view-all" href="shopping.html">View All Shops <i class="bi bi-arrow-up-right"></i></a><button class="shopping-arrow" id="shoppingPrev" type="button" aria-label="Previous shops"><i class="bi bi-arrow-left"></i></button><button class="shopping-arrow" id="shoppingNext" type="button" aria-label="Next shops"><i class="bi bi-arrow-right"></i></button></div>
+        </div>
+        <div class="shopping-track" id="shoppingHomeTrack" aria-live="polite"></div>
+      </div>
+    </section>
     <!-- Mobile Bottom Dock -->
     <nav class="heritage-mobile-dock d-lg-none">
       <div class="container-fluid px-3">
@@ -413,6 +422,7 @@
 <script src="js/gallery.js"></script>
 <script src="js/homepage-editor.js"></script>
 <script src="js/nearby-places.js"></script>
+<script src="js/shopping-directory.js"></script>
 <script src="js/testimonials.js"></script>
 <script src="js/footer.js"></script>
   <script src="js/header.js"></script>

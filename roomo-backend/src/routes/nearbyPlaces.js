@@ -18,6 +18,7 @@ const placeSchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(10000).default(0)
 });
 const placesSchema = z.object({
+  enabled: z.boolean().default(true),
   title: z.string().trim().min(2).max(120),
   description: z.string().trim().min(2).max(400),
   places: z.array(placeSchema).max(50)
@@ -27,6 +28,7 @@ const placesSchema = z.object({
 });
 
 const defaultConfig = {
+  enabled: true,
   title: "Nearby Locations",
   description: "Explore familiar landmarks, scenic escapes and memorable destinations around Tiruvannamalai.",
   places: [
