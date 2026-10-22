@@ -25,7 +25,6 @@
     const index = Array.from(String(shop.id || shop.name || "shop")).reduce((sum, char) => sum + char.charCodeAt(0), 0) % fallbackPhotos.length;
     return (match ? match.url : fallbackPhotos[index]);
   };
-  const shopName = shop => String(shop?.name ?? "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
   function offerLabel(value) { const label = String(value ?? "").trim(); return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label; }
   function card(shop) {
     const imageUrl = shopImage(shop);
