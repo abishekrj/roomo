@@ -67,7 +67,6 @@ const homepageSchema = z.object({
   whatsappNumber: z.string().trim().regex(/^\d{8,15}$/),
   seoDescription: z.string().trim().min(10).max(300),
 
-  spiritualGuide: z.object({ visible: z.boolean().default(true), eyebrow: z.string().trim().min(1).max(100), title: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(500), items: z.array(z.object({ eyebrow: z.string().trim().min(1).max(100), title: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(1000), meta: z.string().trim().min(1).max(120), icon: z.string().trim().min(1).max(80) })).length(3) }).optional(),
   testimonials: z.object({ eyebrow: z.string().trim().min(1).max(100), title: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(500), ratingSummary: z.string().trim().min(1).max(100), items: z.array(z.object({ id: z.string().trim().min(1).max(80), quote: z.string().trim().min(1).max(2000), name: z.string().trim().min(1).max(120), location: z.string().trim().max(120), rating: z.number().int().min(1).max(5), hidden: z.boolean() })).max(50) }).optional(),
   footerLinks: z.object({
     social: z.array(z.object({ label: z.string().trim().min(1).max(80), url: z.string().trim().min(1).max(500), icon: z.string().trim().min(1).max(80) })).max(12),
