@@ -6,7 +6,7 @@
     const image = shop.imageUrl ? '<img src="' + esc(shop.imageUrl) + '" alt="' + esc(shop.name) + '" loading="lazy">' : '<div class="shopping-image-placeholder"><i class="bi bi-shop"></i></div>';
     const map = shop.directionsUrl || ("https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent([shop.name, shop.address || shop.location, "Tiruvannamalai"].filter(Boolean).join(", ")));
     return '<article class="shopping-card"><a class="shopping-card-main" href="shop-details.html?id=' + encodeURIComponent(shop.id) + '">' +
-      '<div class="shopping-card-image">' + image + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(shop.name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
+      '<div class="shopping-card-image">' + image + (shop.offerTag ? '<span class="shopping-offer-badge"><i class="bi bi-tag-fill"></i> ' + esc(shop.offerTag) + '</span>' : '') + '</div><div class="shopping-card-copy"><span class="shopping-category">' + esc(shop.category) + '</span><h3>' + esc(shop.name) + '</h3><p><i class="bi bi-geo-alt"></i> ' + esc(shop.location) + '</p>' +
       (shop.openingHours ? '<p><i class="bi bi-clock"></i> ' + esc(shop.openingHours) + '</p>' : '') + '</div></a><a class="shopping-directions" href="' + esc(map) + '" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Directions</a></article>';
   }
   async function init() {
@@ -27,7 +27,7 @@
       }
       document.getElementById("shoppingSectionTitle").textContent = config.title || "Best Shops for Shopping";
       document.getElementById("shoppingSectionDescription").textContent = config.description || "Discover verified local shops in Tiruvannamalai.";
-      track.innerHTML = shops.slice(0, 5).map(card).join("");
+      track.innerHTML = shops.slice(0, 4).map(card).join("");
       section.hidden = false;
       const prev = document.getElementById("shoppingPrev"), next = document.getElementById("shoppingNext");
       if (prev) prev.hidden = shops.length < 2;
