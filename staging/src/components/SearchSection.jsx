@@ -40,6 +40,7 @@ export default function SearchSection({ variant = "default", onSearch }) {
   const [rooms, setRooms] = useState(1);
   const [childrenAges, setChildrenAges] = useState([]);
   const [dateError, setDateError] = useState("");
+  const [calendarMonth, setCalendarMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [loadingPlaces, setLoadingPlaces] = useState(true);
 
   useEffect(() => {
@@ -78,6 +79,15 @@ export default function SearchSection({ variant = "default", onSearch }) {
   const today = new Date();
   const minDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const toggle = name => setActiveDropdown(current => current === name ? "" : name);
+  const shiftMonth = amount => setCalendarMonth(current => new Date(current.getFullYear(), current.getMonth() + amount, 1));
+  const dateKey = date => date ? [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-") : "";
+  const selectCalendarDate = date => { const value = dateKey(date); if (!checkIn || checkOut || value <= checkIn) { setCheckIn(value); setCheckOut(""); } else setCheckOut(value); setDateError(""); };
+  const renderMonth = month => {
+    const offset = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
+    const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+    const days = [...Array(offset).fill(null), ...Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
+    return <div className="min-w-0"><div className="mb-3 text-center text-sm font-semibold text-slate-800">{new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(month)}</div><div className="mb-1 grid grid-cols-7 text-center text-[11px] font-medium text-slate-500">{["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(day => <span key={day} className="py-1">{day}</span>)}</div><div className="grid grid-cols-7 gap-y-1">{days.map((date, index) => { if (!date) return <span key={"empty-" + index} />; const value = dateKey(date), disabled = value < minDate, selected = value === checkIn || value === checkOut, inRange = checkIn && checkOut && value > checkIn && value < checkOut; const cls = "mx-auto grid h-9 w-9 place-items-center rounded-lg text-sm transition " + (selected ? "bg-roomo-navy font-semibold text-white" : inRange ? "bg-blue-50 text-roomo-navy" : "text-slate-700 hover:bg-blue-50") + " disabled:cursor-not-allowed disabled:text-slate-300"; return <button key={value} type="button" disabled={disabled} onClick={() => selectCalendarDate(date)} aria-label={value} aria-pressed={selected} className={cls}>{date.getDate()}</button>; })}</div></div>;
+  };
   const choosePlace = place => { setSelectedPlace(place); setDestination(place.name); setActiveDropdown(""); };
   const submit = event => {
     event.preventDefault();
@@ -123,10 +133,11 @@ export default function SearchSection({ variant = "default", onSearch }) {
           <label className={labelClass}>{datesLabel}</label>
           <button type="button" className={fieldClass + " w-full"} onClick={() => toggle("dates")} aria-expanded={activeDropdown === "dates"}><Icon name="calendar" className="h-5 w-5 shrink-0 text-roomo-blue"/><span className="min-w-0 flex-1 text-sm text-slate-800"><span className="block truncate">{checkIn ? formatDate(checkIn) : checkInLabel}<span className="mx-2 text-slate-300">—</span>{checkOut ? formatDate(checkOut) : checkOutLabel}</span></span><Icon name="chevron" className="h-4 w-4 shrink-0 text-slate-400"/></button>
           {activeDropdown === "dates" && <div className={panelClass + " sm:min-w-[340px]"}>
-            <div className="mb-3 flex items-center justify-between gap-3"><div className="text-sm font-semibold text-slate-900">{content?.searchCalendarTitle || "Select your dates"}</div><button type="button" onClick={() => setActiveDropdown("")} aria-label={content?.searchCloseLabel || "Close calendar"} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4"/></button></div>
-            <div className="grid grid-cols-2 gap-3"><label className="block"><span className={labelClass}>{checkInLabel}</span><input type="date" min={minDate} value={checkIn} onChange={e => { setCheckIn(e.target.value); if (checkOut && e.target.value >= checkOut) setCheckOut(""); setDateError(""); }} className="w-full min-w-0 rounded-lg border border-slate-300 px-2 py-3 text-sm outline-none focus:border-roomo-blue"/></label><label className="block"><span className={labelClass}>{checkOutLabel}</span><input type="date" min={checkIn || minDate} value={checkOut} onChange={e => { setCheckOut(e.target.value); setDateError(""); }} className="w-full min-w-0 rounded-lg border border-slate-300 px-2 py-3 text-sm outline-none focus:border-roomo-blue"/></label></div>
+            <div className="mb-3 flex items-center justify-between gap-3"><div><div className="text-sm font-semibold text-slate-900">{content?.searchCalendarTitle || "Select your dates"}</div><p className="mt-1 text-xs text-slate-500">{checkIn ? (checkOut ? formatDate(checkIn) + " – " + formatDate(checkOut) : formatDate(checkIn) + " · Select check-out") : "Choose check-in, then check-out"}</p></div><button type="button" onClick={() => setActiveDropdown("")} aria-label={content?.searchCloseLabel || "Close calendar"} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4"/></button></div>
+            <div className="mb-3 flex items-center justify-between"><button type="button" onClick={() => shiftMonth(-1)} disabled={calendarMonth.getFullYear() === new Date().getFullYear() && calendarMonth.getMonth() === new Date().getMonth()} aria-label="Previous month" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 text-slate-600 disabled:opacity-30">‹</button><div className="text-xs text-slate-500">Select check-in and check-out</div><button type="button" onClick={() => shiftMonth(1)} aria-label="Next month" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 text-slate-600">›</button></div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">{renderMonth(calendarMonth)}{renderMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}</div>
             {dateError && <p role="alert" className="mt-2 text-xs text-red-600">{dateError}</p>}
-            <button type="button" onClick={() => setActiveDropdown("")} className="mt-4 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || "Apply & Done"}</button>
+            <button type="button" disabled={!checkIn || !checkOut} onClick={() => setActiveDropdown("")} className="mt-4 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40] disabled:cursor-not-allowed disabled:opacity-40">{content?.searchDoneLabel || "Apply & Done"}</button>
           </div>}
         </div>
         <div ref={guestsRef} className="relative min-w-0">
@@ -137,7 +148,7 @@ export default function SearchSection({ variant = "default", onSearch }) {
             <div className="border-t border-slate-100"><Counter label={content?.searchChildrenLabel || "Children"} description={content?.searchChildrenDescription || "0–12 years"} value={children} min={0} onChange={setChildren}/></div>
             {children > 0 && <div className="border-t border-slate-100 py-3"><div className="mb-2 text-xs font-medium text-slate-600">{content?.searchChildrenAgeLabel || "Children’s ages"}</div><div className="grid grid-cols-2 gap-2">{childrenAges.map((age, index) => <label key={index} className="text-xs text-slate-600">{(content?.searchChildLabel || "Child") + " " + (index + 1)}<select value={age} onChange={e => setChildrenAges(current => current.map((item, i) => i === index ? e.target.value : item))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"><option value="">{content?.searchAgePlaceholder || "Age"}</option>{Array.from({ length: 18 }, (_, i) => <option key={i} value={i}>{i}</option>)}</select></label>)}</div></div>}
             <div className="border-t border-slate-100"><Counter label={content?.searchRoomsLabel || "Rooms / Kutir"} description={content?.searchRoomsDescription || "Sanctuary count"} value={rooms} min={1} onChange={setRooms}/></div>
-            <button type="button" onClick={() => setActiveDropdown("")} className="mt-2 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || ""}</button>
+            <button type="button" onClick={() => setActiveDropdown("")} className="mt-2 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || "Apply & Done"}</button>
           </div>}
         </div>
         <div className="flex items-end"><button type="submit" className="inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-lg bg-roomo-navy px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#102b40] focus:outline-none focus:ring-2 focus:ring-roomo-blue focus:ring-offset-2"><Icon name="search" className="h-5 w-5"/>{content?.searchButtonLabel || "Seek Blessed Stays"}</button></div>
