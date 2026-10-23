@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
 const API = "http://localhost:5001/api/homepage";
 const defaults = {
@@ -68,7 +69,7 @@ export default function Footer() {
       <div className="container">
         <div className="row g-4">
           <div className="col-lg-5 col-md-6">
-            <img className="roomo-footer-logo" src="../roomo-frontend/assets/roomo-logo.png" alt="ROOMO Sacred" width="176" height="58" />
+            <img className="roomo-footer-logo" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
             <p className="roomo-footer-description">{content?.footerDescription || defaults.description}</p>
             <div className="roomo-footer-social">
               {links.social.map((item, i) => <SafeLink item={item} key={item.label || i}><i className={"bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg")} aria-hidden="true"></i><span className="visually-hidden">{item.label || "Social link"}</span></SafeLink>)}
