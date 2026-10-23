@@ -38,9 +38,10 @@
 }
 .home-page .shopping-view-all {
   min-height: 42px;
-  padding: 0 14px;
-  border-radius: 8px;
+  padding: 0 16px;
+  border-radius: 999px;
   white-space: nowrap;
+  font-weight: 600;
 }
 .home-page .shopping-arrow {
   display: inline-flex;

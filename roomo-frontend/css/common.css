@@ -2573,10 +2573,10 @@ body.search-page .listing .listing-policy-no-card i{color:#218838}
 .nearby-places-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:24px; }
 .nearby-places-heading-copy { min-width:0; }
 .nearby-places-controls { display:flex; flex:0 0 auto; align-items:center; gap:10px; }
-.nearby-places-view-all, .nearby-places-arrow { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid #d7e0e7; border-radius:8px; background:var(--roomo-white); color:var(--roomo-navy); font:600 13px/1 Poppins,sans-serif; cursor:pointer; transition:background .2s ease,border-color .2s ease; }
-.nearby-places-view-all { padding:0 16px; }
-.nearby-places-arrow { width:42px; height:42px; padding:0; border-radius:50%; font-size:16px; background:#f8f9fa; box-shadow:0 2px 5px rgba(15,39,59,.08); }
-.nearby-places-view-all:hover { background:var(--roomo-blue); border-color:var(--roomo-blue); color:var(--roomo-gold-bright); }
+.nearby-places-view-all, .nearby-places-arrow { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid #d7e0e7; background:var(--roomo-white); color:var(--roomo-navy); font:600 13px/1 Poppins,sans-serif; cursor:pointer; transition:background .2s ease,border-color .2s ease,color .2s ease; }
+.nearby-places-view-all { padding:0 16px; border-radius:999px; font-weight:600; }
+.nearby-places-arrow { width:42px; height:42px; min-width:42px; padding:8px; border-radius:50%; background:#f8f9fa; box-shadow:0 2px 5px rgba(15,39,59,.08); }
+.nearby-places-view-all:hover { background:#0058bc; border-color:#0058bc; color:#FACC15; }
 .nearby-places-view-all:focus-visible { outline:2px solid var(--roomo-blue); outline-offset:3px; }
 .nearby-places-arrow:hover { border-color:#c5d4e0; background:#eaf0f5; }
 .nearby-places-view-all[hidden], .nearby-places-arrow[hidden] { display:none !important; }
