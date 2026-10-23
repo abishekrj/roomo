@@ -3070,3 +3070,31 @@ body.search-page .results-head > .listing-view-toolbar {
 .heritage-navbar #roomoAccountToggle > .bi-chevron-down {
   color:var(--roomo-white) !important;
 }
+
+
+/* Mobile homepage hero banner: full-bleed image, no container gutters. */
+.roomo-mobile-hero-banner { display: none; }
+.roomo-mobile-hero-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+@media (max-width: 767.98px) {
+  .home-page .roomo-mobile-hero-banner {
+    display: block !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    line-height: 0;
+  }
+  .home-page .roomo-mobile-hero-banner img {
+    display: block !important;
+    width: 100vw;
+    max-width: 100vw;
+    height: auto;
+    margin: 0;
+    object-fit: contain;
+  }
+}
