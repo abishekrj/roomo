@@ -353,44 +353,15 @@ h4,
   border: 1px dashed var(--sacred-gold);
 }
 
-/* Karthigai Deepam Special Festival Card */
 .karthigai-heritage-card {
-  background: linear-gradient(
-    135deg,
-    var(--roomo-midnight) 0%,
-    var(--roomo-navy-deep) 60%,
-    #1e3a8a 100%
-  );
-  border: 1.5px solid var(--sacred-yellow-bright);
-  border-radius: 28px;
   box-shadow: 0 20px 45px -10px rgba(15, 44, 89, 0.4);
+  background: var(--roomo-blue-action);
   color: #faf6f0;
   position: relative;
   overflow: hidden;
 }
 
-.karthigai-heritage-card::after {
-  content: "";
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(
-    circle,
-    rgba(250, 204, 21, 0.25) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
 .brass-btn {
-  background: linear-gradient(
-    135deg,
-    var(--roomo-gold-bright) 0%,
-    var(--roomo-gold-deep) 60%,
-    #ca8a04 100%
-  );
   color: var(--roomo-navy-deep);
   font-weight: 700;
   border-radius: 50px;
@@ -1969,7 +1940,7 @@ body.auth-page .mobile-brand {
   color: var(--sacred-yellow-bright);
 }
 .home-inline-59 {
-  background: var(--roomo-navy);
+  background: var(--roomo-blue-action);
   box-shadow: rgba(0, 0, 0, 0.7) 0px 12px 36px -8px,
     rgba(234, 179, 8, 0.15) 0px 0px 20px;
   border: 1.5px solid rgb(31 125 203) !important;
@@ -3669,9 +3640,6 @@ body.home-page {
 .hero-heritage-wrapper::before {
   display: none !important;
 }
-.pournami-banner-capsule {
-  background: var(--roomo-blue-action);
-}
 .monolithic-search-engine {
   background: var(--roomo-white);
   box-shadow: 0 18px 44px -20px rgba(24, 59, 86, 0.22), 0 0 0 5px #e9e3d7;
@@ -3686,12 +3654,6 @@ body.home-page {
 }
 .btn-sacred-primary:hover {
   background: var(--roomo-blue-hover) !important;
-}
-.karthigai-heritage-card {
-  background: var(--roomo-navy) !important;
-}
-.karthigai-heritage-card::after {
-  display: none !important;
 }
 .brass-btn {
   background: #ffc107 !important;
@@ -5896,12 +5858,12 @@ body.search-page .listing .heart:disabled {
 .pournami-banner-capsule {
   display: flex;
   align-items: center;
+  background: var(--roomo-blue-action);
   gap: 14px;
   width: min(100%, 480px);
   min-height: 94px;
   padding: 12px 16px;
   border-radius: 16px;
-  border: 1.5px solid var(--sacred-yellow-bright);
   color: var(--roomo-white);
   box-shadow: 0 8px 24px rgba(15, 44, 89, 0.22);
   overflow: hidden;
