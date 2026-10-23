@@ -581,19 +581,20 @@ h4,
 }
 
 .testimonial-slide-item {
-  flex: 0 0 100%;
+  flex: 0 0 min(340px, 85vw);
+  min-width: 0;
   scroll-snap-align: start;
 }
 
 @media (min-width: 768px) {
   .testimonial-slide-item {
-    flex: 0 0 calc(50% - 12px);
+    flex-basis: calc((100% - 24px) / 2);
   }
 }
 
 @media (min-width: 992px) {
   .testimonial-slide-item {
-    flex: 0 0 calc(33.333% - 16px);
+    flex-basis: calc((100% - 72px) / 4);
   }
 }
 
