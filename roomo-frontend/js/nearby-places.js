@@ -28,7 +28,7 @@
     if (config?.enabled === false || !places.length) { section.hidden = true; return; }
     section.hidden = false;
     track.classList.remove("is-expanded");
-    if (viewAll) { viewAll.textContent = "View all"; viewAll.setAttribute("aria-expanded", "false"); viewAll.hidden = places.length <= 4; }
+    if (viewAll) { viewAll.textContent = "View All"; viewAll.setAttribute("aria-expanded", "false"); viewAll.hidden = places.length <= 4; }
     if (prev) prev.hidden = places.length <= 4;
     if (next) next.hidden = places.length <= 4;
     track.innerHTML = places.map(place => {
