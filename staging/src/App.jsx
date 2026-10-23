@@ -2,6 +2,7 @@ import Header from "./components/Header.jsx";
 import HeroBanner from "./components/HeroBanner.jsx";
 import SearchSection from "./components/SearchSection.jsx";
 import Footer from "./components/Footer.jsx";
+import FeaturedStays from "./components/FeaturedStays.jsx";
 
 export default function App() {
   return (
@@ -10,7 +11,8 @@ export default function App() {
       <main className="flex-1">
         <HeroBanner />
         <SearchSection />
-        {/* Homepage sections will be migrated one at a time as reusable components. */}
+        <FeaturedStays />
+        {/* Additional homepage sections will be migrated as reusable components. */}
       </main>
       <Footer />
     </div>
