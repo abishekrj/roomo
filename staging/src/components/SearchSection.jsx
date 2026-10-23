@@ -97,14 +97,14 @@ export default function SearchSection({ variant = "default", onSearch }) {
     else window.location.assign((content?.searchResultsUrl || "/roomo-search-results.html") + (query ? "?" + query : ""));
   };
 
-  const baseLabel = content?.searchDestinationLabel || "";
-  const datesLabel = content?.searchDatesLabel || "";
-  const guestsLabel = content?.searchGuestsLabel || "";
-  const heading = content?.searchTrendingTitle || "";
-  const destinationPlaceholder = content?.searchDestinationPlaceholder || "";
-  const checkInLabel = content?.searchCheckInLabel || "";
-  const checkOutLabel = content?.searchCheckOutLabel || "";
-  const guestSummary = [`${adults} ${adults === 1 ? (content?.searchAdultSingular || "") : (content?.searchAdultPlural || "")}`, children ? `${children} ${children === 1 ? (content?.searchChildSingular || "") : (content?.searchChildPlural || "")}` : "", `${rooms} ${rooms === 1 ? (content?.searchRoomSingular || "") : (content?.searchRoomPlural || "")}`].filter(Boolean).join(", ");
+  const baseLabel = content?.searchDestinationLabel || "SACRED DESTINATION";
+  const datesLabel = content?.searchDatesLabel || "YOUR STAY";
+  const guestsLabel = content?.searchGuestsLabel || "GUESTS & ROOMS";
+  const heading = content?.searchTrendingTitle || "TRENDING DESTINATIONS";
+  const destinationPlaceholder = content?.searchDestinationPlaceholder || "Where would you like to stay?";
+  const checkInLabel = content?.searchCheckInLabel || "CHECK-IN";
+  const checkOutLabel = content?.searchCheckOutLabel || "CHECK-OUT";
+  const guestSummary = [`${adults} ${adults === 1 ? (content?.searchAdultSingular || "Adult") : (content?.searchAdultPlural || "Adults")}`, children ? `${children} ${children === 1 ? (content?.searchChildSingular || "Child") : (content?.searchChildPlural || "Children")}` : "", `${rooms} ${rooms === 1 ? (content?.searchRoomSingular || "Room") : (content?.searchRoomPlural || "Rooms")}`].filter(Boolean).join(", ");
   const fieldClass = "flex min-h-[60px] min-w-0 items-center gap-3 rounded-lg border border-slate-300 bg-white px-3.5 text-left transition focus-within:border-roomo-blue focus-within:ring-2 focus-within:ring-blue-100 sm:px-4";
   const labelClass = "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500";
   const panelClass = "absolute left-0 top-[calc(100%+8px)] z-[80] w-full rounded-lg border border-slate-200 bg-white p-4 text-left shadow-xl sm:min-w-[300px]";
@@ -115,32 +115,32 @@ export default function SearchSection({ variant = "default", onSearch }) {
           <label htmlFor="roomo-search-destination" className={labelClass}>{baseLabel}</label>
           <div className={fieldClass}><Icon name="pin" className="h-5 w-5 shrink-0 text-roomo-blue"/><input id="roomo-search-destination" value={destination} onFocus={() => setActiveDropdown("destination")} onChange={e => { setDestination(e.target.value); setSelectedPlace(null); setActiveDropdown("destination"); }} placeholder={destinationPlaceholder} autoComplete="off" className="w-full min-w-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" aria-expanded={activeDropdown === "destination"} aria-controls="roomo-destination-suggestions" /></div>
           {activeDropdown === "destination" && <div id="roomo-destination-suggestions" className={panelClass} role="listbox">
-            {heading && <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{heading}</div>}
-            {suggestions.length ? suggestions.map(place => <button type="button" role="option" aria-selected={selectedPlace?.id === place.id} key={place.id || place.name} onClick={() => choosePlace(place)} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50"><Icon name="pin" className="h-4 w-4 shrink-0 text-slate-400"/><span>{place.name}</span></button>) : <p className="px-2 py-3 text-sm text-slate-500">{loadingPlaces ? (content?.searchLoadingLabel || "") : (content?.searchNoDestinationsLabel || "")}</p>}
+            {heading && !destination.trim() && <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-roomo-blue">{heading}</div>}
+            {suggestions.length ? suggestions.map(place => <button type="button" role="option" aria-selected={selectedPlace?.id === place.id} key={place.id || place.name} onClick={() => choosePlace(place)} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50"><Icon name="pin" className="h-4 w-4 shrink-0 text-slate-400"/><span>{place.name}</span></button>) : <p className="px-2 py-3 text-sm text-slate-500">{loadingPlaces ? (content?.searchLoadingLabel || "Loading destinations…") : (content?.searchNoDestinationsLabel || "No destinations found")}</p>}
           </div>}
         </div>
         <div ref={dateRef} className="relative min-w-0">
           <label className={labelClass}>{datesLabel}</label>
           <button type="button" className={fieldClass + " w-full"} onClick={() => toggle("dates")} aria-expanded={activeDropdown === "dates"}><Icon name="calendar" className="h-5 w-5 shrink-0 text-roomo-blue"/><span className="min-w-0 flex-1 text-sm text-slate-800"><span className="block truncate">{checkIn ? formatDate(checkIn) : checkInLabel}<span className="mx-2 text-slate-300">—</span>{checkOut ? formatDate(checkOut) : checkOutLabel}</span></span><Icon name="chevron" className="h-4 w-4 shrink-0 text-slate-400"/></button>
           {activeDropdown === "dates" && <div className={panelClass + " sm:min-w-[340px]"}>
-            <div className="mb-3 flex items-center justify-between gap-3"><div className="text-sm font-semibold text-slate-900">{content?.searchCalendarTitle || ""}</div><button type="button" onClick={() => setActiveDropdown("")} aria-label={content?.searchCloseLabel || "Close"} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4"/></button></div>
+            <div className="mb-3 flex items-center justify-between gap-3"><div className="text-sm font-semibold text-slate-900">{content?.searchCalendarTitle || "Select your dates"}</div><button type="button" onClick={() => setActiveDropdown("")} aria-label={content?.searchCloseLabel || "Close calendar"} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4"/></button></div>
             <div className="grid grid-cols-2 gap-3"><label className="block"><span className={labelClass}>{checkInLabel}</span><input type="date" min={minDate} value={checkIn} onChange={e => { setCheckIn(e.target.value); if (checkOut && e.target.value >= checkOut) setCheckOut(""); setDateError(""); }} className="w-full min-w-0 rounded-lg border border-slate-300 px-2 py-3 text-sm outline-none focus:border-roomo-blue"/></label><label className="block"><span className={labelClass}>{checkOutLabel}</span><input type="date" min={checkIn || minDate} value={checkOut} onChange={e => { setCheckOut(e.target.value); setDateError(""); }} className="w-full min-w-0 rounded-lg border border-slate-300 px-2 py-3 text-sm outline-none focus:border-roomo-blue"/></label></div>
             {dateError && <p role="alert" className="mt-2 text-xs text-red-600">{dateError}</p>}
-            <button type="button" onClick={() => setActiveDropdown("")} className="mt-4 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || ""}</button>
+            <button type="button" onClick={() => setActiveDropdown("")} className="mt-4 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || "Apply & Done"}</button>
           </div>}
         </div>
         <div ref={guestsRef} className="relative min-w-0">
           <label className={labelClass}>{guestsLabel}</label>
           <button type="button" className={fieldClass + " w-full"} onClick={() => toggle("guests")} aria-expanded={activeDropdown === "guests"}><Icon name="users" className="h-5 w-5 shrink-0 text-roomo-blue"/><span className="min-w-0 flex-1 truncate text-sm text-slate-800">{guestSummary}</span><Icon name="chevron" className="h-4 w-4 shrink-0 text-slate-400"/></button>
           {activeDropdown === "guests" && <div className={panelClass + " sm:min-w-[320px]"}>
-            <Counter label={content?.searchAdultsLabel || ""} description={content?.searchAdultsDescription || ""} value={adults} min={1} onChange={setAdults}/>
-            <div className="border-t border-slate-100"><Counter label={content?.searchChildrenLabel || ""} description={content?.searchChildrenDescription || ""} value={children} min={0} onChange={setChildren}/></div>
-            {children > 0 && <div className="border-t border-slate-100 py-3"><div className="mb-2 text-xs font-medium text-slate-600">{content?.searchChildrenAgeLabel || ""}</div><div className="grid grid-cols-2 gap-2">{childrenAges.map((age, index) => <label key={index} className="text-xs text-slate-600">{(content?.searchChildLabel || "") + " " + (index + 1)}<select value={age} onChange={e => setChildrenAges(current => current.map((item, i) => i === index ? e.target.value : item))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"><option value="">{content?.searchAgePlaceholder || ""}</option>{Array.from({ length: 18 }, (_, i) => <option key={i} value={i}>{i}</option>)}</select></label>)}</div></div>}
-            <div className="border-t border-slate-100"><Counter label={content?.searchRoomsLabel || ""} description={content?.searchRoomsDescription || ""} value={rooms} min={1} onChange={setRooms}/></div>
+            <Counter label={content?.searchAdultsLabel || "Adults"} description={content?.searchAdultsDescription || "Age 12+ years"} value={adults} min={1} onChange={setAdults}/>
+            <div className="border-t border-slate-100"><Counter label={content?.searchChildrenLabel || "Children"} description={content?.searchChildrenDescription || "0–12 years"} value={children} min={0} onChange={setChildren}/></div>
+            {children > 0 && <div className="border-t border-slate-100 py-3"><div className="mb-2 text-xs font-medium text-slate-600">{content?.searchChildrenAgeLabel || "Children’s ages"}</div><div className="grid grid-cols-2 gap-2">{childrenAges.map((age, index) => <label key={index} className="text-xs text-slate-600">{(content?.searchChildLabel || "Child") + " " + (index + 1)}<select value={age} onChange={e => setChildrenAges(current => current.map((item, i) => i === index ? e.target.value : item))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"><option value="">{content?.searchAgePlaceholder || "Age"}</option>{Array.from({ length: 18 }, (_, i) => <option key={i} value={i}>{i}</option>)}</select></label>)}</div></div>}
+            <div className="border-t border-slate-100"><Counter label={content?.searchRoomsLabel || "Rooms / Kutir"} description={content?.searchRoomsDescription || "Sanctuary count"} value={rooms} min={1} onChange={setRooms}/></div>
             <button type="button" onClick={() => setActiveDropdown("")} className="mt-2 w-full rounded-lg bg-roomo-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#102b40]">{content?.searchDoneLabel || ""}</button>
           </div>}
         </div>
-        <div className="flex items-end"><button type="submit" className="inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-lg bg-roomo-navy px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#102b40] focus:outline-none focus:ring-2 focus:ring-roomo-blue focus:ring-offset-2"><Icon name="search" className="h-5 w-5"/>{content?.searchButtonLabel || ""}</button></div>
+        <div className="flex items-end"><button type="submit" className="inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-lg bg-roomo-navy px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#102b40] focus:outline-none focus:ring-2 focus:ring-roomo-blue focus:ring-offset-2"><Icon name="search" className="h-5 w-5"/>{content?.searchButtonLabel || "Seek Blessed Stays"}</button></div>
       </div>
     </form>
   </section>;
