@@ -3106,3 +3106,16 @@ body.search-page .results-head > .listing-view-toolbar {
     font-size: 14px !important;
   }
 }
+
+/* Homepage Featured Stays: show exactly three complete cards on desktop. */
+@media (min-width: 992px) {
+  .home-page #popularStays .popular-stays-track {
+    gap: 22px;
+    overflow-x: auto;
+    scroll-padding-inline: 2px;
+  }
+  .home-page #popularStays .popular-stay-item {
+    flex: 0 0 calc((100% - 44px) / 3);
+    min-width: 0;
+  }
+}
