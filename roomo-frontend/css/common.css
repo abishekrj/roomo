@@ -2777,16 +2777,7 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
 }
 
 
-/* Listing page: reduce the search hero heading size for a more balanced layout. */
-.search-page #searchHeroTitle {
-  font-size: clamp(22px, 2.2vw, 30px);
-  line-height: 1.25;
-}
-@media (max-width: 767.98px) {
-  .search-page #searchHeroTitle {
-    font-size: 22px;
-  }
-}
+/* Listing title sizing is handled by .roomo-shared-title--hero. */
 
 
 /* Listing results: keep the title full-width, then align Sort by and View on one row. */
