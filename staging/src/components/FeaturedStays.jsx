@@ -24,9 +24,24 @@ export default function FeaturedStays() {
     return () => { cancelled = true; };
   }, []);
 
-  const stays = Array.isArray(content?.featuredRooms)
-    ? content.featuredRooms.filter(stay => stay && stay.featured !== false).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999))
-    : [];
+  // The Featured Rooms admin manages actual Property records. Prefer published
+  // property data; retain the CMS list as a compatibility fallback.
+  const stays = Array.isArray(content?.featuredProperties) && content.featuredProperties.length
+    ? content.featuredProperties.map((property, index) => ({
+        id: property.id,
+        name: property.title,
+        type: property.propertyType,
+        location: [property.address, property.city, property.state].filter(Boolean).join(", "),
+        price: property.nightlyPrice,
+        img: property.images?.[0]?.imageUrl || "",
+        desc: property.description,
+        url: property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
+        sortOrder: property.featuredSortOrder ?? index
+      }))
+    : Array.isArray(content?.featuredRooms)
+      ? content.featuredRooms.filter(stay => stay && stay.featured !== false)
+          .sort((left, right) => (left.sortOrder ?? 999) - (right.sortOrder ?? 999))
+      : [];
   if (!loading && content?.featuredSectionEnabled === false) return null;
   if (!loading && stays.length === 0) return null;
 
@@ -36,7 +51,7 @@ export default function FeaturedStays() {
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8">
           <div className="max-w-3xl">
             <h2 id="featured-stays-title" className="text-2xl font-semibold tracking-tight text-[#212529] sm:text-3xl">
-              {content?.featuredSectionTitle || ""}
+              {content?.featuredSectionTitle || "Featured Stays"}
             </h2>
             {content?.featuredSectionDescription && (
               <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{content.featuredSectionDescription}</p>
@@ -44,7 +59,7 @@ export default function FeaturedStays() {
           </div>
           {content?.featuredSectionViewAllEnabled !== false && content?.featuredSectionViewAllUrl && stays.length >= 4 && (
             <a href={content.featuredSectionViewAllUrl} className="inline-flex items-center gap-2 rounded-lg border border-[#2563a6] px-4 py-2.5 text-sm font-semibold text-[#2563a6] transition-colors hover:bg-[#2563a6] hover:text-white">
-              {content?.featuredSectionViewAllLabel || ""}<span aria-hidden="true">→</span>
+              {content?.featuredSectionViewAllLabel || "View all stays"}<span aria-hidden="true">→</span>
             </a>
           )}
         </div>
@@ -71,7 +86,7 @@ export default function FeaturedStays() {
                     {stay.desc && <p className="mt-3 line-clamp-2 text-sm leading-5 text-slate-600">{stay.desc}</p>}
                     <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                       {stay.reviews != null && <span className="text-xs text-slate-500">{stay.reviews} {content?.featuredReviewLabel || ""}</span>}
-                      {stay.price != null && <span className="ml-auto whitespace-nowrap text-right text-sm text-slate-600">{content?.featuredPricePrefix || ""}<strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix || ""}</span></span>}
+                      {stay.price != null && <span className="ml-auto whitespace-nowrap text-right text-sm text-slate-600">{content?.featuredPricePrefix || ""}<strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix || "per night"}</span></span>}
                     </div>
                   </div>
                 </a>
