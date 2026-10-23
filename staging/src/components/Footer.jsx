@@ -33,7 +33,7 @@ const defaults = {
 function SafeLink({ item, children }) {
   const href = /^javascript:/i.test(String(item.url || "")) ? "#" : item.url || "#";
   const external = /^https?:\/\//i.test(href) && !href.startsWith(window.location.origin);
-  return <a className="roomo-footer-link" href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>{children ?? item.label}</a>;
+  return <a className="text-sm text-slate-300 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300" href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>{children ?? item.label}</a>;
 }
 
 export default function Footer() {
@@ -65,29 +65,29 @@ export default function Footer() {
   };
 
   return (
-    <footer className="roomo-footer">
-      <div className="container">
-        <div className="row g-4">
-          <div className="col-lg-5 col-md-6">
-            <img className="roomo-footer-logo" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
-            <p className="roomo-footer-description">{content?.footerDescription || defaults.description}</p>
-            <div className="roomo-footer-social">
-              {links.social.map((item, i) => <SafeLink item={item} key={item.label || i}><i className={"bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg")} aria-hidden="true"></i><span className="visually-hidden">{item.label || "Social link"}</span></SafeLink>)}
+    <footer className="mt-auto bg-[#17232d] pb-6 pt-11 text-white sm:pt-12">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <div className="grid gap-9 border-b border-white/15 pb-9 md:grid-cols-2 lg:grid-cols-12">
+          <div className="md:col-span-1 lg:col-span-5">
+            <img className="mb-3 h-auto w-44 object-contain" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
+            <p className="mb-4 mt-3 max-w-lg text-sm leading-7 text-slate-300">{content?.footerDescription || defaults.description}</p>
+            <div className="flex gap-4 text-xl">
+              {links.social.map((item, i) => <SafeLink item={item} key={item.label || i}><i className={"bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg")} aria-hidden="true"></i><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
             </div>
           </div>
-          <div className="col-lg-3 col-md-3 col-6">
-            <h2 className="roomo-footer-heading">Sanctuaries</h2>
-            <ul>{links.sanctuaries.map((item, i) => <li key={item.label || i}><SafeLink item={item} /></li>)}</ul>
+          <div className="lg:col-span-3">
+            <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-wider text-roomo-gold">Sanctuaries</h2>
+            <ul className="space-y-3">{links.sanctuaries.map((item, i) => <li key={item.label || i}><SafeLink item={item} /></li>)}</ul>
           </div>
-          <div className="col-lg-4 col-md-3 col-6">
-            <h2 className="roomo-footer-heading">Pilgrim Care</h2>
+          <div className="lg:col-span-4">
+            <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-wider text-roomo-gold">Pilgrim Care</h2>
             <ul>{links.pilgrimCare.map((item, i) => <li key={item.label || i}><SafeLink item={item} /></li>)}</ul>
-            {visitor.visible && <div className="roomo-visitor-count"><i className="bi bi-people-fill" aria-hidden="true"></i> Visitors: {visitor.count.toLocaleString("en-IN")}</div>}
+            {visitor.visible && <div className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-500 px-4 py-2 text-sm"><i className="bi bi-people-fill" aria-hidden="true"></i> Visitors: {visitor.count.toLocaleString("en-IN")}</div>}
           </div>
         </div>
-        <div className="roomo-footer-bottom">
+        <div className="flex flex-col gap-4 border-t border-gray-700 mt-8 pt-5 text-xs text-slate-400 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} ROOMO Sacred. All rights reserved.</p>
-          <nav aria-label="Legal links">{links.legal.map((item, i) => <SafeLink item={item} key={item.label || i} />)}</nav>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal links">{links.legal.map((item, i) => <SafeLink item={item} key={item.label || i} />)}</nav>
         </div>
       </div>
     </footer>
