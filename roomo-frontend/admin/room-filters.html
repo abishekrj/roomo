@@ -1,28 +1,225 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ROOMO Admin | Room Filters</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/admin.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><style>
-.room-filter-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.room-filter-admin-form{display:grid;gap:12px}.room-filter-admin-form label{display:grid;gap:6px;font-size:13px;font-weight:700}.room-filter-admin-form input,.room-filter-admin-form select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;font:inherit}.room-filter-admin-form .field-row{display:grid;grid-template-columns:1fr 120px;gap:10px}.filter-group-card{border:1px solid var(--border);border-radius:12px;margin:14px 0;background:#fff;overflow:hidden}.filter-group-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;background:#dce5ef;border-bottom:1px solid #b8c7d8}.filter-group-heading h3{margin:0;font-size:17px;font-weight:800;color:#18324b;letter-spacing:.1px}.filter-group-heading .filter-admin-actions button{font-weight:700}.filter-group-heading h3{margin:0;font-size:15px}.filter-admin-actions{display:flex;gap:7px;flex-wrap:wrap}.filter-admin-actions button{font-size:12px;padding:6px 9px}.filter-option-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid #edf1f5}.filter-option-row:last-child{border-bottom:0}.filter-option-row small{display:block;color:var(--muted);margin-top:3px}.filter-option-row.is-disabled{opacity:.55}.filter-empty{padding:16px;color:var(--muted);font-size:13px}.help-text{font-size:12px;color:var(--muted);line-height:1.5}.hidden{display:none!important}@media(max-width:800px){.room-filter-admin-grid{grid-template-columns:1fr}}@media(max-width:520px){.filter-group-heading,.filter-option-row{align-items:flex-start;flex-direction:column}.room-filter-admin-form .field-row{grid-template-columns:1fr}}
-</style>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>ROOMO Admin | Room Filters</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+      .room-filter-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px
+      }
+
+      .room-filter-admin-form {
+        display: grid;
+        gap: 12px
+      }
+
+      .room-filter-admin-form label {
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700
+      }
+
+      .room-filter-admin-form input,
+      .room-filter-admin-form select {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: #fff;
+        font: inherit
+      }
+
+      .room-filter-admin-form .field-row {
+        display: grid;
+        grid-template-columns: 1fr 120px;
+        gap: 10px
+      }
+
+      .filter-group-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin: 14px 0;
+        background: #fff;
+        overflow: hidden
+      }
+
+      .filter-group-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        background: #dce5ef;
+        border-bottom: 1px solid #b8c7d8
+      }
+
+      .filter-group-heading h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        color: #18324b;
+        letter-spacing: .1px
+      }
+
+      .filter-group-heading .filter-admin-actions button {
+        font-weight: 700
+      }
+
+      .filter-group-heading h3 {
+        margin: 0;
+        font-size: 15px
+      }
+
+      .filter-admin-actions {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap
+      }
+
+      .filter-admin-actions button {
+        font-size: 12px;
+        padding: 6px 9px
+      }
+
+      .filter-option-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 11px 16px;
+        border-bottom: 1px solid #edf1f5
+      }
+
+      .filter-option-row:last-child {
+        border-bottom: 0
+      }
+
+      .filter-option-row small {
+        display: block;
+        color: var(--muted);
+        margin-top: 3px
+      }
+
+      .filter-option-row.is-disabled {
+        opacity: .55
+      }
+
+      .filter-empty {
+        padding: 16px;
+        color: var(--muted);
+        font-size: 13px
+      }
+
+      .help-text {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5
+      }
+
+      .hidden {
+        display: none !important
+      }
+
+      @media(max-width:800px) {
+        .room-filter-admin-grid {
+          grid-template-columns: 1fr
+        }
+      }
+
+      @media(max-width:520px) {
+
+        .filter-group-heading,
+        .filter-option-row {
+          align-items: flex-start;
+          flex-direction: column
+        }
+
+        .room-filter-admin-form .field-row {
+          grid-template-columns: 1fr
+        }
+      }
+    </style>
     <script src="../js/favicon.js"></script>
-</head>
-<body data-page="room-filters"><header class="topbar"><div class="brand">ROOMO<span>PROPERTY MANAGEMENT</span></div><button id="logoutButton" class="button button-secondary" type="button">Sign out</button></header>
-<main class="page"><div class="admin-shell"><aside class="admin-sidebar"><div class="sidebar-brand">ROOMO</div><div class="sidebar-subtitle">ADMIN PANEL</div><div class="sidebar-label">WORKSPACE</div><nav class="sidebar-nav" aria-label="Admin navigation"><a class="sidebar-link" href="dashboard.html"><span class="sidebar-icon"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>Dashboard</a><a class="sidebar-link" href="enquiries.html"><span class="sidebar-icon"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span>Enquiries</a><a class="sidebar-link" href="owner.html"><span class="sidebar-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>Owners</a>
-<details class="sidebar-accordion" open><summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-houses-fill" aria-hidden="true"></i></span><span>Rooms</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary><div class="sidebar-subnav"><a class="sidebar-sublink" href="homepage.html?section=header">Header</a><a class="sidebar-sublink" href="homepage.html?section=hero-banner">Hero Banner</a><a class="sidebar-sublink" href="homepage.html?section=upcoming-festival">Upcoming Festival</a><a class="sidebar-sublink" href="homepage.html?section=footer">Footer</a><a class="sidebar-sublink" href="pilgrim-guide.html">Pilgrim Guide</a></div></details>
-<a class="sidebar-link" href="cms-pages.html"><span class="sidebar-icon"><i class="bi bi-file-earmark-richtext-fill" aria-hidden="true"></i></span>CMS Pages</a><a class="sidebar-link" href="destinations.html"><span class="sidebar-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>Destinations</a><a class="sidebar-link" href="nearby-places.html"><span class="sidebar-icon"><i class="bi bi-signpost-2-fill" aria-hidden="true"></i></span>Nearby Locations</a><a class="sidebar-link" href="testimonials.html"><span class="sidebar-icon"><i class="bi bi-chat-quote-fill" aria-hidden="true"></i></span>Testimonials</a>
-<details class="sidebar-accordion"><summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-images" aria-hidden="true"></i></span><span>Gallery</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary><div class="sidebar-subnav"><a class="sidebar-sublink" href="galleries.html#add-gallery">Add Gallery</a><a class="sidebar-sublink" href="galleries.html#gallery-list">Gallery List</a></div></details><a class="sidebar-link" href="reports.html"><span class="sidebar-icon"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>Reports</a><a class="sidebar-link" href="registered-users.html"><span class="sidebar-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>Registered Users</a></nav></aside>
-<div class="admin-content"><div id="pageNotice" class="notice" role="status"></div>
-<div class="page-heading"><div><h1>Room Filters</h1><p class="muted">Manage the subheadings and filter options shown on the property listing page.</p></div><button id="refreshFilters" class="button button-secondary" type="button">Refresh</button></div>
-<div class="room-filter-admin-grid">
-<section class="panel"><h2>Add subheading</h2><p class="help-text">Create the filter group first. You can then add filter options under it.</p><form id="groupForm" class="room-filter-admin-form">
-<label>Subheading title<input id="groupTitle" maxlength="120" placeholder="e.g. Facilities and services" required></label>
-<div class="field-row"><label>Icon class<input id="groupIcon" maxlength="60" value="bi-stars" placeholder="bi-stars" required></label><label>Display order<input id="groupOrder" type="number" min="0" max="10000" value="10" required></label></div>
-<button class="button button-primary" type="submit">Add subheading</button></form></section>
-<section class="panel"><h2>Add filter</h2><p class="help-text">Select an existing subheading, then define the filter label and the value used by ROOMO search.</p><form id="filterForm" class="room-filter-admin-form">
-<label>Subheading<select id="filterGroup" required><option value="">Create a subheading first</option></select></label>
-<label>Filter label<input id="filterLabel" maxlength="160" placeholder="e.g. Free Wi-Fi" required></label>
-<div class="field-row"><label>Filter type<select id="filterType" required><option value="amenity">Amenity / facility</option><option value="type">Stay type</option><option value="rating">Guest rating</option><option value="distance">Nearby landmark</option><option value="room">Room preference</option><option value="keyword">Property text / perk</option></select></label><label>Display order<input id="filterOrder" type="number" min="0" max="10000" value="0" required></label></div>
-<label>Filter value<input id="filterValue" maxlength="160" placeholder="e.g. wifi" required></label>
-<p class="help-text">Use the property’s stored value: for example <code>wifi</code>, <code>parking</code>, <code>temple</code>, or an exact stay type. Rating values should be numbers such as <code>4.5</code>.</p>
-<button class="button button-primary" type="submit">Add filter</button></form></section>
-</div>
-<section class="panel" style="margin-top:18px"><div class="page-heading"><div><h2>Current subheadings and filters</h2><p class="muted">Edit, reorder, enable, disable, or remove items. Deleting a subheading also deletes its filters.</p></div></div><div id="filterGroupsList"><p class="muted">Loading room filters…</p></div></section>
-</div></div></main><script src="js/room-filters-admin.js" defer></script></body></html>
+  </head>
+  <body data-page="room-filters">
+    <header class="topbar">
+      <div class="brand">ROOMO<span>PROPERTY MANAGEMENT</span></div><button id="logoutButton" class="button button-secondary" type="button">Sign out</button>
+    </header>
+    <main class="page">
+      <div class="admin-shell">
+        <aside class="admin-sidebar">
+          <div class="sidebar-brand">ROOMO</div>
+          <div class="sidebar-subtitle">ADMIN PANEL</div>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav class="sidebar-nav" aria-label="Admin navigation"><a class="sidebar-link" href="dashboard.html"><span class="sidebar-icon"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>Dashboard</a><a class="sidebar-link" href="enquiries.html"><span class="sidebar-icon"><i class="bi bi-inbox-fill" aria-hidden="true"></i></span>Enquiries</a><a class="sidebar-link" href="owner.html"><span class="sidebar-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>Owners</a>
+            <details class="sidebar-accordion" open>
+              <summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-houses-fill" aria-hidden="true"></i></span><span>Rooms</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary>
+              <div class="sidebar-subnav"><a class="sidebar-sublink" href="homepage.html?section=header">Header</a><a class="sidebar-sublink" href="homepage.html?section=hero-banner">Hero Banner</a><a class="sidebar-sublink" href="homepage.html?section=upcoming-festival">Upcoming Festival</a><a class="sidebar-sublink" href="homepage.html?section=footer">Footer</a><a class="sidebar-sublink" href="pilgrim-guide.html">Pilgrim Guide</a></div>
+            </details><a class="sidebar-link" href="cms-pages.html"><span class="sidebar-icon"><i class="bi bi-file-earmark-richtext-fill" aria-hidden="true"></i></span>CMS Pages</a><a class="sidebar-link" href="destinations.html"><span class="sidebar-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span>Destinations</a><a class="sidebar-link" href="nearby-places.html"><span class="sidebar-icon"><i class="bi bi-signpost-2-fill" aria-hidden="true"></i></span>Nearby Locations</a><a class="sidebar-link" href="testimonials.html"><span class="sidebar-icon"><i class="bi bi-chat-quote-fill" aria-hidden="true"></i></span>Testimonials</a>
+            <details class="sidebar-accordion">
+              <summary class="sidebar-link sidebar-accordion-trigger"><span class="sidebar-icon"><i class="bi bi-images" aria-hidden="true"></i></span><span>Gallery</span><i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i></summary>
+              <div class="sidebar-subnav"><a class="sidebar-sublink" href="galleries.html#add-gallery">Add Gallery</a><a class="sidebar-sublink" href="galleries.html#gallery-list">Gallery List</a></div>
+            </details><a class="sidebar-link" href="reports.html"><span class="sidebar-icon"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i></span>Reports</a><a class="sidebar-link" href="registered-users.html"><span class="sidebar-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>Registered Users</a>
+          </nav>
+        </aside>
+        <div class="admin-content">
+          <div id="pageNotice" class="notice" role="status"></div>
+          <div class="page-heading">
+            <div>
+              <h1>Room Filters</h1>
+              <p class="muted">Manage the subheadings and filter options shown on the property listing page.</p>
+            </div><button id="refreshFilters" class="button button-secondary" type="button">Refresh</button>
+          </div>
+          <div class="room-filter-admin-grid">
+            <section class="panel">
+              <h2>Add subheading</h2>
+              <p class="help-text">Create the filter group first. You can then add filter options under it.</p>
+              <form id="groupForm" class="room-filter-admin-form"><label>Subheading title<input id="groupTitle" maxlength="120" placeholder="e.g. Facilities and services" required></label>
+                <div class="field-row"><label>Icon class<input id="groupIcon" maxlength="60" value="bi-stars" placeholder="bi-stars" required></label><label>Display order<input id="groupOrder" type="number" min="0" max="10000" value="10" required></label></div><button class="button button-primary" type="submit">Add subheading</button>
+              </form>
+            </section>
+            <section class="panel">
+              <h2>Add filter</h2>
+              <p class="help-text">Select an existing subheading, then define the filter label and the value used by ROOMO search.</p>
+              <form id="filterForm" class="room-filter-admin-form"><label>Subheading<select id="filterGroup" required>
+                    <option value="">Create a subheading first</option>
+                  </select></label><label>Filter label<input id="filterLabel" maxlength="160" placeholder="e.g. Free Wi-Fi" required></label>
+                <div class="field-row"><label>Filter type<select id="filterType" required>
+                      <option value="amenity">Amenity / facility</option>
+                      <option value="type">Stay type</option>
+                      <option value="rating">Guest rating</option>
+                      <option value="distance">Nearby landmark</option>
+                      <option value="room">Room preference</option>
+                      <option value="keyword">Property text / perk</option>
+                    </select></label><label>Display order<input id="filterOrder" type="number" min="0" max="10000" value="0" required></label></div><label>Filter value<input id="filterValue" maxlength="160" placeholder="e.g. wifi" required></label>
+                <p class="help-text">Use the property’s stored value: for example <code>wifi</code>, <code>parking</code>, <code>temple</code>, or an exact stay type. Rating values should be numbers such as <code>4.5</code>.</p><button class="button button-primary" type="submit">Add filter</button>
+              </form>
+            </section>
+          </div>
+          <section class="panel" style="margin-top:18px">
+            <div class="page-heading">
+              <div>
+                <h2>Current subheadings and filters</h2>
+                <p class="muted">Edit, reorder, enable, disable, or remove items. Deleting a subheading also deletes its filters.</p>
+              </div>
+            </div>
+            <div id="filterGroupsList">
+              <p class="muted">Loading room filters…</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script src="js/room-filters-admin.js" defer></script>
+  </body>
+</html>
