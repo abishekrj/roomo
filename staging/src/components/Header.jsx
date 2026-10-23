@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
 const API_BASE = "http://localhost:5001";
 const TOKEN_KEY = "roomoGuestToken";
@@ -77,7 +78,7 @@ export default function Header() {
     <header className={"roomo-header" + (hidden ? " roomo-header--hidden" : "")}>
       <div className="container roomo-header-inner">
         <a className="roomo-header-logo" href="../roomo-frontend/index.html" aria-label="ROOMO Sacred home">
-          <img src="../roomo-frontend/assets/roomo-logo.png" alt="ROOMO Sacred" width="176" height="58" />
+          <img src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
         </a>
         <div className="roomo-location d-none d-md-flex"><i className="bi bi-geo-alt" aria-hidden="true"></i> Tiruvannamalai, Tamil Nadu</div>
         <div className="roomo-header-actions">
