@@ -4,30 +4,30 @@ import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 const API_BASE = "http://localhost:5001";
 const TOKEN_KEY = "roomoGuestToken";
 const USER_KEY = "roomoGuest";
+const languages = [{ code: "en", label: "English", short: "ENG" }, { code: "ta", label: "Tamil/தமிழ்", short: "Tamil" }, { code: "te", label: "Telugu/తెలుగు", short: "Telugu" }, { code: "kn", label: "Kannada/ಕನ್ನಡ", short: "Kannada" }];
 
 function readSession() {
   const token = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
   const raw = sessionStorage.getItem(USER_KEY) || localStorage.getItem(USER_KEY);
-  try { return { token, user: raw ? JSON.parse(raw) : null }; }
-  catch { return { token, user: null }; }
+  try { return { token, user: raw ? JSON.parse(raw) : null }; } catch { return { token, user: null }; }
 }
+const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
 export default function Header() {
-  const [language, setLanguage] = useState("ENG");
+  const [language, setLanguage] = useState(languages[0]);
   const [user, setUser] = useState(() => readSession().user);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    let lastY = window.scrollY;
-    let frame = 0;
+    let lastY = window.scrollY, frame = 0;
     const onScroll = () => {
       if (frame) return;
-      frame = window.requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
         const y = Math.max(0, window.scrollY);
-        setHidden(y > 80 && y > lastY + 4 ? true : y < lastY - 4 ? false : y <= 80 ? false : hidden);
-        lastY = y;
-        frame = 0;
+        setHidden(y > 80 && y > lastY + 4 ? true : y < lastY - 4 || y <= 80 ? false : hidden);
+        lastY = y; frame = 0;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -38,71 +38,38 @@ export default function Header() {
     let cancelled = false;
     const session = readSession();
     if (!session.token) return;
-    fetch(API_BASE + "/api/guest-auth/me", {
-      headers: { Authorization: "Bearer " + session.token }, cache: "no-store"
-    }).then(async response => {
-      if (!response.ok) throw new Error("Session expired");
-      const data = await response.json();
-      if (!data.user) throw new Error("Missing guest profile");
-      if (!cancelled) {
-        setUser(data.user);
-        const store = sessionStorage.getItem(TOKEN_KEY) ? sessionStorage : localStorage;
-        store.setItem(USER_KEY, JSON.stringify(data.user));
-      }
-    }).catch(() => {
-      if (cancelled) return;
-      sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY);
-      localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY);
-      setUser(null);
-    });
+    fetch(API_BASE + "/api/guest-auth/me", { headers: { Authorization: "Bearer " + session.token }, cache: "no-store" })
+      .then(async response => { if (!response.ok) throw new Error("Session expired"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) { setUser(data.user); const store = sessionStorage.getItem(TOKEN_KEY) ? sessionStorage : localStorage; store.setItem(USER_KEY, JSON.stringify(data.user)); } })
+      .catch(() => { if (cancelled) return; sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); });
     return () => { cancelled = true; };
   }, []);
 
-  const authHref = (page) => {
-    const returnTo = window.location.pathname + window.location.search + window.location.hash;
-    return page + "?returnTo=" + encodeURIComponent(returnTo);
-  };
-  const logout = () => {
-    sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY);
-    localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY);
-    setUser(null); window.location.reload();
-  };
-  const chooseLanguage = (code, label) => {
-    setLanguage(label);
-    // Preserve the legacy language selection behavior without injecting Google's toolbar into the page.
+  const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
+  const logout = () => { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); window.location.reload(); };
+  const chooseLanguage = item => {
+    setLanguage(item); setLanguageOpen(false);
     const combo = document.querySelector("#google_translate_element select.goog-te-combo");
-    if (combo) { combo.value = code; combo.dispatchEvent(new Event("change", { bubbles: true })); }
+    if (combo) { combo.value = item.code; combo.dispatchEvent(new Event("change", { bubbles: true })); }
   };
 
   return (
-    <header className={"roomo-header" + (hidden ? " roomo-header--hidden" : "")}>
-      <div className="container roomo-header-inner">
-        <a className="roomo-header-logo" href="../roomo-frontend/index.html" aria-label="ROOMO Sacred home">
-          <img src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
-        </a>
-        <div className="roomo-location d-none d-md-flex"><i className="bi bi-geo-alt" aria-hidden="true"></i> Tiruvannamalai, Tamil Nadu</div>
-        <div className="roomo-header-actions">
-          <div className="dropdown">
-            <button className="btn roomo-pill-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i className="bi bi-translate text-primary" aria-hidden="true"></i><span>{language}</span>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end">
-              <li><button className="dropdown-item" onClick={() => chooseLanguage("en", "ENG")}>English</button></li>
-              <li><button className="dropdown-item" onClick={() => chooseLanguage("ta", "Tamil")}>Tamil/தமிழ்</button></li>
-              <li><button className="dropdown-item" onClick={() => chooseLanguage("te", "Telugu")}>Telugu/తెలుగు</button></li>
-              <li><button className="dropdown-item" onClick={() => chooseLanguage("kn", "Kannada")}>Kannada/ಕನ್ನಡ</button></li>
-            </ul>
+    <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+      <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6">
+        <a className="shrink-0" href="../roomo-frontend/index.html" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] object-contain sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
+        <div className="hidden items-center gap-2 text-[13px] text-slate-600 md:flex"><i className="bi bi-geo-alt text-roomo-blue" aria-hidden="true" />Tiruvannamalai, Tamil Nadu</div>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="relative">
+            <button className="inline-flex items-center gap-1.5 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3" type="button" aria-expanded={languageOpen} onClick={() => {setLanguageOpen(!languageOpen);setMenuOpen(false);}}><i className="bi bi-translate text-roomo-blue" /><span>{language.short}</span><i className="bi bi-chevron-down text-[10px]" /></button>
+            {languageOpen && <div className="absolute right-0 mt-2 min-w-44 rounded-roomo border border-slate-200 bg-white p-1 shadow-lg">{languages.map(item => <button key={item.code} className={`${linkClass} w-full text-left`} type="button" onClick={() => chooseLanguage(item)}>{item.label}</button>)}</div>}
           </div>
-          <div className="dropdown">
-            <button className="btn roomo-pill-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i className="bi bi-person-circle" aria-hidden="true"></i><span>{user?.fullName || "Login / Signup"}</span>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end">
-              {!user && <><li><a className="dropdown-item" href={authHref("../roomo-frontend/roomo-login.html")}>Sign In</a></li><li><a className="dropdown-item" href={authHref("../roomo-frontend/roomo-signup.html")}>Sign Up</a></li><li><hr className="dropdown-divider" /></li></>}
-              <li><a className="dropdown-item" href="../roomo-frontend/roomo-my-bookings.html"><i className="bi bi-journal-bookmark me-2"></i>My Pilgrimage Bookings</a></li>
-              <li><a className="dropdown-item" href={user ? "../roomo-frontend/roomo-my-bookings.html" : authHref("../roomo-frontend/roomo-login.html")}><i className="bi bi-heart me-2"></i>Saved Ashrams &amp; Haveli</a></li>
-              {user && <li><button className="dropdown-item" type="button" onClick={logout}>Logout</button></li>}
-            </ul>
+          <div className="relative">
+            <button className="inline-flex items-center gap-2 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3 sm:text-sm" type="button" aria-expanded={menuOpen} onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><i className="bi bi-person-circle text-base" /><span className="max-w-28 truncate sm:max-w-none">{user?.fullName || "Login / Signup"}</span><i className="bi bi-chevron-down text-[10px]" /></button>
+            {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
+              {!user && <><a className={linkClass} href={authHref("../roomo-frontend/roomo-login.html")}>Sign In</a><a className={linkClass} href={authHref("../roomo-frontend/roomo-signup.html")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
+              <a className={linkClass} href="../roomo-frontend/roomo-my-bookings.html"><i className="bi bi-journal-bookmark mr-2" />My Pilgrimage Bookings</a>
+              <a className={linkClass} href={user ? "../roomo-frontend/roomo-my-bookings.html" : authHref("../roomo-frontend/roomo-login.html")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
+              {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
+            </nav>}
           </div>
         </div>
       </div>
