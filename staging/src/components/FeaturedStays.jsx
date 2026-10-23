@@ -42,8 +42,7 @@ export default function FeaturedStays() {
       ? content.featuredRooms.filter(stay => stay && stay.featured !== false)
           .sort((left, right) => (left.sortOrder ?? 999) - (right.sortOrder ?? 999))
       : [];
-  if (!loading && content?.featuredSectionEnabled === false) return null;
-  if (!loading && stays.length === 0) return null;
+  if (content?.featuredSectionEnabled === false) return null;
 
   return (
     <section aria-labelledby="featured-stays-title" className="w-full bg-white px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
@@ -67,6 +66,10 @@ export default function FeaturedStays() {
         {loading ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-label="Loading featured stays">
             {[0, 1, 2, 3].map(item => <div key={item} className="overflow-hidden rounded-lg border border-slate-200"><div className="h-48 animate-pulse bg-slate-100" /><div className="space-y-3 p-4"><div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" /><div className="h-3 w-full animate-pulse rounded bg-slate-100" /></div></div>)}
+          </div>
+        ) : stays.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm text-slate-600">
+            {content?.featuredSectionEmptyMessage || "No featured stays are available yet. Select and publish properties in the Featured Rooms admin to display them here."}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
