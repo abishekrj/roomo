@@ -1748,7 +1748,17 @@ body.home-page {
 
       
 
-      /* Brand Logo */
+      .font-cinzel {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
+}
+
+.font-serif-sacred {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: -0.01em;
+}
+
+/* Brand Logo */
       .brand-logo-text {
         font-family: 'Poppins', sans-serif;
         font-size: 1.85rem;
@@ -9506,7 +9516,3 @@ body.search-page .results-head > .listing-view-toolbar {
 }
 
 
-/* ROOMO typography standard: Poppins throughout the site. Keep icon fonts intact. */
-html, body, body :not(i):not([class*="bi-"]):not([class^="bi"]) {
-  font-family: 'Poppins', sans-serif !important;
-}
