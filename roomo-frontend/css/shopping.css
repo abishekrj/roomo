@@ -73,3 +73,57 @@
     margin-top: 0;
   }
 }
+
+
+/* Keep the View All action on the left and carousel arrows at the far right. */
+.home-page #shoppingDirectorySection .shopping-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 14px;
+}
+.home-page #shoppingDirectorySection .shopping-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex: 0 0 100%;
+  gap: 8px;
+}
+.home-page #shoppingDirectorySection .shopping-view-all {
+  order: 0;
+  margin-right: auto;
+}
+.home-page #shoppingDirectorySection .shopping-arrow {
+  flex: 0 0 42px;
+  background: #fff;
+  border-color: #d7e0e7;
+}
+.home-page #shoppingDirectorySection .shopping-arrow:hover {
+  background: #f2f5f7;
+  border-color: #c5d4e0;
+}
+/* Prevent a vertical scrollbar inside the shopping carousel. */
+.home-page #shoppingDirectorySection .shopping-track {
+  overflow-x: visible;
+  overflow-y: hidden;
+  align-items: stretch;
+  scrollbar-width: none;
+}
+.home-page #shoppingDirectorySection .shopping-track::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 767px) {
+  .home-page #shoppingDirectorySection .shopping-controls {
+    width: 100%;
+    flex: 0 0 100%;
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  .home-page #shoppingDirectorySection .shopping-track {
+    overflow-x: auto;
+    overflow-y: clip;
+    padding-bottom: 8px;
+  }
+}
