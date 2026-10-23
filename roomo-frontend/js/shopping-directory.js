@@ -53,7 +53,7 @@
       }
       document.getElementById("shoppingSectionTitle").textContent = config.title || "Best Shops for Shopping";
       document.getElementById("shoppingSectionDescription").textContent = config.description || "Discover verified local shops in Tiruvannamalai.";
-      track.innerHTML = shops.slice(0, 4).map(card).join("");
+      track.innerHTML = shops.map(card).join("");
       section.hidden = false;
       const prev = document.getElementById("shoppingPrev"), next = document.getElementById("shoppingNext");
       if (prev) prev.hidden = shops.length < 2;
