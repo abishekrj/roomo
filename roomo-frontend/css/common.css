@@ -3098,3 +3098,15 @@ body.search-page .results-head > .listing-view-toolbar {
     object-fit: contain;
   }
 }
+
+
+/* Mobile homepage search: match date labels to the destination label and date values to other field values. */
+@media (max-width: 767.98px) {
+  .home-page .home-hero-search .roomo-date-endpoint-label {
+    font-size: 11px !important;
+    letter-spacing: .01em;
+  }
+  .home-page .home-hero-search .roomo-date-endpoint strong {
+    font-size: 14px !important;
+  }
+}
