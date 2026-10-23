@@ -669,6 +669,9 @@ body.auth-page .mobile-brand { display: none; }
   body.auth-page .visual { min-height: 330px; }
   body.auth-page .form-side { min-height: auto; }
   body.auth-page .mobile-brand { display: inline-flex; }
+  .temple-granite-footer a.footer-link {
+    font-size: 12;
+  }
 }
 
 /* Externalized inline styles from code.html */
