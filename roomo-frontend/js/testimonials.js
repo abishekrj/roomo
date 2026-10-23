@@ -38,7 +38,6 @@
       info.append(text("span","text-muted small",item.location||"ROOMO Guest"));
       author.append(avatar,info); card.append(stars,quote,author); slide.append(card); track.append(slide);
     });
-    track.querySelectorAll(".testimonial-slide-item").forEach(item=>{item.style.flex="0 0 min(340px, 85vw)";});
   }
   document.addEventListener("click",event=>{
     const button=event.target.closest("[data-testimonial-scroll]"); if(!button)return;
