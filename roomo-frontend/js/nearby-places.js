@@ -18,17 +18,26 @@
     const title = document.getElementById("nearbyPlacesTitle");
     const description = document.getElementById("nearbyPlacesDescription");
     const track = document.getElementById("nearbyPlacesGrid");
-    const viewAll = document.getElementById("nearbyPlacesViewAll");
-    const prev = document.getElementById("nearbyPlacesPrev");
-    const next = document.getElementById("nearbyPlacesNext");
     if (!section || !track || !title || !description) return;
+    const heading = section.querySelector(".nearby-places-heading");
+    let controls = section.querySelector(".nearby-places-controls");
+    if (!controls && heading) {
+      controls = document.createElement("div");
+      controls.className = "nearby-places-controls";
+      controls.setAttribute("aria-label", "Nearby locations controls");
+      controls.innerHTML = '<button type="button" class="nearby-places-view-all" id="nearbyPlacesViewAll">View all <i class="bi bi-arrow-right-short fs-6"></i></button><button type="button" class="nearby-places-arrow" id="nearbyPlacesPrev" aria-label="Previous nearby locations"><i class="bi bi-chevron-left"></i></button><button type="button" class="nearby-places-arrow" id="nearbyPlacesNext" aria-label="Next nearby locations"><i class="bi bi-chevron-right"></i></button>';
+      heading.appendChild(controls);
+    }
+    const viewAll = controls?.querySelector("#nearbyPlacesViewAll");
+    const prev = controls?.querySelector("#nearbyPlacesPrev");
+    const next = controls?.querySelector("#nearbyPlacesNext");
     const places = Array.isArray(config?.places) ? config.places.filter(place => place && place.visible !== false).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) : [];
     title.textContent = !config?.title || config.title === "Explore Places Around Tiruvannamalai" ? DEFAULT_CONFIG.title : (config.title === "Featured Stays" ? DEFAULT_CONFIG.title : config.title);
     description.textContent = config?.description || DEFAULT_CONFIG.description;
     if (config?.enabled === false || !places.length) { section.hidden = true; return; }
     section.hidden = false;
     track.classList.remove("is-expanded");
-    if (viewAll) { viewAll.textContent = "View All"; viewAll.setAttribute("aria-expanded", "false"); viewAll.hidden = places.length <= 4; }
+    if (viewAll) { viewAll.innerHTML = 'View all <i class="bi bi-arrow-right-short fs-6"></i>'; viewAll.setAttribute("aria-expanded", "false"); viewAll.hidden = places.length <= 4; }
     if (prev) prev.hidden = places.length <= 4;
     if (next) next.hidden = places.length <= 4;
     track.innerHTML = places.map(place => {
@@ -80,7 +89,7 @@
     }
     if (viewAll) viewAll.onclick = () => {
       const expanded = track.classList.toggle("is-expanded");
-      viewAll.textContent = expanded ? "Show less" : "View all";
+      viewAll.innerHTML = expanded ? 'Show less <i class="bi bi-arrow-right-short fs-6"></i>' : 'View all <i class="bi bi-arrow-right-short fs-6"></i>';
       viewAll.setAttribute("aria-expanded", String(expanded));
       if (prev) prev.hidden = expanded || places.length <= 4;
       if (next) next.hidden = expanded || places.length <= 4;

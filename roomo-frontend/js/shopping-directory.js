@@ -55,7 +55,15 @@
       document.getElementById("shoppingSectionDescription").textContent = config.description || "Discover verified local shops in Tiruvannamalai.";
       track.innerHTML = shops.map(card).join("");
       section.hidden = false;
-      const prev = document.getElementById("shoppingPrev"), next = document.getElementById("shoppingNext");
+      const heading = section.querySelector(".shopping-heading");
+      let controls = section.querySelector(".shopping-controls");
+      if (!controls && heading) {
+        controls = document.createElement("div");
+        controls.className = "shopping-controls";
+        controls.innerHTML = '<a class="shopping-view-all" href="shopping.html">View All Shops <i class="bi bi-arrow-right-short fs-6"></i></a><button class="shopping-arrow" id="shoppingPrev" type="button" aria-label="Previous shops"><i class="bi bi-chevron-left"></i></button><button class="shopping-arrow" id="shoppingNext" type="button" aria-label="Next shops"><i class="bi bi-chevron-right"></i></button>';
+        heading.appendChild(controls);
+      }
+      const prev = controls?.querySelector("#shoppingPrev"), next = controls?.querySelector("#shoppingNext");
       if (prev) prev.hidden = shops.length < 2;
       if (next) next.hidden = shops.length < 2;
       const step = direction => {
