@@ -145,8 +145,8 @@
     scrollbar-width: none;
   }
   .home-page #shoppingDirectorySection .shopping-track > .shopping-card {
-    flex: 0 0 calc((100% - 36px) / 3);
-    width: calc((100% - 36px) / 3);
+    flex: 0 0 calc((100% - 54px) / 4);
+    width: calc((100% - 54px) / 4);
     scroll-snap-align: start;
   }
   .home-page #shoppingDirectorySection .shopping-track::-webkit-scrollbar {
