@@ -3245,7 +3245,6 @@ body.auth-page .mobile-brand {
   margin: 0;
   font: 500 14px/1.5 'Poppins', sans-serif;
   letter-spacing: .02em;
->>>>>>> 70cb252ebc44d493c8fab0d2d768678fdf9e153b
 }
 .roomo-loader-mark {
   display: flex;
@@ -4310,7 +4309,6 @@ button,input,select,textarea{font:inherit}
 .home-page .sanctuary-card h5{line-height:1.4}
 .home-page #featuredStayControls .btn{min-width:42px;min-height:42px}
 .home-page .btn-sacred-primary{min-height:52px;font-weight:800;letter-spacing:.01em}
->>>>>>> 70cb252ebc44d493c8fab0d2d768678fdf9e153b
 
 /* 2. Search discovery: clear hierarchy, listing cards, filters */
 .search-page {
@@ -5950,8 +5948,6 @@ body.search-page .listing .heart:disabled {
 .pournami-slide{height:64px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}.pournami-slide-eyebrow{font-size:.61rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sacred-yellow-bright);font-family:Cinzel,serif;line-height:1.2}.pournami-slide strong{display:block;color:var(--roomo-white);font-size:.93rem;line-height:1.25;font-weight:700}.pournami-slide>span:last-child{color:rgba(255,255,255,.82);font-size:.75rem;line-height:1.25}.pournami-slide-indicator{flex:0 0 auto;align-self:flex-end;color:rgba(255,255,255,.64);font-size:.62rem;font-variant-numeric:tabular-nums}
 @media(max-width:575.98px){.pournami-banner-capsule{gap:10px;padding:10px 12px;min-height:86px}.pournami-capsule-icon{flex-basis:38px;width:38px;height:38px}.pournami-slide strong{font-size:.85rem}.pournami-slide>span:last-child{font-size:.7rem}.pournami-slide-indicator{display:none}}
 @media(prefers-reduced-motion:reduce){.pournami-vertical-track{transition:none}}
-
->>>>>>> 70cb252ebc44d493c8fab0d2d768678fdf9e153b
 
 /* Stay details: compact three-column facility lists starting with Parking. */
 .stay-details-page .detail-popular-section > h2 {
