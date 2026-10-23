@@ -3243,8 +3243,8 @@ body.auth-page .mobile-brand {
 }
 .roomo-page-loader p {
   margin: 0;
-  font: 500 14px/1.5 'Poppins', sans-serif;
-  letter-spacing: .02em;
+  font: 500 14px/1.5 "Poppins", sans-serif;
+  letter-spacing: 0.02em;
 }
 .roomo-loader-mark {
   display: flex;
@@ -3804,7 +3804,7 @@ section[id] {
 .detail-amenity-category h3 {
   margin: 0 0 13px;
   color: #202b33;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 1.4;
@@ -3912,7 +3912,13 @@ body {
   text-transform: uppercase;
 }
 
-.destination-suggestions-heading { padding: 9px 12px 8px; color: #59666f; font: 800 11px/1.4 'Poppins', sans-serif; letter-spacing: .09em; text-transform: uppercase; }
+.destination-suggestions-heading {
+  padding: 9px 12px 8px;
+  color: #59666f;
+  font: 800 11px/1.4 "Poppins", sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
 
 /* Anchor the destination suggestions directly to the destination search field. */
 #destinationInput {
@@ -3945,8 +3951,8 @@ body {
   color: #215b39;
   box-shadow: 0 8px 22px rgba(26, 92, 55, 0.08);
   font: 600 13px/1.55 "DM Sans", sans-serif;
-  box-shadow: 0 8px 22px rgba(26, 92, 55, .08);
-  font: 600 13px/1.55 'Poppins', sans-serif;
+  box-shadow: 0 8px 22px rgba(26, 92, 55, 0.08);
+  font: 600 13px/1.55 "Poppins", sans-serif;
   opacity: 0;
   transform: translateY(-7px);
   transition: opacity 0.24s ease, transform 0.24s ease;
@@ -4261,7 +4267,7 @@ body {
 /* Shared heading typography used across homepage and stay listings. */
 .roomo-shared-title {
   margin-top: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.2;
@@ -4285,26 +4291,93 @@ body {
 }
 
 /* ROOMO UI refinement pass — homepage, discovery, property details, and auth */
-body{font-family: 'Poppins', sans-serif;color:#202b33}
-h1,h2,h3,h4,h5,h6,
-button,input,select,textarea{font:inherit}
-:focus-visible{outline:3px solid rgba(37,99,166,.48);outline-offset:3px}
+body {
+  font-family: "Poppins", sans-serif;
+  color: #202b33;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+:focus-visible {
+  outline: 3px solid rgba(37, 99, 166, 0.48);
+  outline-offset: 3px;
+}
 
 /* 1. Homepage hierarchy and featured property cards */
-.home-page .hero-heritage-wrapper h1{max-width:760px;font-size:clamp(2rem,3.5vw,3.35rem);line-height:1.12;letter-spacing:-.035em}
-.home-page .hero-heritage-wrapper h1 em{color:var(--roomo-blue-action)}
-.home-page #popularStays .badge{color:var(--roomo-blue-action);background:var(--roomo-blue-pale);border-color:#c6d9e8!important;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.home-page #featuredSectionTitle{margin-top:3px}
-.home-page #featuredSectionDescription{max-width:560px;margin-top:8px!important;font-size:14px!important;line-height:1.65}
-.home-page .popular-stay-item{min-width:0}
-.home-page .sanctuary-card{height:100%;overflow:hidden;border:1px solid #e4e0d7;box-shadow:0 5px 18px rgba(24,59,86,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-.home-page .sanctuary-card:hover{transform:translateY(-3px);border-color:#c6d9e8;box-shadow:0 14px 30px rgba(24,59,86,.12)}
-.home-page .sanctuary-img-holder{overflow:hidden;background:var(--roomo-blue-pale)}
-.home-page .sanctuary-img-holder img{transition:transform .35s ease}
-.home-page .sanctuary-card:hover .sanctuary-img-holder img{transform:scale(1.035)}
-.home-page .sanctuary-card h5{line-height:1.4}
-.home-page #featuredStayControls .btn{min-width:42px;min-height:42px}
-.home-page .btn-sacred-primary{min-height:52px;font-weight:800;letter-spacing:.01em}
+.home-page .hero-heritage-wrapper h1 {
+  max-width: 760px;
+  font-size: clamp(2rem, 3.5vw, 3.35rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+.home-page .hero-heritage-wrapper h1 em {
+  color: var(--roomo-blue-action);
+}
+.home-page #popularStays .badge {
+  color: var(--roomo-blue-action);
+  background: var(--roomo-blue-pale);
+  border-color: #c6d9e8 !important;
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.home-page #featuredSectionTitle {
+  margin-top: 3px;
+}
+.home-page #featuredSectionDescription {
+  max-width: 560px;
+  margin-top: 8px !important;
+  font-size: 14px !important;
+  line-height: 1.65;
+}
+.home-page .popular-stay-item {
+  min-width: 0;
+}
+.home-page .sanctuary-card {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #e4e0d7;
+  box-shadow: 0 5px 18px rgba(24, 59, 86, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.home-page .sanctuary-card:hover {
+  transform: translateY(-3px);
+  border-color: #c6d9e8;
+  box-shadow: 0 14px 30px rgba(24, 59, 86, 0.12);
+}
+.home-page .sanctuary-img-holder {
+  overflow: hidden;
+  background: var(--roomo-blue-pale);
+}
+.home-page .sanctuary-img-holder img {
+  transition: transform 0.35s ease;
+}
+.home-page .sanctuary-card:hover .sanctuary-img-holder img {
+  transform: scale(1.035);
+}
+.home-page .sanctuary-card h5 {
+  line-height: 1.4;
+}
+.home-page #featuredStayControls .btn {
+  min-width: 42px;
+  min-height: 42px;
+}
+.home-page .btn-sacred-primary {
+  min-height: 52px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
 
 /* 2. Search discovery: clear hierarchy, listing cards, filters */
 .search-page {
@@ -5587,8 +5660,6 @@ body h6 *,
 body [role="heading"] * {
   font-weight: 600 !important;
 }
-
-/* Search hero and search details: ensure accessible contrast on the dark blue background. */
 body.search-page .hero {
   background: linear-gradient(115deg, #003580 0%, var(--roomo-navy-deep) 100%);
   color: var(--roomo-white);
@@ -5627,8 +5698,6 @@ body.search-page .listing .heart:disabled {
   opacity: 0.65;
   cursor: wait;
 }
-
-/* Saved stays displayed alongside reservations in My Pilgrimage Bookings. */
 .my-bookings-page .favorites-section {
   margin-top: 36px;
   padding-top: 28px;
@@ -5706,8 +5775,6 @@ body.search-page .listing .heart:disabled {
     height: 190px;
   }
 }
-
-/* Listing page search editor is collapsed until requested. */
 .search-page .listing-edit-search[hidden] {
   display: none !important;
 }
@@ -5718,7 +5785,6 @@ body.search-page .listing .heart:disabled {
   scroll-margin-top: 24px;
 }
 
-/* Search page: embedded, reusable homepage search component and favourite feedback. */
 .search-page .listing-edit-search {
   margin: 18px 0 26px;
   padding: clamp(18px, 3vw, 30px);
@@ -5807,7 +5873,6 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-/* Homepage featured property descriptions: clamp to two lines. */
 .home-page .sanctuary-card .p-3 > p.text-muted.small {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -5818,7 +5883,6 @@ body.search-page .listing .heart:disabled {
   min-height: calc(1.5em * 2);
 }
 
-/* Search results refinements: square property photos and tighter search inputs. */
 .search-page .listing .photo {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -5839,7 +5903,6 @@ body.search-page .listing .heart:disabled {
   padding: 0.65rem !important;
 }
 
-/* Pournami banner: compact vertical carousel, content managed in Homepage Editor. */
 .pournami-banner-capsule {
   display: flex;
   align-items: center;
@@ -5937,14 +6000,103 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-.pournami-banner-capsule{display:flex;align-items:center;gap:14px;width:min(100%,480px);min-height:94px;padding:12px 16px;border-radius:16px;background:linear-gradient(135deg,var(--roomo-navy-deep) 0%,#172554 100%);border:1.5px solid var(--sacred-yellow-bright);color:var(--roomo-white);box-shadow:0 8px 24px rgba(15,44,89,.22);overflow:hidden}
-.pournami-capsule-icon{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.12);color:var(--sacred-yellow-bright);font-size:1.25rem}
-.pournami-vertical-viewport{min-width:0;flex:1;height:64px;overflow:hidden}.pournami-vertical-track{will-change:transform;transition:transform .55s cubic-bezier(.22,.68,0,1.05)}
-.pournami-slide{height:64px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}.pournami-slide-eyebrow{font-size:.61rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sacred-yellow-bright);font-family:Cinzel,serif;line-height:1.2}.pournami-slide strong{display:block;color:var(--roomo-white);font-size:.93rem;line-height:1.25;font-weight:700}.pournami-slide>span:last-child{color:rgba(255,255,255,.82);font-size:.75rem;line-height:1.25}.pournami-slide-indicator{flex:0 0 auto;align-self:flex-end;color:rgba(255,255,255,.64);font-size:.62rem;font-variant-numeric:tabular-nums}
-@media(max-width:575.98px){.pournami-banner-capsule{gap:10px;padding:10px 12px;min-height:86px}.pournami-capsule-icon{flex-basis:38px;width:38px;height:38px}.pournami-slide strong{font-size:.85rem}.pournami-slide>span:last-child{font-size:.7rem}.pournami-slide-indicator{display:none}}
-@media(prefers-reduced-motion:reduce){.pournami-vertical-track{transition:none}}
+.pournami-banner-capsule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(100%, 480px);
+  min-height: 94px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--roomo-navy-deep) 0%, #172554 100%);
+  border: 1.5px solid var(--sacred-yellow-bright);
+  color: var(--roomo-white);
+  box-shadow: 0 8px 24px rgba(15, 44, 89, 0.22);
+  overflow: hidden;
+}
+.pournami-capsule-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--sacred-yellow-bright);
+  font-size: 1.25rem;
+}
+.pournami-vertical-viewport {
+  min-width: 0;
+  flex: 1;
+  height: 64px;
+  overflow: hidden;
+}
+.pournami-vertical-track {
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.22, 0.68, 0, 1.05);
+}
+.pournami-slide {
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+.pournami-slide-eyebrow {
+  font-size: 0.61rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sacred-yellow-bright);
+  font-family: Cinzel, serif;
+  line-height: 1.2;
+}
+.pournami-slide strong {
+  display: block;
+  color: var(--roomo-white);
+  font-size: 0.93rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.pournami-slide > span:last-child {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+.pournami-slide-indicator {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 575.98px) {
+  .pournami-banner-capsule {
+    gap: 10px;
+    padding: 10px 12px;
+    min-height: 86px;
+  }
+  .pournami-capsule-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+  .pournami-slide strong {
+    font-size: 0.85rem;
+  }
+  .pournami-slide > span:last-child {
+    font-size: 0.7rem;
+  }
+  .pournami-slide-indicator {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pournami-vertical-track {
+    transition: none;
+  }
+}
 
-/* Stay details: compact three-column facility lists starting with Parking. */
 .stay-details-page .detail-popular-section > h2 {
   margin-bottom: 12px;
 }
@@ -5993,7 +6145,6 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-/* Keep search-result descriptions to two lines on all screen sizes. */
 .search-page .listing .desc {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -6001,7 +6152,6 @@ body.search-page .listing .heart:disabled {
   overflow: hidden;
 }
 
-/* Property details: full-screen gallery with synchronized, scrollable thumbnails. */
 .stay-details-page .detail-gallery-main {
   position: relative;
   display: block;
@@ -6228,7 +6378,6 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-/* Shared category-free search form on property details pages. */
 .stay-details-page .detail-search-section {
   margin: 0 0 24px;
   padding: 22px;
@@ -6327,7 +6476,6 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-/* Shared ROOMO search component: details-page variant */
 .stay-details-page .detail-search-section {
   margin: 0 0 24px;
   padding: 22px;
@@ -6421,7 +6569,6 @@ body.search-page .listing .heart:disabled {
   }
 }
 
-/* Details page uses the same monolithic search card as the homepage, without an extra heading/card wrapper. */
 .stay-details-page .detail-search-section {
   margin: 0 0 24px;
   padding: 0;
@@ -6431,7 +6578,6 @@ body.search-page .listing .heart:disabled {
   box-shadow: none;
 }
 
-/* Property details: tighter breadcrumb rhythm and a collapsed Modify Search panel. */
 .stay-details-page .detail-crumb {
   margin: 3px 0 14px;
   gap: 7px;
@@ -6483,7 +6629,6 @@ body.search-page .listing .heart:disabled {
   font-weight: 700 !important;
 }
 
-/* Global search-field spacing and date emphasis across ROOMO pages. */
 .monolithic-search-engine .heritage-input-box {
   padding: 0.65rem !important;
 }
@@ -6497,7 +6642,6 @@ body.search-page .listing .heart:disabled {
   margin-top: 0 !important;
 }
 
-/* Property details page spacing adjustments. */
 .stay-details-page .detail-section {
   margin-bottom: 0 !important;
 }
@@ -6506,7 +6650,6 @@ body.search-page .listing .heart:disabled {
   padding-bottom: 32px !important;
 }
 
-/* Property details page spacing adjustments. */
 .stay-details-page .detail-section {
   margin-bottom: 0 !important;
 }
@@ -6515,7 +6658,6 @@ body.search-page .listing .heart:disabled {
   padding-bottom: 32px !important;
 }
 
-/* Listing filters: keep the complete filter list in the page flow instead of clipping it inside a short sidebar. */
 @media (min-width: 761px) {
   .search-page .filters {
     position: static !important;
@@ -6529,8 +6671,6 @@ body.search-page .listing .heart:disabled {
     max-height: none;
   }
 }
-
-/* Configurable search-result listing information */
 .listing .accommodation-summary,
 .listing .bed-summary {
   font-size: 13px;
@@ -6564,7 +6704,6 @@ body.search-page .listing .heart:disabled {
   flex: 0 0 auto;
 }
 
-/* Stronger listing-card hierarchy and primary availability action */
 .listing .details {
   font-size: 15px;
   font-weight: 700;
@@ -6596,7 +6735,6 @@ body.search-page .listing .heart:disabled {
   font-weight: 600;
 }
 
-/* Per-property Google Maps popup on search results */
 body.search-page .location {
   display: flex;
   align-items: flex-start;
@@ -6722,7 +6860,6 @@ body.roomo-map-open {
   }
 }
 
-/* Booking-style location row and property payment reassurance */
 body.search-page .listing-location-label {
   display: inline-flex;
   align-items: flex-start;
@@ -6746,7 +6883,6 @@ body.search-page .listing .listing-policy-no-card i {
   color: #218838;
 }
 
-/* Homepage: hide the hero copy and image on mobile, but retain the search section. */
 @media (max-width: 767.98px) {
   .home-page
     .hero-heritage-wrapper
@@ -6765,7 +6901,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Homepage mobile: place View All at the left and carousel arrows at the right. */
 @media (max-width: 767.98px) {
   .home-page #featuredStayControls {
     width: 100%;
@@ -6773,8 +6908,6 @@ body.search-page .listing .listing-policy-no-card i {
     justify-content: space-between;
   }
 }
-
-/* Property photo gallery: show two thumbnail items per row on mobile. */
 @media (max-width: 640px) {
   .stay-details-page .detail-gallery-side {
     display: grid;
@@ -6788,19 +6921,15 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Use consistent 8px corners for the homepage View All button. */
 .home-page #featuredStayControls > a {
   border-radius: 8px !important;
 }
-
-/* Homepage hero vertical spacing on mobile. */
 @media (max-width: 767.98px) {
   .home-page .hero-heritage-wrapper {
     padding: 24px 0 !important;
   }
 }
 
-/* Homepage sections using Bootstrap py-5 spacing use py-4 spacing on mobile. */
 @media (max-width: 767.98px) {
   .home-page .py-5 {
     padding-top: 1.5rem !important;
@@ -6808,7 +6937,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* ROOMO homepage: cinematic panoramic hero banner */
 .home-page .roomo-home-hero {
   position: relative;
   isolation: isolate;
@@ -6966,7 +7094,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Homepage-only hero search: stacked controls in a 420px left-side panel. */
 .home-page .roomo-hero-slide {
   align-items: stretch;
   min-height: clamp(760px, 66vw, 900px);
@@ -7057,7 +7184,6 @@ body.search-page .listing .listing-policy-no-card i {
   z-index: 50;
 }
 @media (max-width: 767.98px) {
-  /* Keep search usable on mobile while honoring the existing mobile hero-hide behavior. */
   .home-page .roomo-home-hero {
     display: block;
     overflow: visible;
@@ -7087,7 +7213,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Property details: reclaim top whitespace and keep page actions aligned above the photo gallery. */
 .stay-details-page .stay-detail-page-wrap {
   padding-top: 12px !important;
 }
@@ -7154,7 +7279,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Property details: show the address and Google Map above the booking panel. */
 .stay-details-page .detail-address-map {
   margin: 0 0 18px;
   overflow: hidden;
@@ -7211,9 +7335,7 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Keep the booking / “Your sacred stay” card sticky alongside the full property details content. */
 @media (min-width: 761px) {
-  /* Stretch the sidebar to the full details-row height; otherwise sticky is constrained to the map + card height. */
   .stay-details-page .detail-columns > .detail-sidebar {
     align-self: stretch;
     min-height: 100%;
@@ -7227,7 +7349,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Listing page: switch between compact list and card grid layouts */
 .search-page .listing-view-toolbar {
   display: flex;
   align-items: center;
@@ -7414,7 +7535,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Three property cards per row on desktop; mobile always uses list layout. */
 @media (min-width: 1081px) {
   .search-page #listings.view-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7510,7 +7630,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Mobile listing cards: use a clean two-column grid with photo above details. */
 @media (max-width: 760px) {
   body.search-page .listing-view-toolbar {
     display: none !important;
@@ -7634,8 +7753,6 @@ body.search-page .listing .listing-policy-no-card i {
     padding: 0 8px 8px !important;
   }
 }
-
-/* Reduce the Upcoming Festival heading size. */
 #homeFestivalTitle {
   font-size: clamp(1.65rem, 2.5vw, 2.35rem) !important;
   line-height: 1.2;
@@ -7646,12 +7763,10 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Footer section heading accent color. */
 .temple-granite-footer .footer-section-heading-gold {
   color: #ffc107;
 }
 
-/* Nearby places section: property-listing style cards, configured through the admin panel. */
 .nearby-places-section {
   background: #f7f9fb;
   border-top: 1px solid #e6ebef;
@@ -7788,7 +7903,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Featured Stays carousel */
 .nearby-places-heading {
   display: flex;
   align-items: flex-end;
@@ -7909,7 +8023,6 @@ body.search-page .listing .listing-policy-no-card i {
   }
 }
 
-/* Nearby Locations cards and place details dialog */
 .nearby-place-card {
   cursor: pointer;
 }
@@ -8088,8 +8201,6 @@ body.nearby-place-modal-open {
   }
 }
 
-/* Shared header: keep it pinned so it can reappear when the user scrolls upward.
-   The earlier shared-header rule sets position: relative, so override it here. */
 .heritage-navbar {
   position: sticky !important;
   top: 0;
@@ -8105,7 +8216,6 @@ body.nearby-place-modal-open {
   }
 }
 
-/* Scroll reveal: sections rise gently into view; cards fade in with a stagger. */
 html.roomo-reveal-enabled [data-roomo-reveal],
 html.roomo-reveal-enabled [data-roomo-reveal-card] {
   opacity: 0;
@@ -8131,7 +8241,6 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   }
 }
 
-/* Keep destination autocomplete above the CTA, including the button hover layer. */
 .home-page .home-hero-search,
 .home-page .home-hero-search .monolithic-search-engine,
 .home-page .home-hero-search #staySearchForm,
@@ -8159,8 +8268,6 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   z-index: 0 !important;
 }
 
-/* Autocomplete must remain readable: suppress the CTA visually while suggestions are open.
-   The CTA keeps its layout space, so the dropdown does not jump as it opens/closes. */
 .home-page
   .home-hero-search
   #destinationInput[aria-expanded="true"]
@@ -8190,8 +8297,6 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   z-index: 100000 !important;
 }
 
-/* The homepage search is mounted inside .monolithic-search-engine directly
-   (not .home-hero-search). Stack the destination column above the CTA column. */
 .home-page .hero-heritage-wrapper .monolithic-search-engine,
 .home-page .hero-heritage-wrapper .monolithic-search-engine #staySearchForm,
 .home-page
@@ -8240,7 +8345,7 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   position: relative !important;
   z-index: 0 !important;
 }
-/* Keep the blue CTA from painting over the open suggestions. */
+
 .home-page
   .hero-heritage-wrapper
   .monolithic-search-engine
@@ -8251,7 +8356,6 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   pointer-events: none !important;
 }
 
-/* Correct stacking without hiding the Search button: suggestions overlay it. */
 .home-page
   .hero-heritage-wrapper
   .monolithic-search-engine
@@ -8301,9 +8405,6 @@ html.roomo-reveal-enabled [data-roomo-reveal-card].is-roomo-visible {
   z-index: 0 !important;
 }
 
-/* Listing title sizing is handled by .roomo-shared-title--hero. */
-
-/* Listing results: keep the title full-width, then align Sort by and View on one row. */
 body.search-page .results-head {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
@@ -8355,7 +8456,7 @@ body.search-page .listing-view-toolbar {
   }
 }
 
-/* Keep Sort by and the List/Grid controls together on a single row. */
+
 body.search-page .results-head {
   grid-template-columns: minmax(0, 1fr) auto !important;
 }
@@ -8377,7 +8478,6 @@ body.search-page .listing-view-button {
   white-space: nowrap !important;
 }
 
-/* Force Sort by and listing-view-toolbar into the same second row. */
 body.search-page .results-head {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
@@ -8410,7 +8510,6 @@ body.search-page .listing-view-toolbar {
   white-space: nowrap !important;
 }
 
-/* Sort and View controls share one horizontal row beneath the full-width listing title. */
 body.search-page .results-head {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto !important;
@@ -8462,7 +8561,6 @@ body.search-page .results-head > .listing-view-toolbar {
   }
 }
 
-/* Reservation contact number field */
 .reservation-contact-phone {
   display: block;
   width: 100%;
@@ -8489,7 +8587,6 @@ body.search-page .results-head > .listing-view-toolbar {
   margin: 0 0 14px;
 }
 
-/* ROOMO header refresh: calm, compact controls with consistent Poppins styling. */
 .heritage-navbar {
   background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid #e8edf2;
@@ -8602,7 +8699,6 @@ body.search-page .results-head > .listing-view-toolbar {
   }
 }
 
-/* Header control hierarchy: emphasize the location and make account access the primary action. */
 .heritage-navbar .temple-location-badge .roomo-location-text {
   color: #30475a;
   font-weight: 600;
@@ -8638,7 +8734,6 @@ body.search-page .results-head > .listing-view-toolbar {
   color: var(--roomo-white) !important;
 }
 
-/* Mobile homepage hero banner: full-bleed image, no container gutters. */
 .roomo-mobile-hero-banner {
   display: none;
 }
@@ -8667,7 +8762,6 @@ body.search-page .results-head > .listing-view-toolbar {
   }
 }
 
-/* Mobile homepage search: match date labels to the destination label and date values to other field values. */
 @media (max-width: 767.98px) {
   .home-page .home-hero-search .roomo-date-endpoint-label {
     font-size: 11px !important;
@@ -8678,7 +8772,6 @@ body.search-page .results-head > .listing-view-toolbar {
   }
 }
 
-/* Homepage Featured Stays: show exactly three complete cards on desktop. */
 @media (min-width: 992px) {
   .home-page #popularStays .popular-stays-track {
     gap: 22px;
