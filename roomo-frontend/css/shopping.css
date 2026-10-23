@@ -7,8 +7,8 @@
 .shopping-heading p{margin:0;color:#61717e;font:400 14px/1.7 Poppins,sans-serif}
 .shopping-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .shopping-view-all,.shopping-arrow,.shopping-directions,.shopping-primary-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid #d7e0e7;border-radius:8px;background:#fff;color:#183b56;text-decoration:none;font:600 12px/1.4 Poppins,sans-serif}
-.shopping-arrow{width:40px;padding:0;cursor:pointer}.shopping-arrow[hidden]{display:none}
-.shopping-view-all:hover,.shopping-primary-link:hover{background:#183b56;color:#fff}
+.shopping-arrow{width:42px;height:42px;min-height:42px;padding:0;border-radius:50%;background:#f8f9fa;box-shadow:0 2px 5px rgba(15,39,59,.08);cursor:pointer}.shopping-arrow[hidden]{display:none}
+.shopping-view-all:hover{background:#0058bc;border-color:#0058bc;color:#FACC15}.shopping-primary-link:hover{background:#183b56;color:#fff}
 .shopping-track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;overflow:visible;padding:2px 1px 12px}
 .shopping-track::-webkit-scrollbar{display:none}
 .shopping-card{display:flex;flex:0 0 calc((100% - 36px)/3);min-width:0;flex-direction:column;border:1px solid #e0e7ed;border-radius:8px;overflow:hidden;background:#fff;scroll-snap-align:start;transition:box-shadow .2s ease,border-color .2s ease}.shopping-card:hover{border-color:#cbd8e2;box-shadow:0 8px 24px rgba(15,44,89,.09)}
@@ -97,11 +97,12 @@
 }
 .home-page #shoppingDirectorySection .shopping-arrow {
   flex: 0 0 42px;
-  background: #fff;
+  background: #f8f9fa;
   border-color: #d7e0e7;
+  box-shadow: 0 2px 5px rgba(15,39,59,.08);
 }
 .home-page #shoppingDirectorySection .shopping-arrow:hover {
-  background: #f2f5f7;
+  background: #eaf0f5;
   border-color: #c5d4e0;
 }
 /* Prevent a vertical scrollbar inside the shopping carousel. */
