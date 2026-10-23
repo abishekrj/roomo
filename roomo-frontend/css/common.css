@@ -1381,7 +1381,8 @@ button,input,select,textarea{font:inherit}
 .home-page .sanctuary-img-holder img{transition:transform .35s ease}
 .home-page .sanctuary-card:hover .sanctuary-img-holder img{transform:scale(1.035)}
 .home-page .sanctuary-card h5{line-height:1.4}
-.home-page #featuredStayControls .btn{min-width:42px;min-height:42px}
+.home-page #featuredStayControls a.btn{min-width:42px;min-height:42px;background: transparent;border: #1d4e89 1px solid;}
+.home-page #featuredStayControls a.btn:hover {background: #1d4e89;}
 .home-page .btn-sacred-primary{min-height:52px;font-weight:800;letter-spacing:.01em}
 
 /* 2. Search discovery: clear hierarchy, listing cards, filters */
