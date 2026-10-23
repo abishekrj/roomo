@@ -50,7 +50,7 @@ export default function HeroBanner() {
           <div className="absolute -inset-3 rounded-[1.25rem] border border-[#e6d9bd] sm:-inset-4" aria-hidden="true" />
           <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#e8e1d5] shadow-xl sm:aspect-[5/4] lg:aspect-[4/4.15]">
             <img src={heroImage} alt="Tiruvannamalai, the sacred home of Arunachala" className="h-full w-full object-cover" fetchPriority="high" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#101b24]/70 via-transparent to-transparent" aria-hidden="true" />
+            <div className="absolute inset-0 bg-[#101b24]/25" aria-hidden="true" />
             <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f2d99e] sm:text-xs">Arunachala Siva · Sacred View</p>
               <p className="mt-2 max-w-sm text-xl font-medium leading-snug sm:text-2xl">A peaceful stay for your sacred journey.</p>
