@@ -2995,3 +2995,39 @@ body.search-page .results-head > .listing-view-toolbar {
   .heritage-navbar #roomoAccountName { max-width:80px; }
 }
 
+
+/* Header control hierarchy: emphasize the location and make account access the primary action. */
+.heritage-navbar .temple-location-badge .roomo-location-text {
+  color:#30475a;
+  font-weight:600;
+}
+.heritage-navbar #langDropdownBtn {
+  background:#f3f6f9 !important;
+  border-color:#dce5ec !important;
+  color:#344b5e !important;
+}
+.heritage-navbar #langDropdownBtn:hover,
+.heritage-navbar #langDropdownBtn[aria-expanded="true"] {
+  background:#eaf0f5 !important;
+  border-color:#c5d4e0 !important;
+}
+.heritage-navbar #roomoAccountToggle {
+  background:#183b56 !important;
+  border-color:#183b56 !important;
+  color:#fff !important;
+  box-shadow:0 2px 5px rgba(24,59,86,.16);
+}
+.heritage-navbar #roomoAccountToggle:hover,
+.heritage-navbar #roomoAccountToggle[aria-expanded="true"] {
+  background:#244f70 !important;
+  border-color:#244f70 !important;
+  box-shadow:0 4px 12px rgba(24,59,86,.2);
+}
+.heritage-navbar #roomoAccountToggle > .rounded-circle {
+  background:rgba(255,255,255,.16) !important;
+  color:#fff !important;
+}
+.heritage-navbar #roomoAccountName,
+.heritage-navbar #roomoAccountToggle > .bi-chevron-down {
+  color:#fff !important;
+}
