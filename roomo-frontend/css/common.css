@@ -366,6 +366,7 @@ body.home-page {
         scrollbar-width: none;
         padding: 8px 2px 0;
         scroll-behavior: smooth;
+        overflow-y: hidden;
       }
 
       .popular-stays-track::-webkit-scrollbar {
