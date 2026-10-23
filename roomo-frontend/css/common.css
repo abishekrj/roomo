@@ -3904,7 +3904,6 @@ body {
   color: var(--roomo-blue-hover);
 }
 
-<<<<<<< HEAD
 .destination-suggestions-heading {
   padding: 9px 12px 8px;
   color: #59666f;
@@ -3912,7 +3911,6 @@ body {
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
-=======
 
 .destination-suggestions-heading { padding: 9px 12px 8px; color: #59666f; font: 800 11px/1.4 'Poppins', sans-serif; letter-spacing: .09em; text-transform: uppercase; }
 
@@ -3945,10 +3943,8 @@ body {
   border-radius: 12px;
   background: linear-gradient(110deg, #effaf3 0%, #f8fcf9 100%);
   color: #215b39;
-<<<<<<< HEAD
   box-shadow: 0 8px 22px rgba(26, 92, 55, 0.08);
   font: 600 13px/1.55 "DM Sans", sans-serif;
-=======
   box-shadow: 0 8px 22px rgba(26, 92, 55, .08);
   font: 600 13px/1.55 'Poppins', sans-serif;
   opacity: 0;
@@ -5844,7 +5840,6 @@ body.search-page .listing .heart:disabled {
 }
 
 /* Pournami banner: compact vertical carousel, content managed in Homepage Editor. */
-<<<<<<< HEAD
 .pournami-banner-capsule {
   display: flex;
   align-items: center;
@@ -5941,7 +5936,7 @@ body.search-page .listing .heart:disabled {
     transition: none;
   }
 }
-=======
+
 .pournami-banner-capsule{display:flex;align-items:center;gap:14px;width:min(100%,480px);min-height:94px;padding:12px 16px;border-radius:16px;background:linear-gradient(135deg,var(--roomo-navy-deep) 0%,#172554 100%);border:1.5px solid var(--sacred-yellow-bright);color:var(--roomo-white);box-shadow:0 8px 24px rgba(15,44,89,.22);overflow:hidden}
 .pournami-capsule-icon{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.12);color:var(--sacred-yellow-bright);font-size:1.25rem}
 .pournami-vertical-viewport{min-width:0;flex:1;height:64px;overflow:hidden}.pournami-vertical-track{will-change:transform;transition:transform .55s cubic-bezier(.22,.68,0,1.05)}
