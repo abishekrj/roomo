@@ -1,25 +1,7 @@
-import { useEffect, useState } from "react";
 import mobileHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jpg";
 import desktopHeroImage from "../../../roomo-frontend/assets/hero-desktop.png";
 
-const girivalamHighlights = [
-  "Plan your Pournami Girivalam with a peaceful stay",
-  "Stay close to Arunachala Hill and the sacred Girivalam path",
-  "Find a restful stay near Annamalaiyar Temple",
-  "Discover ashrams, heritage homes and serene retreats",
-  "Make room for a calmer, more meaningful pilgrimage",
-];
-
 export default function HeroBanner() {
-  const [activeHighlight, setActiveHighlight] = useState(0);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setActiveHighlight((current) => (current + 1) % girivalamHighlights.length);
-    }, 3500);
-    return () => window.clearInterval(timer);
-  }, []);
-
   return (
     <section aria-labelledby="home-hero-title" className="overflow-hidden border-b border-slate-200 bg-[#f7f5f0]">
       <div className="block w-full leading-none md:hidden">
@@ -41,7 +23,7 @@ export default function HeroBanner() {
             <span>Abode of Silence &amp; Divine Fire (Agni Sthalam)</span>
           </div>
 
-          <h1 id="home-hero-title" className="max-w-2xl text-4xl font-normal leading-[1.12] tracking-tight text-[#212529] sm:text-5xl lg:text-[3.5rem]">
+          <h1 id="home-hero-title" className="max-w-2xl text-[2.5rem] font-normal leading-[1.12] tracking-tight text-[#212529]">
             Find Sacred Solace at
             <span className="mt-1 block font-semibold text-[#183b56]">Holy Arunachala</span>
             <span className="sr-only"> stays and accommodation in Tiruvannamalai</span>
@@ -51,26 +33,16 @@ export default function HeroBanner() {
             Hand-curated sanctuary stays, peaceful ashram guest rooms, and heritage havelis situated in revered proximity to Annamalaiyar Temple &amp; Sri Ramanasramam.
           </p>
 
-          <div
-            className="mt-6 flex min-h-[76px] max-w-xl items-center gap-3 rounded-lg border border-[#e5d8b8] bg-white px-4 py-3 shadow-sm"
-            aria-label="Pournami Girivalam highlights"
-            aria-live="polite"
+          <a
+            href="/roomo-search-results.html"
+            className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#183b56] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#102b40] focus:outline-none focus:ring-2 focus:ring-[#183b56] focus:ring-offset-2 sm:text-base"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f7f0df] text-[#9b762f]" aria-hidden="true">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-                <path d="M12 2a9.8 9.8 0 0 0 9.1 13.4A10 10 0 1 1 8.6 2.3 9.7 9.7 0 0 0 12 2Z" />
-              </svg>
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9b762f]">Pournami Girivalam</p>
-              <p key={activeHighlight} className="mt-1 animate-[fadeIn_.35s_ease-out] text-sm font-medium leading-5 text-[#333333] sm:text-base">
-                {girivalamHighlights[activeHighlight]}
-              </p>
-            </div>
-            <span className="shrink-0 text-xs tabular-nums text-slate-500">
-              {String(activeHighlight + 1).padStart(2, "0")} / {String(girivalamHighlights.length).padStart(2, "0")}
-            </span>
-          </div>
+            Browse Rooms
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+          </a>
         </div>
 
         <div className="relative mx-auto hidden w-full max-w-xl md:block lg:max-w-none">
