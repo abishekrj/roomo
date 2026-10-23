@@ -127,3 +127,29 @@
     padding-bottom: 8px;
   }
 }
+
+
+/* Desktop shopping guide: show a single horizontal carousel row (not a grid). */
+@media (min-width: 768px) {
+  .home-page #shoppingDirectorySection .shopping-track {
+    display: flex;
+    flex-wrap: nowrap;
+    grid-template-columns: none;
+    gap: 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .home-page #shoppingDirectorySection .shopping-track > .shopping-card {
+    flex: 0 0 calc((100% - 36px) / 3);
+    width: calc((100% - 36px) / 3);
+    scroll-snap-align: start;
+  }
+  .home-page #shoppingDirectorySection .shopping-track::-webkit-scrollbar {
+    display: none;
+  }
+}
