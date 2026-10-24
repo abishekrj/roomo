@@ -14,8 +14,8 @@ import AuthPage from "./components/AuthPage.jsx";
 
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  if (path === "/staging/login" || path === "/login") return <AuthPage mode="login" />;
-  if (path === "/staging/signup" || path === "/signup") return <AuthPage mode="signup" />;
+  if (path === "/staging/login" || path === "/login") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="login" /></main><Footer /></div>;
+  if (path === "/staging/signup" || path === "/signup") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="signup" /></main><Footer /></div>;
 
   const isListingPage = path === "/staging/properties" ||
     path === "/staging/roomo-search-results.html" ||
