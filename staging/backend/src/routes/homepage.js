@@ -129,8 +129,22 @@ router.get("/", async (req, res, next) => {
       ...defaults,
       ...(row?.published || {}),
       // Preserve newly added homepage sections when the database has older published JSON.
-      nearbyLocations: row?.published?.nearbyLocations || defaults.nearbyLocations,
-      pilgrimGuide: row?.published?.pilgrimGuide || defaults.pilgrimGuide,
+      nearbyLocations: {
+        ...defaults.nearbyLocations,
+        ...(row?.published?.nearbyLocations || {}),
+        // Older saved homepage configurations may contain an empty or partial section.
+        // Keep the section's defaults/items available unless an admin explicitly disables it.
+        items: Array.isArray(row?.published?.nearbyLocations?.items) && row.published.nearbyLocations.items.length > 0
+          ? row.published.nearbyLocations.items
+          : defaults.nearbyLocations.items,
+      },
+      pilgrimGuide: {
+        ...defaults.pilgrimGuide,
+        ...(row?.published?.pilgrimGuide || {}),
+        cards: Array.isArray(row?.published?.pilgrimGuide?.cards) && row.published.pilgrimGuide.cards.length > 0
+          ? row.published.pilgrimGuide.cards
+          : defaults.pilgrimGuide.cards,
+      },
     };
     const featuredProperties = await prisma.property.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
