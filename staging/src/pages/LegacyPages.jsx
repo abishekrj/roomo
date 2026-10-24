@@ -78,6 +78,37 @@ export function ShoppingPage({ detail = false }) {
 
 export function MyBookingsPage() {
   const token=localStorage.getItem("roomoGuestToken")||sessionStorage.getItem("roomoGuestToken")||"";
-  const [message,setMessage]=useState(token?"Your reservations and favourite stays will appear here when available.":"Sign in to view your reservations and saved favourite stays.");
-  return <PageShell><div className="mx-auto max-w-5xl"><p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Your ROOMO journey</p><h1 className="mt-2 text-3xl font-semibold">My Pilgrimage Bookings</h1><p className="mt-3 text-sm leading-6 text-slate-600">Review your reservations and keep your favourite sacred stays together in one place.</p><Notice>{message}</Notice>{!token&&<div className="mt-5"><ActionLink href={"/login?returnTo="+encodeURIComponent("/my-bookings")}>Sign in to continue</ActionLink></div>}<section className="mt-10"><h2 className="text-xl font-semibold">My favourite stays</h2><p className="mt-2 text-sm text-slate-600">The sanctuaries you save from search listings will be available here.</p></section></div></PageShell>;
+  const [message,setMessage]=useState(token?"Loading your saved stays…":"Sign in to view your reservations and saved favourite stays.");
+  const [favouriteIds,setFavouriteIds]=useState([]);
+  const [properties,setProperties]=useState([]);
+  useEffect(()=>{
+    const raw=sessionStorage.getItem("roomoGuest")||localStorage.getItem("roomoGuest");
+    let guest=null;try{guest=raw?JSON.parse(raw):null;}catch{guest=null;}
+    const key="roomoFavourites:"+String(guest?.id||guest?.guestId||guest?.email||"guest");
+    let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||"[]");}catch{saved=[];}
+    setFavouriteIds(Array.isArray(saved)?saved.map(String):[]);
+    if(!token){setMessage("Sign in to view your reservations and saved favourite stays.");return;}
+    const controller=new AbortController();
+    fetch(API+"/properties?limit=100&sort=newest",{cache:"no-store",signal:controller.signal})
+      .then(async response=>{if(!response.ok)throw new Error("We couldn't load saved stays right now.");return response.json();})
+      .then(json=>{const list=Array.isArray(json)?json:(json?.properties||json?.data?.properties||json?.data||[]);setProperties(list);setMessage("");})
+      .catch(error=>{if(error.name!=="AbortError")setMessage(error.message||"Unable to load saved stays.");});
+    return()=>controller.abort();
+  },[token]);
+  const savedProperties=properties.filter(item=>favouriteIds.includes(String(item.id)));
+  const removeFavourite=id=>{
+    const raw=sessionStorage.getItem("roomoGuest")||localStorage.getItem("roomoGuest");
+    let guest=null;try{guest=raw?JSON.parse(raw):null;}catch{guest=null;}
+    const key="roomoFavourites:"+String(guest?.id||guest?.guestId||guest?.email||"guest");
+    const next=favouriteIds.filter(value=>value!==String(id));
+    localStorage.setItem(key,JSON.stringify(next));setFavouriteIds(next);
+  };
+  const imageFor=item=>{
+    const first=(Array.isArray(item.images)?item.images:[])[0]||(Array.isArray(item.media)?item.media.find(media=>media?.type!=="VIDEO"&&media?.mediaType!=="video"):null);
+    const value=typeof first==="string"?first:(first?.imageUrl||first?.mediaUrl||first?.url||first?.src||"");
+    if(!value)return "";
+    if(/^https?:\/\//i.test(value)||/^data:|^blob:/i.test(value))return value;
+    return "http://localhost:5001"+(value.startsWith("/")?value:"/"+value);
+  };
+  return <PageShell><div className="mx-auto max-w-5xl"><p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Your ROOMO journey</p><h1 className="mt-2 text-3xl font-semibold">My Pilgrimage Bookings</h1><p className="mt-3 text-sm leading-6 text-slate-600">Review your reservations and keep your favourite sacred stays together in one place.</p>{message&&<Notice>{message}</Notice>}{!token&&<div className="mt-5"><ActionLink href={"/staging/login?returnTo="+encodeURIComponent("/staging/my-bookings")}>Sign in to continue</ActionLink></div>}<section className="mt-10"><div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">My favourite stays</h2><p className="mt-2 text-sm text-slate-600">Stays you save from the listing or property details page appear here.</p></div><a href="/staging/properties" className="text-sm font-semibold text-[#2563a6] hover:underline">Explore stays ↗</a></div>{token&&savedProperties.length===0&&!message&&<div className="mt-4 rounded-lg border border-dashed border-slate-300 p-6"><p className="text-sm font-medium text-slate-800">No favourite stays saved yet</p><p className="mt-1 text-sm text-slate-500">Use “Save stay” on a property to keep it here for your pilgrimage planning.</p></div>}<div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{savedProperties.map(item=>{const title=item.title||item.name||"ROOMO stay";const image=imageFor(item);return <article key={item.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white"><a href={"/staging/property-details?id="+encodeURIComponent(item.id)} className="block">{image?<img src={image} alt={title} loading="lazy" className="aspect-[4/3] w-full object-cover"/>:<div className="flex aspect-[4/3] items-center justify-center bg-slate-100 text-sm text-slate-500">Photo coming soon</div>}<div className="p-4"><h3 className="font-semibold text-slate-800">{title}</h3><p className="mt-1 text-sm text-slate-500">{[item.locality,item.city,item.state].filter(Boolean).join(", ")}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">{item.nightlyPrice!=null?"₹"+Number(item.nightlyPrice).toLocaleString("en-IN"):"Contact property"}<span className="font-normal text-slate-500"> / night</span></p></div></a><div className="flex items-center justify-between border-t border-slate-100 p-3"><a href={"/staging/property-details?id="+encodeURIComponent(item.id)} className="text-sm font-semibold text-[#2563a6]">View stay</a><button type="button" onClick={()=>removeFavourite(item.id)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">Remove</button></div></article>})}</div></section></div></PageShell>;
 }
