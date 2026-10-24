@@ -7,10 +7,21 @@ const PROPERTIES_API = API_ORIGIN + "/api/properties";
 
 function imageUrl(value) {
   if (!value || typeof value !== "string") return "";
-  const path = value.trim();
+  const path = value.trim().replace(/\\\\/g, "/");
   if (!path) return "";
   if (/^(data:|blob:)/i.test(path)) return path;
-  try { return new URL(path, API_ORIGIN).href; } catch { return ""; }
+  try {
+    const url = new URL(path, API_ORIGIN);
+    // Older uploads may have been saved with Vite's origin instead of the
+    // Express server that actually serves /uploads.
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port === "5173" && url.pathname.startsWith("/uploads/")) {
+      url.protocol = "http:";
+      url.hostname = "localhost";
+      url.port = "5001";
+    }
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.href;
+  } catch { return ""; }
 }
 function money(value) {
   const n = Number(value);
