@@ -15,7 +15,7 @@ const router = express.Router();
 // Every route in this file requires authentication and ADMIN permission.
 router.use(authenticateToken, requireAdmin);
 
-const propertyUploadDir = path.join(__dirname, "../../uploads/properties");
+// Store new property images alongside existing ROOMO uploads, matching the directory served by server.js.\nconst uploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../../roomo-backend/uploads"));\nconst propertyUploadDir = path.join(uploadsRoot, "properties");
 fs.mkdirSync(propertyUploadDir, { recursive: true });
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const propertyStorage = multer.diskStorage({
