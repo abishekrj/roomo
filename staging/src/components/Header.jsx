@@ -14,7 +14,7 @@ function readSession() {
 const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
 export default function Header({ ownerPortal = false } = {}) {
-  const [language, setLanguage] = useState(languages[0]);
+  const [language, setLanguage] = useState(() => languages.find(item => item.code === localStorage.getItem("roomoLanguage")) || languages[0]);
   const [user, setUser] = useState(() => readSession().user);
   const [menuOpen, setMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -48,6 +48,7 @@ export default function Header({ ownerPortal = false } = {}) {
   const logout = () => { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); window.location.reload(); };
   const chooseLanguage = item => {
     setLanguage(item); setLanguageOpen(false);
+    try { localStorage.setItem("roomoLanguage", item.code); } catch {}
     const applyLanguage = () => {
       const combo = document.querySelector("#google_translate_element select.goog-te-combo");
       if (!combo) return false;
