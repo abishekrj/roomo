@@ -48,8 +48,19 @@ export default function Header({ ownerPortal = false } = {}) {
   const logout = () => { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); window.location.reload(); };
   const chooseLanguage = item => {
     setLanguage(item); setLanguageOpen(false);
-    const combo = document.querySelector("#google_translate_element select.goog-te-combo");
-    if (combo) { combo.value = item.code; combo.dispatchEvent(new Event("change", { bubbles: true })); }
+    const applyLanguage = () => {
+      const combo = document.querySelector("#google_translate_element select.goog-te-combo");
+      if (!combo) return false;
+      combo.value = item.code;
+      combo.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    };
+    if (applyLanguage()) return;
+    let attempts = 0;
+    const retry = window.setInterval(() => {
+      attempts += 1;
+      if (applyLanguage() || attempts >= 24) window.clearInterval(retry);
+    }, 250);
   };
 
   return (
