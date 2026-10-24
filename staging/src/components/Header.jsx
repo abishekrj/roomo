@@ -13,12 +13,15 @@ function readSession() {
 }
 const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
-export default function Header({ ownerPortal = false } = {}) {
+export default function Header({ ownerPortal = false, adminNotifications = false } = {}) {
   const [language, setLanguage] = useState(() => languages.find(item => item.code === localStorage.getItem("roomoLanguage")) || languages[0]);
   const [user, setUser] = useState(() => readSession().user);
   const [menuOpen, setMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsMessage, setNotificationsMessage] = useState("");
 
   useEffect(() => {
     let lastY = window.scrollY, frame = 0;
@@ -44,6 +47,22 @@ export default function Header({ ownerPortal = false } = {}) {
     return () => { cancelled = true; };
   }, []);
 
+  const loadAdminNotifications = async () => {
+    const adminToken = localStorage.getItem("roomoAdminToken") || sessionStorage.getItem("roomoAdminToken");
+    if (!adminToken) { setNotifications([]); setNotificationsMessage("Sign in to view administrator notifications."); return; }
+    setNotificationsMessage("Loading notifications…");
+    const headers = { Authorization: "Bearer " + adminToken };
+    const results = await Promise.allSettled([
+      fetch(API_BASE + "/api/admin/properties", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load property activity."); return d; }),
+      fetch(API_BASE + "/api/admin/registered-users", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load guest activity."); return d; })
+    ]);
+    const items = [];
+    if (results[0].status === "fulfilled") (results[0].value.properties || []).forEach(p => items.push({ title: "Property listing", detail: (p.title || "Property") + " · " + (p.status || "DRAFT"), date: p.createdAt, href: "/staging/admin/properties" }));
+    if (results[1].status === "fulfilled") (results[1].value.users || []).forEach(u => items.push({ title: "Guest registration", detail: (u.fullName || "Guest") + (u.email ? " · " + u.email : ""), date: u.createdAt, href: "/staging/admin/users" }));
+    items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    setNotifications(items.slice(0, 15));
+    setNotificationsMessage(items.length ? "" : results.every(r => r.status === "rejected") ? "Could not load notifications. Check the backend connection." : "No notifications yet.");
+  };
   const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
   const logout = () => { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); window.location.reload(); };
   const chooseLanguage = item => {
