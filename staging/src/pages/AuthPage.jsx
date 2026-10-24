@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
-const API_BASE = "http://localhost:5001";
-const TOKEN_KEY = "roomoGuestToken";
-const USER_KEY = "roomoGuest";
+const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
 export default function AuthPage({ mode = "login" }) {
   const isSignup = mode === "signup";
@@ -40,19 +38,15 @@ export default function AuthPage({ mode = "login" }) {
           setGoogleBusy(true);
           setMessage("");
           try {
-            const response = await fetch(`${API_BASE}/api/guest-auth/google`, {
+            const response = await fetch(`${API_BASE}/guest-auth/google`, {
               method: "POST",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ credential: credentialResponse.credential })
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.message || "Google sign-in failed. Please try again.");
-            if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
-            const storage = remember ? localStorage : sessionStorage;
-            storage.setItem(TOKEN_KEY, data.token);
-            storage.setItem(USER_KEY, JSON.stringify(data.user));
-            (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
-            (remember ? sessionStorage : localStorage).removeItem(USER_KEY);
+            if (!data.user) throw new Error("The server response is missing the guest profile.");
             const returnTo = new URLSearchParams(window.location.search).get("returnTo");
             if (returnTo) {
               try {
@@ -83,7 +77,7 @@ export default function AuthPage({ mode = "login" }) {
       setGoogleReady(true);
     };
 
-    fetch(`${API_BASE}/api/guest-auth/config`, { cache: "no-store" })
+    fetch(`${API_BASE}/guest-auth/config`, { cache: "no-store", credentials: "include" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Unable to load Google sign-in configuration.");
@@ -123,8 +117,9 @@ export default function AuthPage({ mode = "login" }) {
     try {
       let response;
       try {
-        response = await fetch(`${API_BASE}/api/guest-auth/${isSignup ? "register" : "login"}`, {
+        response = await fetch(`${API_BASE}/guest-auth/${isSignup ? "register" : "login"}`, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(isSignup
             ? { fullName: fullName.trim(), email: email.trim().toLowerCase(), password, ...(phoneNumber.trim() ? { phoneNumber: phoneNumber.trim() } : {}) }
@@ -143,12 +138,7 @@ export default function AuthPage({ mode = "login" }) {
         notify(data.message || "Account created. Check your email for the verification link.", "success");
         return;
       }
-      if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
-      const storage = remember ? localStorage : sessionStorage;
-      storage.setItem(TOKEN_KEY, data.token);
-      storage.setItem(USER_KEY, JSON.stringify(data.user));
-      (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
-      (remember ? sessionStorage : localStorage).removeItem(USER_KEY);
+      if (!data.user) throw new Error("The server response is missing the guest profile.");
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       if (returnTo) {
         try {
