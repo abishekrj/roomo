@@ -67,7 +67,7 @@
   const TOKEN_KEY = "roomoOwnerToken";
   const $ = (id) => document.getElementById(id);
   let token = sessionStorage.getItem(TOKEN_KEY);
-  let me = null, properties = [], reservations = [], lastPendingCount = null;
+  let me = null, properties = [], reservations = [], websiteEnquiries = [], lastPendingCount = null;
   async function request(path, options = {}) {
     let response;
     try {
@@ -229,8 +229,8 @@
     $("editPanel").classList.remove("hidden"); $("editPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
   async function loadDashboard() {
-    const [p,r]=await Promise.all([request("/properties/owner"),request("/reservations/owner")]);
-    properties=Array.isArray(p.properties)?p.properties:[]; reservations=Array.isArray(r.reservations)?r.reservations:[];
+    const [p,r,e]=await Promise.all([request("/properties/owner"),request("/reservations/owner"),request("/enquiries/owner")]);
+    properties=Array.isArray(p.properties)?p.properties:[]; reservations=Array.isArray(r.reservations)?r.reservations:[]; websiteEnquiries=Array.isArray(e.enquiries)?e.enquiries:[];
     const pendingCount = reservations.filter(item => item.status === "REQUESTED").length;
     if (lastPendingCount !== null && pendingCount > lastPendingCount) notice("dashboardNotice", "You have a new guest enquiry. Review it in Enquiries & room requests.", "info");
     lastPendingCount = pendingCount;
