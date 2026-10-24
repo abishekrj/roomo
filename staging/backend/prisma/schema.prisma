@@ -42,7 +42,7 @@ model GuestUser {
   passwordHash String?  @map("password_hash")
   googleId     String?  @unique @map("google_id")
   authProvider String   @default("EMAIL") @map("auth_provider")
-  emailVerified Boolean  @default(true) @map("email_verified")
+  emailVerified Boolean  @default(false) @map("email_verified")
   emailVerificationTokenHash String? @unique @map("email_verification_token_hash")
   emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
   createdAt    DateTime @default(now()) @map("created_at")
