@@ -9,6 +9,54 @@
   let imageItems = [];
   const currentPage = document.body.dataset.page || "dashboard";
 
+  // Shared language control for Super Admin pages.
+  function initAdminLanguageControl() {
+    if (!document.getElementById("google_translate_element")) {
+      const hidden = document.createElement("div");
+      hidden.id = "google_translate_element";
+      hidden.setAttribute("aria-hidden", "true");
+      document.body.appendChild(hidden);
+    }
+    if (!document.getElementById("roomoAdminLanguage")) {
+      const host = document.querySelector(".topbar") || document.body;
+      const select = document.createElement("select");
+      select.id = "roomoAdminLanguage";
+      select.setAttribute("aria-label", "Choose language");
+      select.style.cssText = "margin-left:auto;padding:8px 10px;border:1px solid #d8e0e8;border-radius:8px;background:#fff;color:#183b56;font:inherit;cursor:pointer";
+      [["en","English"],["ta","தமிழ்"],["te","తెలుగు"],["kn","ಕನ್ನಡ"]].forEach(([value,label]) => {
+        const option = document.createElement("option"); option.value = value; option.textContent = label; select.appendChild(option);
+      });
+      if (host.classList.contains("topbar")) host.appendChild(select);
+      else { select.style.cssText += ";position:fixed;top:12px;right:12px;z-index:9999"; document.body.appendChild(select); }
+      select.addEventListener("change", () => {
+        const apply = () => {
+          const combo = document.querySelector("#google_translate_element select.goog-te-combo");
+          if (!combo) return false;
+          combo.value = select.value;
+          combo.dispatchEvent(new Event("change", { bubbles: true }));
+          return true;
+        };
+        if (apply()) return;
+        let attempts = 0;
+        const retry = window.setInterval(() => { attempts += 1; if (apply() || attempts >= 24) window.clearInterval(retry); }, 250);
+      });
+    }
+    if (!document.querySelector('style[data-roomo-translate-style]')) {
+      const style = document.createElement("style");
+      style.dataset.roomoTranslateStyle = "true";
+      style.textContent = "#google_translate_element{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}.goog-te-banner-frame,.goog-te-banner-frame.skiptranslate,iframe.goog-te-banner-frame,#goog-gt-tt,.goog-te-balloon-frame,.goog-tooltip{display:none!important;visibility:hidden!important}html,body{top:0!important}body>.skiptranslate{display:none!important}.topbar{display:flex;align-items:center;gap:16px}";
+      document.head.appendChild(style);
+    }
+    window.googleTranslateElementInit = function () {
+      new google.translate.TranslateElement({ pageLanguage: "en", includedLanguages: "en,ta,te,kn", autoDisplay: false }, "google_translate_element");
+    };
+    if (!document.querySelector('script[data-roomo-google-translate]')) {
+      const script = document.createElement("script");
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      script.async = true; script.dataset.roomoGoogleTranslate = "true"; document.head.appendChild(script);
+    }
+  }
+
   function notice(message, type = "info") {
     const el = $("pageNotice");
     if (!el) return;
@@ -520,5 +568,5 @@
       });
     }
   }
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => { initAdminLanguageControl(); init(); });
 })();
