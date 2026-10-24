@@ -53,7 +53,7 @@ function ensureCsrfCookie(req, res, next) {
 function csrfProtection(req, res, next) {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
   // Authentication bootstrap endpoints are protected by SameSite cookies and exact CORS origins.
-  if (/^\\/api\\/(?:auth\\/(?:login|register)|guest-auth\\/(?:login|register|google|verify-email|resend-verification))$/.test(req.path)) return next();
+  if (["/api/auth/login", "/api/auth/register", "/api/guest-auth/login", "/api/guest-auth/register", "/api/guest-auth/google", "/api/guest-auth/verify-email", "/api/guest-auth/resend-verification"].includes(req.path)) return next();
   const cookies = parseCookies(req);
   const sessionCookiePresent = Boolean(cookies[GUEST_COOKIE] || cookies[ADMIN_COOKIE]);
   if (!sessionCookiePresent) return next();
