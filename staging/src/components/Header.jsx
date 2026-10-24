@@ -55,7 +55,7 @@ export default function Header() {
   return (
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6">
-        <a className="shrink-0" href="../roomo-frontend/index.html" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] object-contain sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
+        <a className="shrink-0" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] object-contain sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
         <div className="hidden items-center gap-2 text-[13px] text-slate-600 md:flex"><i className="bi bi-geo-alt text-roomo-blue" aria-hidden="true" />Tiruvannamalai, Tamil Nadu</div>
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="relative">
