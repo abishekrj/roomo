@@ -62,7 +62,8 @@ function CheckOption({ checked, onChange, label, count }) {
 }
 
 function PropertyCard({ property, view }) {
-  const imageCandidates = propertyImages(property);\n  const image = imageCandidates[0] || "";
+  const imageCandidates = propertyImages(property);
+  const image = imageCandidates[0] || "";
   const amenities = arrayValue(property.amenities).slice(0, 4);
   const highlights = arrayValue(property.highlights || property.propertyHighlights || property.specialFeatures).slice(0, 2);
   const nearby = arrayValue(property.nearbyLandmarks);
