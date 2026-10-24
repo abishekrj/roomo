@@ -8734,3 +8734,72 @@ body.search-page .results-head > .listing-view-toolbar {
     min-width: 0;
   }
 }
+
+
+/* ROOMO Sacred testimonials: consistent brand typography, spacing and controls */
+#testimonials {
+  font-family: Poppins, sans-serif;
+}
+#testimonials #testimonialEyebrow,
+#testimonials #testimonialRatingSummary,
+#testimonials .testimonial-slide-item,
+#testimonials .testimonial-slide-item h6 {
+  font-family: Poppins, sans-serif !important;
+}
+#testimonials #testimonialTitle {
+  font-family: Poppins, sans-serif !important;
+  font-weight: 600 !important;
+}
+#testimonials #testimonialDescription {
+  max-width: 680px;
+  margin-top: 8px;
+  line-height: 1.7;
+}
+#testimonials .testimonial-slide-item > div {
+  border-radius: 8px !important;
+  border-color: #e3e8ed !important;
+  box-shadow: 0 3px 14px rgba(24, 59, 86, 0.045) !important;
+}
+#testimonials .testimonials-track {
+  gap: 16px;
+  scroll-padding-inline: 2px;
+}
+#testimonials .testimonial-slide-item {
+  display: flex;
+}
+#testimonials .testimonial-slide-item > div {
+  width: 100%;
+}
+#testimonials .testimonial-slide-item p {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.8;
+}
+#testimonials [data-testimonial-scroll] {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px !important;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+#testimonials [data-testimonial-scroll]:hover {
+  background: #f1f5f8;
+  border-color: #cbd8e2 !important;
+}
+#testimonials [data-testimonial-scroll]:focus-visible {
+  outline: 2px solid #285b7d;
+  outline-offset: 2px;
+}
+@media (max-width: 767.98px) {
+  #testimonials .testimonials-track {
+    gap: 12px;
+  }
+  #testimonials .testimonial-slide-item {
+    flex-basis: min(310px, 84vw);
+  }
+  #testimonials > .container > .d-flex:first-child {
+    align-items: flex-start !important;
+  }
+}
