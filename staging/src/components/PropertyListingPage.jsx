@@ -61,7 +61,7 @@ function PropertyCard({ property, view }) {
   const badgeLabel = property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isFeatured ? "Popular choice" : property.isGreatLocation ? "Great location" : "");
   const configuredHref = property.url || property.href;
   const href = configuredHref
-    ? (/^https?:\\/\\//i.test(configuredHref) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
+    ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
     : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id);
   return <article className={view === "list" ? "group grid min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md sm:grid-cols-[240px_minmax(0,1fr)]" : "group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"}>
     <a href={href} className={"relative block overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-square w-full sm:aspect-square sm:min-h-0" : "aspect-[4/3]")}>
