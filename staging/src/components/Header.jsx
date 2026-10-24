@@ -65,8 +65,8 @@ export default function Header() {
           <div className="relative">
             <button className="inline-flex items-center gap-2 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3 sm:text-sm" type="button" aria-expanded={menuOpen} onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><i className="bi bi-person-circle text-base" /><span className="max-w-28 truncate sm:max-w-none">{user?.fullName || "Login / Signup"}</span><i className="bi bi-chevron-down text-[10px]" /></button>
             {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
-              {!user && <><a className={linkClass} href={authHref("../roomo-frontend/roomo-login.html")}>Sign In</a><a className={linkClass} href={authHref("../roomo-frontend/roomo-signup.html")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
-              <a className={linkClass} href="../roomo-frontend/roomo-my-bookings.html"><i className="bi bi-journal-bookmark mr-2" />My Pilgrimage Bookings</a>
+              {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
+              <a className={linkClass} href="/staging/my-bookings"><i className="bi bi-journal-bookmark mr-2" />My Pilgrimage Bookings</a>
               <a className={linkClass} href={user ? "../roomo-frontend/roomo-my-bookings.html" : authHref("../roomo-frontend/roomo-login.html")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
               {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
             </nav>}
