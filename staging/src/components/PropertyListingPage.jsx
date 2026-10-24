@@ -55,12 +55,15 @@ function CheckOption({ checked, onChange, label, count }) {
 
 function PropertyCard({ property, view }) {
   const image = propertyImages(property)[0]?.imageUrl || property.imageUrl || property.coverImage || "";
-  const amenities = arrayValue(property.amenities).slice(0, 3);
+  const amenities = arrayValue(property.amenities).slice(0, 4);
+  const highlights = arrayValue(property.highlights || property.propertyHighlights || property.specialFeatures).slice(0, 2);
+  const nearby = arrayValue(property.nearbyLandmarks);
+  const badgeLabel = property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isFeatured ? "Popular choice" : property.isGreatLocation ? "Great location" : "");
   const href = property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id);
   return <article className={view === "list" ? "group grid min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md sm:grid-cols-[240px_minmax(0,1fr)]" : "group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"}>
     <a href={href} className={"relative block overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-[4/3] sm:aspect-auto sm:min-h-[230px]" : "aspect-[4/3]")}>
       {image ? <img src={image} alt={property.title || "ROOMO stay"} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <div className="grid h-full min-h-48 place-items-center text-slate-400"><div className="text-center"><Icon name="bed" className="mx-auto mb-2 h-9 w-9"/><span className="text-xs">Property photos coming soon</span></div></div>}
-      {property.isFeatured && <span className="absolute left-3 top-3 rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-[#2563a6] shadow-sm">Featured stay</span>}
+      {badgeLabel && <span className="absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">✦ {badgeLabel}</span>}<span aria-hidden="true" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-2xl leading-none text-slate-500 shadow-sm">♡</span>
     </a>
     <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
@@ -70,12 +73,12 @@ function PropertyCard({ property, view }) {
         </div>
         {property.rating != null && <div className="shrink-0 rounded-lg bg-[#2563a6] px-2 py-1 text-sm font-semibold text-white">{Number(property.rating).toFixed(1)} ★</div>}
       </div>
-      <p className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-slate-500"><Icon name="pin" className="mt-0.5 h-3.5 w-3.5 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}</span></p>
-      {property.description && <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{property.description}</p>}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600"><Icon name="users" className="h-3.5 w-3.5"/>{property.maxGuests || 2} guests</span>
-        {amenities.map((item, index) => <span key={String(item) + index} className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600">{AMENITY_LABELS[normalize(item)] || item}</span>)}
+      <p className="mt-2 flex items-start gap-1.5 text-sm leading-6 text-slate-500"><Icon name="pin" className="mt-1 h-4 w-4 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}{property.distanceToLandmark ? ` · approx. ${property.distanceToLandmark}` : property.nearestLandmark ? ` · near ${property.nearestLandmark}` : ""}</span></p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {amenities.map((item, index) => <span key={String(item) + index} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{AMENITY_LABELS[normalize(item)] || item}</span>)}
+        {property.sacredViews && <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">Sacred views</span>}
       </div>
+      {highlights.length > 0 && <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-emerald-700">{highlights.map((item, index) => <span key={String(item) + index}>✓ {item}</span>)}</div>}
       <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4 mt-4">
         <div><span className="text-xs text-slate-500">Price per night</span><p className="mt-0.5 text-xl font-semibold text-[#212529]">₹{formatPrice(property.nightlyPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></p></div>
         <a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View stay <Icon name="arrow" className="h-4 w-4"/></a>
