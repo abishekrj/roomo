@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "./Header.jsx";
 import Footer from "./Footer.jsx";
+import SearchSection from "./SearchSection.jsx";
 
 const API_URL = "http://localhost:5001/api/properties";
 const LANDMARKS = [
@@ -152,15 +153,6 @@ export default function PropertyListingPage() {
   const activeFilterCount = selectedTypes.length + selectedAmenities.length + selectedLandmarks.length + (minPrice !== "500" ? 1 : 0) + (maxPrice !== "10000" ? 1 : 0) + (guestCount !== initialGuests ? 1 : 0);
   const toggleValue = (setter, values, value) => setter(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   const clearFilters = () => { setMinPrice("500"); setMaxPrice("10000"); setGuestCount(initialGuests); setSelectedTypes([]); setSelectedAmenities([]); setSelectedLandmarks([]); };
-  const applySearch = event => {
-    event.preventDefault();
-    const next = new URLSearchParams(window.location.search);
-    if (destination.trim()) next.set("ss", destination.trim()); else next.delete("ss");
-    next.set("group_adults", String(guestCount));
-    next.set("group_children", "0");
-    window.history.replaceState({}, "", window.location.pathname + (next.size ? "?" + next.toString() : ""));
-  };
-
   const filterPanel = <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
     <div className="mb-5 flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-base font-semibold text-slate-900"><Icon name="sliders" className="h-4 w-4"/> Filters</h2><button type="button" onClick={clearFilters} className="text-xs font-semibold text-[#2563a6] hover:underline">Clear all</button></div>
     <FilterSection title="Price per night">
@@ -191,10 +183,9 @@ export default function PropertyListingPage() {
               <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2">{guestCount} guests</span>
             </div>
           </div>
-          <form onSubmit={applySearch} className="mt-5 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <label className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3"><Icon name="pin" className="h-4 w-4 shrink-0 text-[#2563a6]"/><input value={destination} onChange={e => setDestination(e.target.value)} aria-label="Destination" placeholder="Search destination or city" className="w-full bg-transparent text-sm outline-none"/></label>
-            <button type="submit" className="rounded-lg bg-[#2563a6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1e4f85]">Update search</button>
-          </form>
+          <div className="mt-5 overflow-visible rounded-lg">
+            <SearchSection variant="default" />
+          </div>
         </div>
       </div>
 
