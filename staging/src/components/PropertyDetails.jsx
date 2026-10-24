@@ -243,24 +243,23 @@ export default function PropertyDetails() {
 
           <section aria-label="Property photos and videos" className="mb-6">
             {media.length ? <div className="relative overflow-hidden rounded-lg">
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.78fr_1fr]">
-                <button type="button" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }} className="relative block aspect-video w-full overflow-hidden rounded-lg bg-slate-100 text-left md:aspect-auto md:min-h-[320px]" aria-label="Open property photo gallery">
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.78fr_1fr] md:gap-4">
+                <button type="button" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }} className="relative block aspect-video w-full overflow-hidden rounded-lg bg-slate-100 text-left md:aspect-auto md:min-h-0 md:rounded-r-none" aria-label="Open property photo gallery">
                   {media[0]?.kind === "video" ? <div className="flex h-full min-h-56 w-full items-center justify-center bg-slate-900 text-5xl text-white">▶</div> : <img src={media[0]?.src} alt={media[0]?.alt || title} className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [media[0]?.src]: true}))} />}
                   {failedMedia[media[0]?.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-sm text-slate-500">Photo unavailable</div>}
                 </button>
-                {media.length > 1 && <div className="grid grid-cols-2 gap-2 md:grid-rows-2">
-                  {media.slice(1, 5).map((item, index) => {
+                <div className="grid grid-cols-2 grid-rows-2 gap-0 overflow-hidden rounded-lg md:rounded-l-none">
+                  {[0, 1, 2, 3].map(slot => {
+                    const item = media[slot + 1];
                     const remainingCount = Math.max(0, media.length - 5);
-                    const showRemaining = index === 3 && remainingCount > 0;
-                    return <button type="button" key={item.src} onClick={() => { setActiveMedia(index + 1); setGalleryOpen(true); }} aria-label={showRemaining ? "Open all photos and videos, " + remainingCount + " more" : "Open photo " + (index + 2)} className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 text-left">
-                      {item.kind === "video" ? <div className="flex h-full w-full items-center justify-center bg-slate-800 text-3xl text-white">▶</div> : <img src={item.src} alt={item.alt || title + " photo " + (index + 2)} loading="lazy" className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
+                    const showRemaining = slot === 3 && remainingCount > 0;
+                    return item ? <button type="button" key={item.src} onClick={() => { setActiveMedia(slot + 1); setGalleryOpen(true); }} aria-label={showRemaining ? "Open all photos and videos, " + remainingCount + " more" : "Open photo " + (slot + 2)} className="relative aspect-square min-w-0 overflow-hidden bg-slate-100 text-left">
+                      {item.kind === "video" ? <div className="flex h-full w-full items-center justify-center bg-slate-800 text-3xl text-white">▶</div> : <img src={item.src} alt={item.alt || title + " photo " + (slot + 2)} loading="lazy" className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
                       {failedMedia[item.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-xs text-slate-500">Photo unavailable</div>}
                       {showRemaining && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-center text-white"><span className="text-2xl font-semibold">+{remainingCount}</span><span className="mt-1 text-xs font-medium">more photos</span></div>}
-                    </button>;
+                    </button> : <div key={"empty-gallery-slot-" + slot} aria-hidden="true" className="aspect-square min-w-0 bg-slate-100" />;
                   })}
-                  {media.length === 2 && <div className="hidden aspect-square md:block" />}
-                  {media.length === 3 && <div className="hidden aspect-square md:block" />}
-                </div>}
+                </div>
               </div>
               <button type="button" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }} className="absolute bottom-3 right-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">▦ Show all photos & videos ({media.length})</button>
             </div> : <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Property photos and videos will appear here when uploaded.</div>}
