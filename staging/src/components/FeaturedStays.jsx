@@ -40,7 +40,25 @@ export default function FeaturedStays() {
   const [favouriteNotice, setFavouriteNotice] = useState("");
   const readGuestSession = () => { const token=sessionStorage.getItem("roomoGuestToken")||localStorage.getItem("roomoGuestToken"); const raw=sessionStorage.getItem("roomoGuest")||localStorage.getItem("roomoGuest"); let user=null; try{user=raw?JSON.parse(raw):null;}catch{} return {token,user}; };
   const favouriteKey = user => "roomoFavourites:" + String(user?.id || user?.guestId || user?.email || "guest");
-  useEffect(() => { const {user}=readGuestSession(); if(!user){setFavourites([]);return;} try{const stored=JSON.parse(localStorage.getItem(favouriteKey(user))||"[]");setFavourites(Array.isArray(stored)?stored.map(String):[]);}catch{setFavourites([]);} }, []);
+  useEffect(() => {
+    const { user, token } = readGuestSession();
+    if (!user) { setFavourites([]); return; }
+    const key = favouriteKey(user);
+    let stored = [];
+    try { stored = JSON.parse(localStorage.getItem(key) || "[]"); } catch { stored = []; }
+    if (!Array.isArray(stored)) stored = [];
+    const query = new URLSearchParams(window.location.search);
+    const pendingId = query.get("favorite");
+    if (token && pendingId && !stored.map(String).includes(String(pendingId))) {
+      stored.push(String(pendingId));
+      localStorage.setItem(key, JSON.stringify(stored));
+      setFavouriteNotice("Stay added to your favourites.");
+      query.delete("favorite");
+      const nextUrl = window.location.pathname + (query.toString() ? "?" + query.toString() : "") + window.location.hash;
+      window.history.replaceState({}, "", nextUrl);
+    }
+    setFavourites(stored.map(String));
+  }, []);
   const toggleFavourite = stay => { if(!stay?.id)return; const {token,user}=readGuestSession(); if(!token||!user){const returnUrl=new URL(window.location.href);returnUrl.searchParams.set("favorite",String(stay.id));window.location.assign("/staging/login?returnTo="+encodeURIComponent(returnUrl.pathname+returnUrl.search+returnUrl.hash));return;} const id=String(stay.id),current=favourites.includes(id),updated=current?favourites.filter(item=>item!==id):[...favourites,id];localStorage.setItem(favouriteKey(user),JSON.stringify(updated));setFavourites(updated);setFavouriteNotice(current?"Stay removed from your favourites.":"Stay added to your favourites."); };
 
   useEffect(() => {
