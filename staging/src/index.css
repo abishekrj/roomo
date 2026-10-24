@@ -8,21 +8,16 @@ body { margin: 0; min-width: 320px; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
 
-/* Testimonials carousel — keep scrollbars unobtrusive while retaining touch scrolling. */
+/* Testimonials carousel — hide the scrollbar while preserving touch and button scrolling. */
 .roomo-testimonials-track {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
 }
 .roomo-testimonials-track::-webkit-scrollbar {
-  height: 6px;
-}
-.roomo-testimonials-track::-webkit-scrollbar-track {
-  background: transparent;
-}
-.roomo-testimonials-track::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  background: #cbd5e1;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 
@@ -141,4 +136,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .roomo-shopping-controls { width: 100%; justify-content: space-between; }
   .roomo-shop-card { flex: 0 0 min(84%, 320px); width: min(84%, 320px); }
   .roomo-shopping-track { gap: 14px; }
+}
+
+
+/* Featured stays carousel — horizontal navigation without a visible scrollbar. */
+.roomo-featured-stays-track {
+  padding: 2px 1px 8px;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.roomo-featured-stays-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
