@@ -14,7 +14,11 @@ export default function SuperAdminPortal() {
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const token = localStorage.getItem("roomoAdminToken") || sessionStorage.getItem("roomoAdminToken") || "";
-  const loginPage = /\/login\/?$/.test(path) || path === "/admin" || path === "/staging/admin";
+  const currentPath = path.replace(/\/+$/, "") || "/";
+  const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
+  const routePrefix = currentPath.startsWith("/staging/admin") ? "/staging/admin" : "/admin";
+  const activePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : "dashboard";
+  const menu = [{ id: "dashboard", label: "Dashboard", icon: "▦" }, { id: "properties", label: "Property Listings", icon: "⌂" }, { id: "users", label: "Registered Users", icon: "♙" }];
 
   useEffect(() => {
     if (!loginPage && !token) window.location.replace("/staging/admin/login");
