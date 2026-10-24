@@ -123,9 +123,11 @@ router.get("/config", (_req, res) => {
 
 router.post("/register", async (req, res, next) => {
   try {
-    if (!emailIsConfigured()) {
+    const verificationEmailConfigured = emailIsConfigured();
+    // Keep local development usable without SMTP. Production always requires email verification.
+    if (!verificationEmailConfigured && process.env.NODE_ENV === "production") {
       return res.status(503).json({
-        message: "Email verification is not configured yet. Please configure SMTP settings before registering new guest accounts.",
+        message: "Email verification is not configured yet. Please contact the ROOMO team.",
       });
     }
 
@@ -146,24 +148,28 @@ router.post("/register", async (req, res, next) => {
         phoneVerified: false,
         passwordHash: await bcrypt.hash(parsed.data.password, 12),
         authProvider: "EMAIL",
-        emailVerified: false,
+        emailVerified: !verificationEmailConfigured,
       },
     });
 
-    try {
-      await issueVerificationEmail(user);
-    } catch (emailError) {
-      console.error("ROOMO verification email could not be sent:", emailError.message);
-      return res.status(503).json({
-        message: "Your account was created but the verification email could not be sent. Please use Resend verification email on the sign-in page.",
-        code: "VERIFICATION_EMAIL_FAILED",
-      });
+    if (verificationEmailConfigured) {
+      try {
+        await issueVerificationEmail(user);
+      } catch (emailError) {
+        console.error("ROOMO verification email could not be sent:", emailError.message);
+        return res.status(503).json({
+          message: "Your account was created but the verification email could not be sent. Please configure SMTP or contact the ROOMO team.",
+          code: "VERIFICATION_EMAIL_FAILED",
+        });
+      }
     }
 
     return res.status(201).json({
-      message: "Account created. Check your inbox and click the verification link before signing in.",
+      message: verificationEmailConfigured
+        ? "Account created. Check your inbox and click the verification link before signing in."
+        : "Account created successfully for local development. You can now sign in.",
       email: user.email,
-      verificationRequired: true,
+      verificationRequired: verificationEmailConfigured,
     });
   } catch (error) {
     if (error.code === "P2002") {
