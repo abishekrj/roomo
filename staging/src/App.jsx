@@ -14,8 +14,10 @@ import AuthPage from "./components/AuthPage.jsx";
 import PropertyDetails from "./components/PropertyDetails.jsx";
 import OwnerPortal from "./components/OwnerPortal.jsx";
 import SuperAdminPortal from "./components/SuperAdminPortal.jsx";
+import { CmsGuidePage, MyBookingsPage, PostPropertyPage, ShoppingPage, VerifyEmailPage } from "./components/LegacyPages.jsx";
+import CommissionManagementPage from "./components/CommissionManagementPage.jsx";
 
-const legacyAdminRoutes = {
+const legacyRoutes = {
   "/frontend/admin/admin.html": "/staging/admin/login",
   "/frontend/admin/dashboard.html": "/staging/admin/dashboard",
   "/frontend/admin/enquiries.html": "/staging/admin/enquiries",
@@ -41,17 +43,71 @@ const legacyAdminRoutes = {
   "/frontend/owner/enquiries.html": "/staging/owner/enquiries",
   "/frontend/owner/reports.html": "/staging/owner/reports",
   "/frontend/owner/room-types.html": "/staging/owner/properties",
+  "/frontend/index.html": "/staging",
+  "/frontend/admin.html": "/staging/admin/login",
+  "/frontend/owner-dashboard.html": "/staging/owner/login",
+  "/frontend/roomo-login.html": "/staging/login",
+  "/frontend/roomo-signup.html": "/staging/signup",
+  "/frontend/roomo-search-results.html": "/staging/properties",
+  "/frontend/roomo-stay-details.html": "/staging/property-details",
+  "/frontend/roomo-owner-auth.html": "/staging/owner/login",
+  "/frontend/post-property.html": "/staging/post-property",
+  "/frontend/roomo-verify-email.html": "/staging/verify-email",
+  "/frontend/roomo-my-bookings.html": "/staging/my-bookings",
+  "/frontend/shopping.html": "/staging/shopping",
+  "/frontend/shop-details.html": "/staging/shop-details",
+  "/frontend/roomo-admin-commissions.html": "/staging/admin/commissions",
+  "/frontend/cms-page.html": "/staging/guides",
+  "/frontend/budget-rooms-in-tiruvannamalai.html": "/staging/guides/budget-rooms-in-tiruvannamalai",
+  "/frontend/family-stays-for-girivalam.html": "/staging/guides/family-stays-for-girivalam",
+  "/frontend/hotels-near-arunachaleswarar-temple.html": "/staging/guides/hotels-near-arunachaleswarar-temple",
+  "/frontend/monthly-stays-in-tiruvannamalai.html": "/staging/guides/monthly-stays-in-tiruvannamalai",
+  "/frontend/stays-near-sri-ramanasramam.html": "/staging/guides/stays-near-sri-ramanasramam",
+  "/frontend/components/header.html": "/staging",
+  "/frontend/components/footer.html": "/staging",
+  "/frontend/components/favicon.html": "/staging",
+  "/frontend/components/testimonials.html": "/staging",
+  "/frontend/public/components/gallery.html": "/staging",
+  "/index.html": "/staging",
+  "/roomo-login.html": "/staging/login",
+  "/roomo-signup.html": "/staging/signup",
+  "/roomo-search-results.html": "/staging/properties",
+  "/roomo-stay-details.html": "/staging/property-details",
+  "/roomo-owner-auth.html": "/staging/owner/login",
+  "/post-property.html": "/staging/post-property",
+  "/roomo-verify-email.html": "/staging/verify-email",
+  "/roomo-my-bookings.html": "/staging/my-bookings",
+  "/shopping.html": "/staging/shopping",
+  "/shop-details.html": "/staging/shop-details",
+  "/roomo-admin-commissions.html": "/staging/admin/commissions",
+  "/admin.html": "/staging/admin/login",
+  "/owner-dashboard.html": "/staging/owner/login",
+  "/budget-rooms-in-tiruvannamalai.html": "/staging/guides/budget-rooms-in-tiruvannamalai",
+  "/family-stays-for-girivalam.html": "/staging/guides/family-stays-for-girivalam",
+  "/hotels-near-arunachaleswarar-temple.html": "/staging/guides/hotels-near-arunachaleswarar-temple",
+  "/monthly-stays-in-tiruvannamalai.html": "/staging/guides/monthly-stays-in-tiruvannamalai",
+  "/stays-near-sri-ramanasramam.html": "/staging/guides/stays-near-sri-ramanasramam",
+  "/cms-page.html": "/staging/guides"
 };
 
 export default function App() {
   const rawPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const legacyPath = rawPath.replace(/^\/staging(?=\/frontend\/)/, "");
-  const legacyDestination = legacyAdminRoutes[legacyPath];
+  const legacyDestination = legacyRoutes[legacyPath] || legacyRoutes[rawPath];
   if (legacyDestination) {
-    window.location.replace(legacyDestination);
+    const destination = legacyDestination + (window.location.search || "");
+    window.location.replace(destination);
     return null;
   }
   const path = rawPath;
+  if (path === "/staging/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
+  if (path === "/staging/post-property" || path === "/post-property") return <PostPropertyPage />;
+  if (path === "/staging/verify-email" || path === "/verify-email") return <VerifyEmailPage />;
+  if (path === "/staging/my-bookings" || path === "/my-bookings") return <MyBookingsPage />;
+  if (path === "/staging/shopping" || path === "/shopping") return <ShoppingPage />;
+  if (path === "/staging/shop-details" || path === "/shop-details") return <ShoppingPage detail />;
+  if (path === "/staging/guides" || path === "/guides") return <CmsGuidePage />;
+  if (path.startsWith("/staging/guides/") || path.startsWith("/guides/")) return <CmsGuidePage slug={path.split("/").filter(Boolean).pop()} />;
   if (path === "/admin" || path.startsWith("/admin/") || path === "/staging/admin" || path.startsWith("/staging/admin/")) return <SuperAdminPortal />;
   if (path === "/owner" || path.startsWith("/owner/") || path === "/staging/owner" || path.startsWith("/staging/owner/")) return <OwnerPortal />;
   if (path === "/staging/login" || path === "/login") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="login" /></main><Footer /></div>;

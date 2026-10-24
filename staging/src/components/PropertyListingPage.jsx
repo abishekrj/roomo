@@ -96,7 +96,7 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
   const configuredHref = property.url || property.href;
   const href = configuredHref
     ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
-    : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id);
+    : "/staging/property-details?id=" + encodeURIComponent(property.id);
   return <article className={"group relative min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md " + (view === "list" ? "grid sm:grid-cols-[240px_minmax(0,1fr)]" : "flex flex-col")}>
     <div className={"relative min-w-0 overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-square w-full sm:aspect-square sm:min-h-0" : "aspect-[4/3]")}>
       <a href={href} className="absolute inset-0 block overflow-hidden">

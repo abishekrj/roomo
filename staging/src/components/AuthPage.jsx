@@ -100,7 +100,7 @@ export default function AuthPage({ mode = "login" }) {
             <button type="submit" disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60">{busy ? "PLEASE WAIT…" : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}</button>
           </form>
           <p className="mt-6 text-center text-sm text-slate-600">{isSignup ? "Already have an account?" : "New to ROOMO Sacred?"} <a href={`/staging/${isSignup ? "login" : "signup"}${window.location.search}`} className="font-semibold text-[#2563a6] hover:underline">{isSignup ? "Sign in" : "Create an account"}</a></p>
-          {!isSignup && <p className="mt-5 text-center text-sm text-slate-600">Property owner? <a href="/owner/admin.html" className="font-semibold text-[#2563a6] hover:underline">Open Owner Dashboard</a></p>}
+          {!isSignup && <p className="mt-5 text-center text-sm text-slate-600">Property owner? <a href="/owner/login" className="font-semibold text-[#2563a6] hover:underline">Open Owner Dashboard</a></p>}
           <p className="mt-8 text-center text-xs leading-5 text-slate-500">By continuing, you agree to our <a href="/staging/terms" className="underline">Terms of Service</a> and <a href="/staging/privacy" className="underline">Privacy Policy</a>.</p>
           <p className="mt-4 text-center text-xs text-slate-400">♧ Secure sign-in powered by ROOMO</p>
         </div>

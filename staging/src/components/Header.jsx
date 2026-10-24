@@ -105,7 +105,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
             {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
               {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
               <a className={linkClass} href="/staging/my-bookings"><i className="bi bi-journal-bookmark mr-2" />My Pilgrimage Bookings</a>
-              <a className={linkClass} href={user ? "../roomo-frontend/roomo-my-bookings.html" : authHref("../roomo-frontend/roomo-login.html")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
+              <a className={linkClass} href={user ? "/staging/my-bookings" : authHref("/staging/login")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
               {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
             </nav>}
           </div>}

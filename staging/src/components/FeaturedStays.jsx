@@ -97,7 +97,7 @@ export default function FeaturedStays() {
             badge: property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isGreatLocation ? "Great location" : ""),
             url: property.url || property.href
               ? (((property.url || property.href).startsWith("http://") || (property.url || property.href).startsWith("https://")) || (property.url || property.href).startsWith("/staging/") ? (property.url || property.href) : (property.url || property.href).startsWith("/") ? "/staging" + (property.url || property.href) : "/staging/" + (property.url || property.href))
-              : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
+              : "/staging/property-details?id=" + encodeURIComponent(property.id),
             sortOrder: property.featuredSortOrder ?? 999
           };
         })
@@ -160,7 +160,7 @@ export default function FeaturedStays() {
           <div ref={trackRef} className="roomo-featured-stays-track flex snap-x snap-mandatory gap-5 overflow-x-auto" aria-label="Featured stays carousel">
             {stays.map((stay, index) => (
               <article key={stay.id || stay.name || index} data-featured-stay-card className="group flex w-[min(280px,84vw)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-shadow duration-200 hover:shadow-lg sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
-                <a href={stay.url || stay.href || "/roomo-search-results.html"} className="flex h-full flex-col">
+                <a href={stay.url || stay.href || "/staging/properties"} className="flex h-full flex-col">
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                     {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => {
                       const image = event.currentTarget;

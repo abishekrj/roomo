@@ -45,7 +45,7 @@ function ShopCard({ shop }) {
   const imageUrl = shopImage(shop);
   return (
     <article className="roomo-shop-card">
-      <a className="roomo-shop-card-main" href={"/frontend/shop-details.html?id=" + encodeURIComponent(shop.id || "")}>
+      <a className="roomo-shop-card-main" href={"/staging/shop-details?id=" + encodeURIComponent(shop.id || "")}>
         <div className="roomo-shop-card-image">
           {!imageFailed ? (
             <img src={imageUrl} alt={name} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
@@ -118,7 +118,7 @@ export default function ShoppingDirectory() {
             <p>{config?.description || DEFAULT_DESCRIPTION}</p>
           </div>
           <div className="roomo-shopping-controls">
-            <a className="roomo-shopping-view-all" href="/frontend/shopping.html">View All Shops <span aria-hidden="true">→</span></a>
+            <a className="roomo-shopping-view-all" href="/staging/shopping">View All Shops <span aria-hidden="true">→</span></a>
             <div className="flex items-center gap-2">
               <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(-1)} aria-label="Previous shops" disabled={loading || shops.length < 2}>‹</button>
               <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(1)} aria-label="Next shops" disabled={loading || shops.length < 2}>›</button>

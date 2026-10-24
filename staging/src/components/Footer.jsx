@@ -11,14 +11,14 @@ const defaults = {
     { label: "YouTube", url: "#", icon: "bi-youtube" }
   ],
   sanctuaries: [
-    { label: "Hotels Near Arunachaleswarar Temple", url: "../roomo-frontend/hotels-near-arunachaleswarar-temple.html" },
-    { label: "Stays Near Sri Ramanasramam", url: "../roomo-frontend/stays-near-sri-ramanasramam.html" },
-    { label: "Budget Rooms in Tiruvannamalai", url: "../roomo-frontend/budget-rooms-in-tiruvannamalai.html" },
-    { label: "Family Stays for Girivalam", url: "../roomo-frontend/family-stays-for-girivalam.html" },
-    { label: "Monthly Stays in Tiruvannamalai", url: "../roomo-frontend/monthly-stays-in-tiruvannamalai.html" }
+    { label: "Hotels Near Arunachaleswarar Temple", url: "/staging/guides/hotels-near-arunachaleswarar-temple" },
+    { label: "Stays Near Sri Ramanasramam", url: "/staging/guides/stays-near-sri-ramanasramam" },
+    { label: "Budget Rooms in Tiruvannamalai", url: "/staging/guides/budget-rooms-in-tiruvannamalai" },
+    { label: "Family Stays for Girivalam", url: "/staging/guides/family-stays-for-girivalam" },
+    { label: "Monthly Stays in Tiruvannamalai", url: "/staging/guides/monthly-stays-in-tiruvannamalai" }
   ],
   pilgrimCare: [
-    { label: "Karthigai Deepam 2026 Passes", url: "../roomo-frontend/index.html#karthigaiPromo" },
+    { label: "Karthigai Deepam 2026 Passes", url: "/staging#upcomingFestival" },
     { label: "Pournami Girivalam Calendar", url: "../roomo-frontend/index.html#spiritualGuide" },
     { label: "Annamalaiyar Darshan Timings", url: "../roomo-frontend/index.html#spiritualGuide" },
     { label: "Ashram Taxi & Station Pickups", url: "#" }
