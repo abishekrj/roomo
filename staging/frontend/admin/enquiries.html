@@ -204,6 +204,7 @@
               <div id="enquiriesEmpty" class="empty-state">Loading enquiries…</div>
             </div>
           </section>
+<section class="panel" style="margin-top:24px"><div class="head"><div><h2>Website enquiries</h2><p class="muted">Enquiries sent from property detail pages. Each submission is visible to ROOMO Super Admin and the property's owner.</p></div><button id="refreshWebsiteEnquiries" class="button button-secondary" type="button">Refresh</button></div><div id="websiteEnquiryCount" class="muted" style="margin:12px 0">Loading website enquiries…</div><div class="table-wrap"><table style="min-width:900px"><thead><tr><th>Property / Owner</th><th>Guest / Contact</th><th>Stay dates</th><th>Guests / Rooms</th><th>Message</th><th>Received</th></tr></thead><tbody id="websiteEnquiryRows"></tbody></table></div><div id="websiteEnquiriesEmpty" class="empty-state hidden">No website enquiries yet.</div></section>
         </div>
       </div>
     </main>
@@ -214,7 +215,7 @@
           KEY = "roomoAdminToken",
           $ = id => document.getElementById(id);
         let token = localStorage.getItem(KEY) || sessionStorage.getItem(KEY),
-          reservations = [];
+          reservations = [], websiteEnquiries = [];
 
         function notice(message, type = "info") {
           const el = $("pageNotice");
@@ -261,6 +262,7 @@
             });
             reservations = Array.isArray(data.reservations) ? data.reservations : [];
             render();
+            await loadWebsiteEnquiries();
           } catch (error) {
             notice(error.message, "error");
             if (error.status === 401 || error.status === 403) {
@@ -273,6 +275,30 @@
           }
         }
 
+        async function loadWebsiteEnquiries() {
+          const response = await fetch(API + "/enquiries/admin", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.message || "Unable to load website enquiries.");
+          websiteEnquiries = Array.isArray(data.enquiries) ? data.enquiries : [];
+          const tbody = $("websiteEnquiryRows"); tbody.replaceChildren();
+          $("websiteEnquiryCount").textContent = websiteEnquiries.length + " website " + (websiteEnquiries.length === 1 ? "enquiry" : "enquiries");
+          $("websiteEnquiriesEmpty").classList.toggle("hidden", websiteEnquiries.length > 0);
+          for (const e of websiteEnquiries) {
+            const tr = document.createElement("tr");
+            const property = cell(tr, "", "guest-contact");
+            const title = document.createElement("strong"); title.textContent = e.property?.title || "Property"; property.appendChild(title);
+            const owner = document.createElement("div"); owner.className = "muted"; owner.textContent = e.property?.owner?.fullName || "Owner not found"; property.appendChild(owner);
+            const guest = cell(tr, "", "guest-contact");
+            const guestName = document.createElement("strong"); guestName.textContent = e.guestName || "Guest"; guest.appendChild(guestName);
+            const email = document.createElement("div"); email.className = "muted"; email.textContent = e.email || ""; guest.appendChild(email);
+            const phone = document.createElement("div"); phone.className = "muted"; phone.textContent = e.phone || ""; guest.appendChild(phone);
+            cell(tr, "Check-in: " + date(e.checkIn) + "\nCheck-out: " + date(e.checkOut));
+            cell(tr, (e.adults || 0) + " adults\n" + (e.rooms || 1) + " room(s)");
+            const message = cell(tr, e.message || "No message"); message.style.whiteSpace = "pre-wrap";
+            cell(tr, date(e.createdAt));
+            tbody.appendChild(tr);
+          }
+        }
         function render() {
           const query = $("enquirySearch").value.trim().toLocaleLowerCase();
           const filtered = reservations.filter(r => [r.guest?.fullName, r.guest?.email, r.contactPhone, r.guest?.phoneNumber, r.property?.title, r.property?.city, r.property?.state, r.checkIn, r.checkOut, date(r.checkIn), date(r.checkOut), r.adults, r.children, r.roomCount, r.specialRequests, r.reservationCode, r.status, r.totalAmount, r.roomType?.name, r.property?.owner?.fullName].some(v => v != null && String(v).toLocaleLowerCase().includes(query)));
@@ -377,6 +403,7 @@
         }
         $("enquirySearch").addEventListener("input", render);
         $("refreshButton").addEventListener("click", load);
+        $("refreshWebsiteEnquiries").addEventListener("click", () => loadWebsiteEnquiries().catch(error => notice(error.message, "error")));
         $("logoutButton").addEventListener("click", () => {
           localStorage.removeItem(KEY);
           sessionStorage.removeItem(KEY);
