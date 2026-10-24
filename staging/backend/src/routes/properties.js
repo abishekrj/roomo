@@ -65,7 +65,7 @@ router.post("/owner", authenticateToken, async (req, res, next) => {
     if (!owner || owner.role !== "OWNER") return res.status(403).json({ message: "Owner account required." });
     const { imageUrls, ...data } = parsed.data;
     const property = await prisma.property.create({
-      data: { ...data, ownerId: owner.id, status: "DRAFT",
+      data: { ...data, ownerId: owner.id, status: "DRAFT", isFeatured: false, featuredSortOrder: 0,
         images: { create: imageUrls.map((imageUrl, index) => ({ imageUrl, sortOrder: index })) } },
       include: { images: { orderBy: { sortOrder: "asc" } } }
     });
@@ -86,7 +86,7 @@ router.patch("/owner/:id/draft", authenticateToken, async (req, res, next) => {
     if (!["DRAFT", "REJECTED"].includes(existing.status)) return res.status(409).json({ message: "Only draft or returned properties can be edited here." });
     const { imageUrls, ...data } = parsed.data;
     const property = await prisma.$transaction(async tx => {
-      await tx.property.update({ where: { id: id.data }, data: { ...data, status: existing.status === "REJECTED" ? "REJECTED" : "DRAFT" } });
+      await tx.property.update({ where: { id: id.data }, data: { ...data, isFeatured: false, featuredSortOrder: 0, status: existing.status === "REJECTED" ? "REJECTED" : "DRAFT" } });
       await tx.propertyImage.deleteMany({ where: { propertyId: id.data } });
       if (imageUrls.length) await tx.propertyImage.createMany({ data: imageUrls.map((imageUrl, index) => ({ propertyId: id.data, imageUrl, sortOrder: index })) });
       return tx.property.findUnique({ where: { id: id.data }, include: { images: { orderBy: { sortOrder: "asc" } } } });
