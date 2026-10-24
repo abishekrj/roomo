@@ -77,7 +77,7 @@ export function ShoppingPage({ detail = false }) {
 }
 
 export function MyBookingsPage() {
-  const token=localStorage.getItem("roomoGuestToken")||sessionStorage.getItem("roomoGuestToken")||"";
+  const token=localStorage.getItem("roomoGuest") ? "cookie-session" : "";
   const [message,setMessage]=useState(token?"Loading your saved stays…":"Sign in to view your reservations and saved favourite stays.");
   const [favouriteIds,setFavouriteIds]=useState([]);
   const [properties,setProperties]=useState([]);
