@@ -44,7 +44,8 @@ function Icon({ name, className = "h-4 w-4" }) {
     close: <path d="m6 6 12 12M18 6 6 18"/>,
     arrow: <><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></>,
     bed: <><path d="M2 4v16M22 4v16M2 14h20M2 9h6a4 4 0 0 1 4 4v1M12 10h6a4 4 0 0 1 4 4"/></>,
-    users: <><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>
+    users: <><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/>
   };
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.pin}</svg>;
 }
@@ -61,7 +62,7 @@ function CheckOption({ checked, onChange, label, count }) {
   </label>;
 }
 
-function PropertyCard({ property, view }) {
+function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
   const imageCandidates = propertyImages(property);
   const image = imageCandidates[0] || "";
   const amenities = arrayValue(property.amenities).slice(0, 4);
@@ -72,7 +73,7 @@ function PropertyCard({ property, view }) {
   const href = configuredHref
     ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
     : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id);
-  return <article className={view === "list" ? "group grid min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md sm:grid-cols-[240px_minmax(0,1fr)]" : "group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"}>
+  return <article className={"group relative min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md " + (view === "list" ? "grid sm:grid-cols-[240px_minmax(0,1fr)]" : "flex flex-col")}>
     <a href={href} className={"relative block overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-square w-full sm:aspect-square sm:min-h-0" : "aspect-[4/3]")}>
       {image ? <img src={image} data-image-candidate-index="0" alt={property.title || "ROOMO stay"} loading="lazy" decoding="async" onError={event => {
         const img = event.currentTarget;
@@ -81,8 +82,11 @@ function PropertyCard({ property, view }) {
         else { img.style.display = "none"; img.parentElement?.querySelector("[data-image-fallback]")?.classList.remove("hidden"); }
       }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : null}
       <div data-image-fallback className={"absolute inset-0 grid min-h-48 place-items-center text-slate-400 " + (image ? "hidden" : "")}><div className="text-center"><Icon name="bed" className="mx-auto mb-2 h-9 w-9"/><span className="text-xs">Property photos coming soon</span></div></div>
-      {badgeLabel && <span className="absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">✦ {badgeLabel}</span>}<span aria-hidden="true" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-2xl leading-none text-slate-500 shadow-sm">♡</span>
+      {badgeLabel && <span className="absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">✦ {badgeLabel}</span>}
     </a>
+    <button type="button" onClick={() => onToggleFavourite(property)} aria-label={isFavourite ? `Remove ${property.title || "stay"} from favourites` : `Add ${property.title || "stay"} to favourites`} aria-pressed={isFavourite} title={isFavourite ? "Remove from favourites" : "Add to favourites"} className={"absolute right-3 top-3 z-10 grid h-11 w-11 place-items-center rounded-full border shadow-md transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 " + (isFavourite ? "border-rose-200 bg-rose-500 text-white hover:bg-rose-600" : "border-white/80 bg-white/95 text-slate-600 hover:scale-105 hover:text-rose-500")}>
+      <Icon name="heart" className="h-5 w-5" />
+    </button>
     <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -122,6 +126,64 @@ export default function PropertyListingPage() {
   const [sort, setSort] = useState("recommended");
   const [view, setView] = useState("list");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [favourites, setFavourites] = useState([]);
+  const [favouriteNotice, setFavouriteNotice] = useState("");
+
+  const readGuestSession = () => {
+    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+    const raw = sessionStorage.getItem("roomoGuest") || localStorage.getItem("roomoGuest");
+    let user = null;
+    try { user = raw ? JSON.parse(raw) : null; } catch { user = null; }
+    return { token, user };
+  };
+  const guestKey = user => String(user?.id || user?.guestId || user?.email || "guest");
+  const favouritesStorageKey = user => "roomoFavourites:" + guestKey(user);
+
+  useEffect(() => {
+    const { user } = readGuestSession();
+    if (!user) { setFavourites([]); return; }
+    try {
+      const stored = JSON.parse(localStorage.getItem(favouritesStorageKey(user)) || "[]");
+      setFavourites(Array.isArray(stored) ? stored.map(String) : []);
+    } catch { setFavourites([]); }
+  }, []);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const pendingId = query.get("favorite");
+    if (!pendingId) return;
+    const { token, user } = readGuestSession();
+    if (!token || !user) return;
+    const key = favouritesStorageKey(user);
+    let stored = [];
+    try { stored = JSON.parse(localStorage.getItem(key) || "[]"); } catch { stored = []; }
+    if (!Array.isArray(stored)) stored = [];
+    if (!stored.map(String).includes(String(pendingId))) {
+      stored.push(String(pendingId));
+      localStorage.setItem(key, JSON.stringify(stored));
+    }
+    setFavourites(stored.map(String));
+    setFavouriteNotice("This room has been successfully added to your favourite.");
+    query.delete("favorite");
+    const nextUrl = window.location.pathname + (query.toString() ? "?" + query.toString() : "") + window.location.hash;
+    window.history.replaceState({}, "", nextUrl);
+  }, []);
+
+  const toggleFavourite = property => {
+    const { token, user } = readGuestSession();
+    if (!token || !user) {
+      const returnUrl = new URL(window.location.href);
+      returnUrl.searchParams.set("favorite", String(property.id));
+      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+      return;
+    }
+    const id = String(property.id);
+    const adding = !favourites.includes(id);
+    const updated = adding ? [...favourites, id] : favourites.filter(item => item !== id);
+    localStorage.setItem(favouritesStorageKey(user), JSON.stringify(updated));
+    setFavourites(updated);
+    setFavouriteNotice(adding ? "This room has been successfully added to your favourite." : "This room has been removed from your favourites.");
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -224,7 +286,8 @@ export default function PropertyListingPage() {
               </div>
             </div>
 
-            {error ? <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error} <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Try again</button></div> : loading ? <div className="space-y-4">{[0,1,2].map(i => <div key={i} className="h-56 animate-pulse rounded-lg border border-slate-200 bg-white"/>)}</div> : visibleProperties.length ? <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2"}>{visibleProperties.map(property => <PropertyCard key={property.id} property={property} view={view}/>)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><p className="text-lg font-semibold text-slate-800">No stays match these filters</p><p className="mt-2 text-sm text-slate-500">Try widening your price range or removing a filter.</p><button type="button" onClick={clearFilters} className="mt-4 rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Clear filters</button></div>}
+            {favouriteNotice && <div role="status" aria-live="polite" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"><span>{favouriteNotice}</span><button type="button" aria-label="Dismiss notification" onClick={() => setFavouriteNotice("")} className="rounded-lg px-2 py-1 font-semibold hover:bg-emerald-100">✕</button></div>}
+            {error ? <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error} <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Try again</button></div> : loading ? <div className="space-y-4">{[0,1,2].map(i => <div key={i} className="h-56 animate-pulse rounded-lg border border-slate-200 bg-white"/>)}</div> : visibleProperties.length ? <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2"}>{visibleProperties.map(property => <PropertyCard key={property.id} property={property} view={view} isFavourite={favourites.includes(String(property.id))} onToggleFavourite={toggleFavourite}/>)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><p className="text-lg font-semibold text-slate-800">No stays match these filters</p><p className="mt-2 text-sm text-slate-500">Try widening your price range or removing a filter.</p><button type="button" onClick={clearFilters} className="mt-4 rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Clear filters</button></div>}
           </section>
         </div>
       </div>
