@@ -203,7 +203,7 @@ export default function SuperAdminPortal() {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "▦", href: routePrefix + "/dashboard" },
     { id: "enquiries", label: "Enquiries", icon: "▤", href: routePrefix + "/enquiries" },
-    { id: "owners", label: "Owners", icon: "♙", href: routePrefix + "/owners" },
+    { id: "owners", label: "Registered Owners", icon: "♙", href: routePrefix + "/owners" },
     { id: "rooms", label: "Rooms", icon: "⌂", children: [
       ["Add Rooms", routePrefix + "/rooms/add"], ["Room Listings", routePrefix + "/rooms/listings"],
       ["Room Types", routePrefix + "/rooms/types"], ["Room Filters", routePrefix + "/rooms/filters"],
