@@ -389,7 +389,7 @@ export default function PropertyDetails() {
                 {Array.isArray(property.reviews) && property.reviews.length > 0 ? <div className="mt-4 grid gap-3 md:grid-cols-2">{property.reviews.map((review,index) => <article key={review.id || index} className="rounded-lg border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold">{review.guestName || review.name || "Guest"}</p>{review.rating != null && <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-[#2563a6]">{review.rating} ★</span>}</div><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{review.comment || review.text || review.review || "Shared feedback for this stay."}</p>{review.createdAt && <p className="mt-3 text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>}</article>)}</div> : <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"><p className="text-sm font-medium text-slate-700">Reviews will appear here when available.</p><p className="mt-1 text-sm leading-6 text-slate-500">For current guest feedback, contact the property team before confirming your stay.</p></div>}
               </section>
 
-              <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
+              {property.showPolicies !== false && <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Property policies</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Check-in & check-out</h3><p className="mt-2 text-sm leading-6 text-slate-600">Check-in: {property.checkInTime || "Please confirm with property"}</p><p className="text-sm leading-6 text-slate-600">Check-out: {property.checkOutTime || "Please confirm with property"}</p></article>
@@ -397,7 +397,7 @@ export default function PropertyDetails() {
                   <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Children & extra beds</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.childrenPolicy || "Please contact the property to confirm child occupancy and extra-bed arrangements."}</p></article>
                   <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Pets & smoking</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.petsPolicy || property.smokingPolicy || "Please check the property's rules before arrival."}</p></article>
                 </div>
-              </section>
+              </section>}
             </div>
 
             <aside id="enquiry" className="scroll-mt-20 lg:sticky lg:top-16">
@@ -405,12 +405,22 @@ export default function PropertyDetails() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#9a7132]">Plan your stay</p>
                 <h2 className="mt-1 text-xl font-semibold">Send an enquiry</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">Ask about availability and get the latest rate directly from the property team.</p>
-                <div className="mt-4 rounded-lg bg-slate-50 p-3"><p className="text-sm text-slate-500">Starting price</p><p className="mt-0.5 text-2xl font-semibold">{money(startingPrice)}{startingPrice != null && <span className="text-xs font-normal text-slate-500"> / night</span>}</p></div>
+                <div className="mt-4 rounded-lg bg-slate-50 p-3">
+                  <p className="text-sm text-slate-500">{estimatedTotal != null ? "Estimated stay total" : "Starting price"}</p>
+                  <p className="mt-0.5 text-2xl font-semibold">{estimatedTotal != null ? money(estimatedTotal) : money(startingPrice)}{estimatedTotal == null && startingPrice != null && <span className="text-xs font-normal text-slate-500"> / night</span>}</p>
+                  {estimatedTotal != null && <p className="mt-1 text-xs text-slate-500">{money(selectedRoomPrice)} × {stayNights} {stayNights===1?"night":"nights"} × {rooms} {rooms===1?"room":"rooms"}</p>}
+                  <div className="mt-3 space-y-1.5 border-t border-slate-200 pt-3 text-sm">
+                    <div className="flex justify-between gap-3"><span className="text-slate-500">Check-in</span><strong className="text-right">{checkIn || "Choose date"}</strong></div>
+                    <div className="flex justify-between gap-3"><span className="text-slate-500">Check-out</span><strong className="text-right">{checkOut || "Choose date"}</strong></div>
+                    <div className="flex justify-between gap-3"><span className="text-slate-500">Guests / rooms</span><strong className="text-right">{adults} {adults===1?"adult":"adults"} · {rooms} {rooms===1?"room":"rooms"}</strong></div>
+                    {selectedRoom && <div className="flex justify-between gap-3"><span className="text-slate-500">Room</span><strong className="max-w-[60%] text-right">{selectedRoom.name || selectedRoom.title || "Selected room"}</strong></div>}
+                  </div>
+                  {estimatedTotal != null && <p className="mt-3 text-xs leading-5 text-slate-500">Estimate only; taxes, extra charges and final availability are confirmed by the property.</p>}
+                </div>
                 <form onSubmit={submitEnquiry} className="mt-4 space-y-3">
                   <label className="block text-sm font-medium">Full name<input required value={enquiryName} onChange={e=>setEnquiryName(e.target.value)} autoComplete="name" className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"/></label>
                   <label className="block text-sm font-medium">Email address<input required type="email" value={enquiryEmail} onChange={e=>setEnquiryEmail(e.target.value)} autoComplete="email" className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"/></label>
                   <label className="block text-sm font-medium">Phone number<input required type="tel" value={enquiryPhone} onChange={e=>setEnquiryPhone(e.target.value)} autoComplete="tel" className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal"/></label>
-                  <div className="grid grid-cols-2 gap-3"><label className="block text-sm font-medium">Adults<select value={adults} onChange={e=>setAdults(Number(e.target.value))} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal">{[1,2,3,4,5,6,7,8].map(n=><option key={n} value={n}>{n}</option>)}</select></label><label className="block text-sm font-medium">Rooms<select value={rooms} onChange={e=>setRooms(Number(e.target.value))} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal">{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n}</option>)}</select></label></div>
                   <label className="block text-sm font-medium">Message (optional)<textarea rows="3" value={enquiryMessage} onChange={e=>setEnquiryMessage(e.target.value)} placeholder="Any preferences or questions?" className="mt-1 block w-full resize-y rounded-lg border border-slate-300 px-3 py-2.5 font-normal"/></label>
                   {enquiryState.message && <p role="status" className={"rounded-lg p-3 text-sm " + (enquiryState.success ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800")}>{enquiryState.message}</p>}
                   <button disabled={enquiryState.busy} type="submit" className="w-full rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4f86] disabled:cursor-wait disabled:opacity-60">{enquiryState.busy ? "Sending enquiry…" : "Send enquiry"}</button>
@@ -422,6 +432,15 @@ export default function PropertyDetails() {
         </>}
       </div>
     </main>
+    {!loading && !error && property && <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-4px_18px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-xs text-slate-500">{estimatedTotal != null ? stayNights + (stayNights===1?" night":" nights") + " · " + rooms + (rooms===1?" room":" rooms") : "Starting from"}</p>
+          <p className="truncate text-lg font-semibold text-slate-900">{money(estimatedTotal != null ? estimatedTotal : startingPrice)}{estimatedTotal == null && startingPrice != null && <span className="text-xs font-normal text-slate-500"> / night</span>}</p>
+        </div>
+        <a href="#enquiry" className="inline-flex shrink-0 items-center justify-center rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1d4f86] focus:outline-none focus:ring-2 focus:ring-blue-200">Send enquiry</a>
+      </div>
+    </div>}
     <Footer />
   </div>;
 }
