@@ -7,6 +7,7 @@ import UpcomingFestival from "./components/UpcomingFestival.jsx";
 import PilgrimGuide from "./components/PilgrimGuide.jsx";
 import NearbyLocations from "./components/NearbyLocations.jsx";
 import Gallery from "./components/Gallery.jsx";
+import ShoppingDirectory from "./components/ShoppingDirectory.jsx";
 import Testimonials from "./components/Testimonials.jsx";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <PilgrimGuide />
         <NearbyLocations />
         <Gallery />
+        <ShoppingDirectory />
         <Testimonials />
       </main>
       <Footer />
