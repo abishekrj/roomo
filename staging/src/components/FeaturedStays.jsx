@@ -73,7 +73,14 @@ export default function FeaturedStays() {
           const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
           // Keep every uploaded image URL so a stale/missing first upload does not
           // leave the whole card blank when another valid property image exists.
-          const imageCandidates = images.map(resolveImageUrl).filter(Boolean);
+          const imageCandidates = [
+            ...images.map(resolveImageUrl),
+            resolveImageUrl(property.coverImage),
+            resolveImageUrl(property.imageUrl),
+            resolveImageUrl(property.featuredImage),
+            resolveImageUrl(property.thumbnailUrl),
+            resolveImageUrl(property.mainImage)
+          ].filter(Boolean).filter((url, index, all) => all.indexOf(url) === index);
           return {
             id: property.id,
             name: property.title,
@@ -94,10 +101,7 @@ export default function FeaturedStays() {
             sortOrder: property.featuredSortOrder ?? 999
           };
         })
-    : fallbackRooms.map(stay => {
-        const img = resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image);
-        return { ...stay, img, imageCandidates: img ? [img] : [], fallbackImg: "" };
-      });
+: [];
   if (content?.featuredSectionEnabled === false) return null;
 
   const scroll = direction => {
