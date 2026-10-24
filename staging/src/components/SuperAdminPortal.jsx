@@ -20,38 +20,38 @@ export default function SuperAdminPortal() {
   const activePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : "dashboard";
   const menu = [
     { id: "dashboard", label: "Dashboard", icon: "▦", href: routePrefix + "/dashboard" },
-    { id: "enquiries", label: "Enquiries", icon: "▤", href: "/staging/frontend/admin/enquiries.html" },
-    { id: "owners", label: "Owners", icon: "♙", href: "/staging/frontend/admin/owner.html" },
+    { id: "enquiries", label: "Enquiries", icon: "▤", href: "/frontend/admin/enquiries.html" },
+    { id: "owners", label: "Owners", icon: "♙", href: "/frontend/admin/owner.html" },
     { id: "rooms", label: "Rooms", icon: "⌂", children: [
-      { label: "Add Rooms", href: "/staging/frontend/admin/rooms-listings.html#add-room" },
-      { label: "Room Listings", href: "/staging/frontend/admin/rooms-listings.html#room-listings" },
-      { label: "Room Types", href: "/staging/frontend/admin/room-types.html" },
-      { label: "Room Filters", href: "/staging/frontend/admin/room-filters.html" },
-      { label: "Featured Rooms", href: "/staging/frontend/admin/featured-rooms.html" },
-      { label: "Listing Display Settings", href: "/staging/frontend/admin/listing-display.html" }
+      { label: "Add Rooms", href: "/frontend/admin/rooms-listings.html#add-room" },
+      { label: "Room Listings", href: "/frontend/admin/rooms-listings.html#room-listings" },
+      { label: "Room Types", href: "/frontend/admin/room-types.html" },
+      { label: "Room Filters", href: "/frontend/admin/room-filters.html" },
+      { label: "Featured Rooms", href: "/frontend/admin/featured-rooms.html" },
+      { label: "Listing Display Settings", href: "/frontend/admin/listing-display.html" }
     ] },
     { id: "home-page", label: "Home Page", icon: "▧", children: [
-      { label: "Hero Banner", href: "/staging/frontend/admin/homepage.html#hero-banner" },
-      { label: "Search Section", href: "/staging/frontend/admin/homepage.html#search-section" },
-      { label: "Featured Stays", href: "/staging/frontend/admin/homepage.html#featured-stays" },
-      { label: "Upcoming Festival", href: "/staging/frontend/admin/homepage.html#upcoming-festival" },
-      { label: "Pilgrim Guide", href: "/staging/frontend/admin/pilgrim-guide.html" },
-      { label: "Nearby Locations", href: "/staging/frontend/admin/nearby-places.html" },
-      { label: "Galleries", href: "/staging/frontend/admin/galleries.html" },
-      { label: "Shopping Directory", href: "/staging/frontend/admin/shops.html" },
-      { label: "Testimonials", href: "/staging/frontend/admin/testimonials.html" },
-      { label: "Footer", href: "/staging/frontend/admin/homepage.html#footer" }
+      { label: "Hero Banner", href: "/frontend/admin/homepage.html#hero-banner" },
+      { label: "Search Section", href: "/frontend/admin/homepage.html#search-section" },
+      { label: "Featured Stays", href: "/frontend/admin/homepage.html#featured-stays" },
+      { label: "Upcoming Festival", href: "/frontend/admin/homepage.html#upcoming-festival" },
+      { label: "Pilgrim Guide", href: "/frontend/admin/pilgrim-guide.html" },
+      { label: "Nearby Locations", href: "/frontend/admin/nearby-places.html" },
+      { label: "Galleries", href: "/frontend/admin/galleries.html" },
+      { label: "Shopping Directory", href: "/frontend/admin/shops.html" },
+      { label: "Testimonials", href: "/frontend/admin/testimonials.html" },
+      { label: "Footer", href: "/frontend/admin/homepage.html#footer" }
     ] },
-    { id: "cms-pages", label: "CMS Pages", icon: "▤", href: "/staging/frontend/admin/cms-pages.html" },
-    { id: "destinations", label: "Destinations", icon: "⌖", href: "/staging/frontend/admin/destinations.html" },
-    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: "/staging/frontend/admin/nearby-places.html" },
-    { id: "shops", label: "Shopping Directory", icon: "▣", href: "/staging/frontend/admin/shops.html" },
-    { id: "testimonials", label: "Testimonials", icon: "❝", href: "/staging/frontend/admin/testimonials.html" },
+    { id: "cms-pages", label: "CMS Pages", icon: "▤", href: "/frontend/admin/cms-pages.html" },
+    { id: "destinations", label: "Destinations", icon: "⌖", href: "/frontend/admin/destinations.html" },
+    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: "/frontend/admin/nearby-places.html" },
+    { id: "shops", label: "Shopping Directory", icon: "▣", href: "/frontend/admin/shops.html" },
+    { id: "testimonials", label: "Testimonials", icon: "❝", href: "/frontend/admin/testimonials.html" },
     { id: "gallery", label: "Gallery", icon: "▧", children: [
-      { label: "Add Gallery", href: "/staging/frontend/admin/galleries.html#add-gallery" },
-      { label: "Gallery List", href: "/staging/frontend/admin/galleries.html#gallery-list" }
+      { label: "Add Gallery", href: "/frontend/admin/galleries.html#add-gallery" },
+      { label: "Gallery List", href: "/frontend/admin/galleries.html#gallery-list" }
     ] },
-    { id: "reports", label: "Reports", icon: "▥", href: "/staging/frontend/admin/reports.html" },
+    { id: "reports", label: "Reports", icon: "▥", href: "/frontend/admin/reports.html" },
     { id: "properties", label: "Property Listings", icon: "⌂", href: routePrefix + "/properties" },
     { id: "users", label: "Registered Users", icon: "♙", href: routePrefix + "/users" }
   ];
