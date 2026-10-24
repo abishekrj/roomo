@@ -183,11 +183,9 @@ export default function PropertyListingPage() {
               <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2">{guestCount} guests</span>
             </div>
           </div>
-          <div className="mt-5 overflow-visible rounded-lg">
-            <SearchSection variant="default" />
-          </div>
         </div>
       </div>
+      <SearchSection variant="default" />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
         <div className="mb-4 flex items-center justify-between gap-3 lg:hidden"><button type="button" onClick={() => setMobileFiltersOpen(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold"><Icon name="sliders"/> Filters {activeFilterCount > 0 && <span className="rounded-full bg-[#2563a6] px-1.5 text-xs text-white">{activeFilterCount}</span>}</button><span className="text-xs text-slate-500">{visibleProperties.length} stays</span></div>
