@@ -195,7 +195,7 @@ export default function FeaturedStays() {
                   {Array.isArray(stay.amenities)&&stay.amenities.length>0&&<div className="mt-3 flex flex-wrap gap-1.5">{stay.amenities.slice(0,3).map((amenity,i)=><span key={`${amenity}-${i}`} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-600">{String(amenity).toLowerCase().includes("wifi")?"Free Wi-Fi":amenity}</span>)}</div>}
                   <div className="mt-auto flex items-end justify-between gap-3 pt-4"><a href={stay.url||stay.href||"/staging/properties"} className="inline-flex min-h-9 items-center rounded-lg border border-[#2563a6] px-3 py-2 text-xs font-semibold text-[#2563a6] hover:bg-blue-50">View stay →</a>{stay.price!=null&&Number(stay.price)>0&&<span className="whitespace-nowrap text-right text-sm text-slate-600"><strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix||"per night"}</span></span>}</div>
                 </div>
-              </article>    </article>
+              </article>
             ))}
           </div>
         )}
