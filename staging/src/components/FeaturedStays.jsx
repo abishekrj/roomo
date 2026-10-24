@@ -57,7 +57,7 @@ export default function FeaturedStays() {
     ? content.featuredProperties
         .filter(property => property && property.status === "PUBLISHED" && property.isFeatured !== false)
         .sort((a, b) => (a.featuredSortOrder ?? 999) - (b.featuredSortOrder ?? 999))
-        .map(property => {
+        .map((property, propertyIndex) => {
           const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
           // Keep every uploaded image URL so a stale/missing first upload does not
           // leave the whole card blank when another valid property image exists.
@@ -72,7 +72,8 @@ export default function FeaturedStays() {
             price: property.nightlyPrice,
             img: imageCandidates[0] || "",
             imageCandidates,
-            fallbackImg: "",
+            // Use the configured homepage image only if every uploaded image for this property fails to load.
+            fallbackImg: resolveImageUrl(fallbackRooms[propertyIndex]?.img || fallbackRooms[propertyIndex]?.imageUrl || fallbackRooms[propertyIndex]?.coverImage || fallbackRooms[propertyIndex]?.image),
             rating: property.rating,
             amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
             highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
