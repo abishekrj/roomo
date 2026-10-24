@@ -62,7 +62,7 @@ export default function FeaturedStays() {
           // Keep every uploaded image URL so a stale/missing first upload does not
           // leave the whole card blank when another valid property image exists.
           const imageCandidates = images
-            .map(image => resolveImageUrl(image?.imageUrl || image?.url || image?.path || image?.src))
+            .map(image => resolveImageUrl(typeof image === "string" ? image : image?.imageUrl || image?.imagePath || image?.fileUrl || image?.mediaUrl || image?.url || image?.path || image?.src || image?.thumbnailUrl))
             .filter(Boolean);
           return {
             id: property.id,
