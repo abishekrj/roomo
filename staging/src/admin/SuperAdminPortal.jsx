@@ -100,6 +100,7 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/auth/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim().toLowerCase(), password })
       });
@@ -182,7 +183,8 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/admin/homepage/hero-image", {
         method: "POST",
-        headers: { Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: csrfHeaders(),
         body: formData
       });
       const data = await response.json().catch(() => ({}));
