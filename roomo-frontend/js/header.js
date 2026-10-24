@@ -1,6 +1,14 @@
 (() => {
   "use strict";
 
+  // Hide Google's banner/toolbar; use ROOMO's own language menu instead.
+  if (!document.querySelector('style[data-roomo-translate-style]')) {
+    const style = document.createElement("style");
+    style.dataset.roomoTranslateStyle = "true";
+    style.textContent = "#google_translate_element{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}.goog-te-banner-frame,.goog-te-banner-frame.skiptranslate,iframe.goog-te-banner-frame,#goog-gt-tt,.goog-te-balloon-frame,.goog-tooltip{display:none!important;visibility:hidden!important}html,body{top:0!important}body>.skiptranslate{display:none!important}";
+    document.head.appendChild(style);
+  }
+
   function initRoomoGoogleTranslate() {
     if (window.google && window.google.translate && window.google.translate.TranslateElement) {
       new window.google.translate.TranslateElement({
@@ -112,6 +120,7 @@
   }
 
   function selectRoomoLanguage(language) {
+    try { localStorage.setItem("roomoLanguage", language); } catch {}
     const label = document.getElementById("currentLangText");
     const labels = { en: "ENG", ta: "Tamil", te: "Telugu", kn: "Kannada" };
     if (label) label.textContent = labels[language] || "ENG";
@@ -193,6 +202,8 @@
       initScrollAwareHeader();
       applyConfiguredSiteLogo();
       initRoomoGoogleTranslate();
+      const savedLanguage = localStorage.getItem("roomoLanguage");
+      if (savedLanguage && ["en", "ta", "te", "kn"].includes(savedLanguage)) selectRoomoLanguage(savedLanguage);
       setReturnToOnAuthLinks();
       await initGuestAccountMenu();
 
