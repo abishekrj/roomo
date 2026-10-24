@@ -11,7 +11,7 @@ const router = express.Router();
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(254),
-  phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/).optional().or(z.literal("")),
+  phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/),
   password: z.string().min(12).max(72),
 });
 
@@ -41,7 +41,7 @@ router.post("/register", async (req, res, next) => {
 
     const fullName = parsed.data.fullName;
     const email = parsed.data.email.toLowerCase();
-    const phoneNumber = parsed.data.phoneNumber || null;
+    const phoneNumber = parsed.data.phoneNumber;
     const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
     const owner = await prisma.owner.create({
@@ -50,6 +50,7 @@ router.post("/register", async (req, res, next) => {
         id: true,
         fullName: true,
         email: true,
+        phoneNumber: true,
         createdAt: true,
       },
     });
@@ -62,7 +63,7 @@ router.post("/register", async (req, res, next) => {
   } catch (error) {
     if (error.code === "P2002") {
       return res.status(409).json({
-        message: "An account with this email already exists.",
+        message: "An account with this email or mobile number already exists.",
       });
     }
     next(error);
@@ -93,6 +94,9 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).json({
         message: "Invalid email or password.",
       });
+    }
+    if (owner.isActive === false) {
+      return res.status(403).json({ message: "This owner account has been disabled. Please contact ROOMO support." });
     }
 
     const safeOwner = {
