@@ -7,7 +7,10 @@ const PROPERTIES_API = API_ORIGIN + "/api/properties";
 
 function imageUrl(value) {
   if (!value || typeof value !== "string") return "";
-  try { return new URL(value, API_ORIGIN).href; } catch { return ""; }
+  const path = value.trim();
+  if (!path) return "";
+  if (/^(data:|blob:)/i.test(path)) return path;
+  try { return new URL(path, API_ORIGIN).href; } catch { return ""; }
 }
 function money(value) {
   const n = Number(value);
@@ -22,11 +25,11 @@ function normalizeList(value) {
 }
 function mediaKind(item) {
   const kind = String(item?.mediaType || item?.type || item?.kind || "").toLowerCase();
-  const src = item?.videoUrl || item?.imageUrl || item?.url || item?.path || item?.src || "";
+  const src = item?.videoUrl || item?.fileUrl || item?.mediaUrl || item?.imageUrl || item?.imagePath || item?.url || item?.path || item?.src || item?.thumbnailUrl || "";
   return kind.includes("video") || /\.(mp4|webm|mov)(\?|$)/i.test(src) ? "video" : "image";
 }
 function mediaSource(item) {
-  return imageUrl(item?.videoUrl || item?.imageUrl || item?.url || item?.path || item?.src);
+  return imageUrl(item?.videoUrl || item?.fileUrl || item?.mediaUrl || item?.imageUrl || item?.imagePath || item?.url || item?.path || item?.src || item?.thumbnailUrl);
 }
 
 export default function PropertyDetails() {
@@ -36,6 +39,8 @@ export default function PropertyDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeMedia, setActiveMedia] = useState(0);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [failedMedia, setFailedMedia] = useState({});
   const [checkIn, setCheckIn] = useState(params.get("checkIn") || "");
   const [checkOut, setCheckOut] = useState(params.get("checkOut") || "");
   const [adults, setAdults] = useState(Math.max(1, Number(params.get("adults") || 2)));
@@ -104,6 +109,18 @@ export default function PropertyDetails() {
   const rating = property?.rating ?? property?.averageRating;
   const startingPrice = property?.nightlyPrice ?? property?.startingPrice ?? property?.price;
   const currentMedia = media[activeMedia];
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const onKeyDown = event => {
+      if (event.key === "Escape") setGalleryOpen(false);
+      if (event.key === "ArrowRight") setActiveMedia(index => media.length ? (index + 1) % media.length : 0);
+      if (event.key === "ArrowLeft") setActiveMedia(index => media.length ? (index - 1 + media.length) % media.length : 0);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", onKeyDown); };
+  }, [galleryOpen, media.length]);
 
   async function submitEnquiry(event) {
     event.preventDefault();
@@ -170,20 +187,41 @@ export default function PropertyDetails() {
           </header>
 
           <section aria-label="Property photos and videos" className="mb-6">
-            {media.length ? <div className="grid gap-2 overflow-hidden rounded-lg md:grid-cols-[1.5fr_1fr]">
-              <button type="button" onClick={() => setActiveMedia(0)} className="relative min-h-64 overflow-hidden bg-slate-100 text-left md:min-h-[390px]" aria-label="View main gallery item">
-                {currentMedia?.kind === "video" ? <video key={currentMedia.src} src={currentMedia.src} controls playsInline className="h-full min-h-64 w-full object-cover md:min-h-[390px]"/> : <img src={currentMedia?.src || media[0]?.src} alt={title} className="h-full min-h-64 w-full object-cover md:min-h-[390px]" onError={e => { e.currentTarget.style.visibility = "hidden"; }} />}
-                <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-3 py-2 text-xs font-semibold text-slate-800">{media.length} photos & videos</span>
+            {media.length ? <div className="relative grid cursor-pointer gap-2 overflow-hidden rounded-lg md:grid-cols-[1.5fr_1fr]" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }}>
+              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="relative min-h-64 overflow-hidden bg-slate-100 text-left md:min-h-[390px]" aria-label="Open property photo gallery">
+                {media[0]?.kind === "video" ? <div className="flex h-full min-h-64 items-center justify-center bg-slate-900 text-5xl text-white md:min-h-[390px]">▶</div> : <img src={media[0]?.src} alt={media[0]?.alt || title} className="h-full min-h-64 w-full object-cover md:min-h-[390px]" onError={() => setFailedMedia(prev => ({...prev, [media[0]?.src]: true}))} />}
+                {failedMedia[media[0]?.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-sm text-slate-500">Photo unavailable</div>}
               </button>
-              <div className="grid grid-cols-2 gap-2 md:grid-rows-2">
-                {media.slice(0, 4).map((item, index) => <button type="button" key={item.src} onClick={() => setActiveMedia(index)} className={"relative min-h-28 overflow-hidden bg-slate-100 text-left " + (activeMedia === index ? "ring-2 ring-inset ring-[#2563a6]" : "")}>
-                  {item.kind === "video" ? <div className="flex h-full min-h-28 items-center justify-center bg-slate-800 text-white"><span className="text-3xl">▶</span><span className="sr-only">Video</span></div> : <img src={item.src} alt={item.alt || title + " gallery " + (index + 1)} loading="lazy" className="h-full min-h-28 w-full object-cover" onError={e => { e.currentTarget.style.visibility = "hidden"; }}/>}
-                  {item.kind === "video" && <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Video</span>}
+              <div className="hidden grid-cols-2 grid-rows-2 gap-2 md:grid">
+                {media.slice(1, 5).map((item, index) => <div key={item.src} className="relative min-h-28 overflow-hidden bg-slate-100">
+                  {item.kind === "video" ? <div className="flex h-full items-center justify-center bg-slate-800 text-3xl text-white">▶</div> : <img src={item.src} alt={item.alt || title + " photo " + (index + 2)} loading="lazy" className="h-full min-h-28 w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
+                  {failedMedia[item.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-xs text-slate-500">Photo unavailable</div>}
+                </div>)}
+              </div>
+              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="absolute bottom-3 right-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">▦ Show all photos & videos ({media.length})</button>
+            </div> : <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Property photos and videos will appear here when uploaded.</div>}
+          </section>
+          {galleryOpen && media.length > 0 && <div role="dialog" aria-modal="true" aria-label="Property photo gallery" className="fixed inset-0 z-[100] flex flex-col bg-slate-950/95 text-white" onMouseDown={event => { if (event.target === event.currentTarget) setGalleryOpen(false); }}>
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/15 px-4 py-3 sm:px-6">
+              <div><p className="text-sm font-semibold">{title}</p><p className="text-xs text-white/65">{activeMedia + 1} of {media.length} · Photos & videos</p></div>
+              <button type="button" onClick={() => setGalleryOpen(false)} aria-label="Close gallery" className="rounded-lg border border-white/25 px-3 py-2 text-sm hover:bg-white/10">✕ Close</button>
+            </div>
+            <div className="flex min-h-0 flex-1 items-center justify-center gap-3 p-3 sm:gap-6 sm:p-6">
+              <button type="button" aria-label="Previous image" onClick={() => setActiveMedia(index => (index - 1 + media.length) % media.length)} className="shrink-0 rounded-full bg-white/10 px-3 py-2 text-2xl hover:bg-white/20">‹</button>
+              <div className="flex h-full min-h-0 min-w-0 flex-1 items-center justify-center">
+                {currentMedia?.kind === "video" ? <video key={currentMedia.src} src={currentMedia.src} controls autoPlay playsInline className="max-h-full max-w-full rounded-lg object-contain" /> : failedMedia[currentMedia?.src] ? <div className="text-sm text-white/70">This image could not be loaded.</div> : <img key={currentMedia?.src} src={currentMedia?.src} alt={currentMedia?.alt || title} className="max-h-full max-w-full rounded-lg object-contain" onError={() => setFailedMedia(prev => ({...prev, [currentMedia?.src]: true}))} />}
+              </div>
+              <button type="button" aria-label="Next image" onClick={() => setActiveMedia(index => (index + 1) % media.length)} className="shrink-0 rounded-full bg-white/10 px-3 py-2 text-2xl hover:bg-white/20">›</button>
+            </div>
+            <div className="shrink-0 border-t border-white/15 px-3 py-3 sm:px-6">
+              <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto pb-1">
+                {media.map((item, index) => <button type="button" key={item.src} onClick={() => setActiveMedia(index)} aria-label={"Show item " + (index + 1)} aria-pressed={activeMedia === index} className={"relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 " + (activeMedia === index ? "border-white" : "border-transparent opacity-65 hover:opacity-100")}>
+                  {item.kind === "video" ? <div className="flex h-full items-center justify-center bg-slate-800 text-xl">▶</div> : <img src={item.src} alt="" className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
+                  {failedMedia[item.src] && <span className="absolute inset-0 flex items-center justify-center bg-slate-700 text-[10px]">Unavailable</span>}
                 </button>)}
               </div>
-            </div> : <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Property photos and videos will appear here when uploaded.</div>}
-            {media.length > 1 && <div className="mt-3 flex gap-2 overflow-x-auto pb-1">{media.map((item, index) => <button type="button" key={item.src} onClick={() => setActiveMedia(index)} aria-label={"Show gallery item " + (index + 1)} aria-pressed={activeMedia === index} className={"relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border " + (activeMedia === index ? "border-[#2563a6] ring-1 ring-[#2563a6]" : "border-slate-200")}>{item.kind === "video" ? <div className="flex h-full items-center justify-center bg-slate-800 text-white">▶</div> : <img src={item.src} alt="" loading="lazy" className="h-full w-full object-cover"/>}</button>)}</div>}
-          </section>
+            </div>
+          </div>}
 
           <nav aria-label="On this page" className="sticky top-0 z-20 mb-8 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white/95 py-2 backdrop-blur">{sectionLink("overview","Overview")}{sectionLink("rooms","Rooms & prices")}{sectionLink("facilities","Facilities")}{sectionLink("enquiry","Enquire")}</nav>
 
