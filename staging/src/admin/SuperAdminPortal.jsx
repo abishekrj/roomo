@@ -231,7 +231,7 @@ export default function SuperAdminPortal() {
         </div>
       </section> : <section>
         <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
+          <aside className="h-fit max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)]">
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
             <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
             <nav className="space-y-1" aria-label="Super Admin navigation">
