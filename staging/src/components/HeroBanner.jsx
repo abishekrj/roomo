@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import desktopHeroImage from "../../../roomo-frontend/assets/hero-desktop.png";
+import desktopHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jpg";
 
 const API_URL = "http://localhost:5001/api/homepage";
 
