@@ -31,17 +31,18 @@ const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
 const cmsPagesRoutes = require("./routes/cmsPages");
 const adminCmsPagesRoutes = require("./routes/adminCmsPages");
 const authenticateToken = require("./middleware/auth");
+const { assertSecurityConfig } = require("./lib/securityConfig");
 
-if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
-  throw new Error("DATABASE_URL and JWT_SECRET must be configured.");
-}
+assertSecurityConfig(process.env);
 
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: process.env.CLIENT_URL || (process.env.NODE_ENV === "production" ? false : "http://localhost:5173"),
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.use(express.json({ limit: "20kb" }));
@@ -62,6 +63,25 @@ const authLimiter = rateLimit({
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// Limit public write endpoints separately from authentication to reduce spam and automated abuse.
+const enquiryWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many enquiries from this connection. Please try again later." },
+});
+const reservationWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many reservation requests. Please try again later." },
+});
+
+app.post("/api/enquiries", enquiryWriteLimiter, (_req, _res, next) => next());
+app.post("/api/reservations", reservationWriteLimiter, (_req, _res, next) => next());
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/guest-auth", authLimiter, guestAuthRoutes);
