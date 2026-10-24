@@ -6,3 +6,21 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; }
 button, a { -webkit-tap-highlight-color: transparent; }
+
+
+/* Testimonials carousel — keep scrollbars unobtrusive while retaining touch scrolling. */
+.roomo-testimonials-track {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.roomo-testimonials-track::-webkit-scrollbar {
+  height: 6px;
+}
+.roomo-testimonials-track::-webkit-scrollbar-track {
+  background: transparent;
+}
+.roomo-testimonials-track::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #cbd5e1;
+}
