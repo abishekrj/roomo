@@ -125,7 +125,13 @@ router.post("/destination-suggestions", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
   try {
     const row = await prisma.homepageConfig.findUnique({ where: { id: 1 } });
-    const content = row?.published || defaults;
+    const content = {
+      ...defaults,
+      ...(row?.published || {}),
+      // Preserve newly added homepage sections when the database has older published JSON.
+      nearbyLocations: row?.published?.nearbyLocations || defaults.nearbyLocations,
+      pilgrimGuide: row?.published?.pilgrimGuide || defaults.pilgrimGuide,
+    };
     const featuredProperties = await prisma.property.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
       include: { images: { orderBy: { sortOrder: "asc" } } },
