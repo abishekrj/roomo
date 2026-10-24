@@ -31,7 +31,15 @@ export default function FeaturedStays() {
       .then(response => response.ok ? response.json() : null)
       .then(data => {
         if (cancelled) return;
-        setContent(data?.content || null);
+        // The homepage API returns published section settings under "content" and
+        // uploaded property records separately at the response root. Merge them so
+        // the cards use the real uploaded property images instead of sample-room fallbacks.
+        setContent(data ? {
+          ...(data.content || {}),
+          featuredProperties: Array.isArray(data.featuredProperties)
+            ? data.featuredProperties
+            : (data.content?.featuredProperties || [])
+        } : null);
       })
       .catch(() => { if (!cancelled) setContent(null); })
       .finally(() => { if (!cancelled) setLoading(false); });
