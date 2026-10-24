@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
+const { ADMIN_COOKIE, setSessionCookie, clearSessionCookie, parseCookies, csrfProtection } = require("../lib/sessionCookies");
 
 const router = express.Router();
 
@@ -106,14 +107,17 @@ router.post("/login", async (req, res, next) => {
       role: owner.role,
     };
 
-    res.json({
-      message: "Login successful.",
-      owner: safeOwner,
-      token: createToken(owner),
-    });
+    const token = createToken(owner);
+    setSessionCookie(res, ADMIN_COOKIE, token, 12 * 60 * 60 * 1000);
+    res.json({ message: "Login successful.", owner: safeOwner });
   } catch (error) {
     next(error);
   }
+});
+
+router.post("/logout", csrfProtection, (req, res) => {
+  clearSessionCookie(res, ADMIN_COOKIE);
+  res.json({ message: "Signed out successfully." });
 });
 
 module.exports = router;
