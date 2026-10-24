@@ -9,8 +9,15 @@ import NearbyLocations from "./components/NearbyLocations.jsx";
 import Gallery from "./components/Gallery.jsx";
 import ShoppingDirectory from "./components/ShoppingDirectory.jsx";
 import Testimonials from "./components/Testimonials.jsx";
+import PropertyListingPage from "./components/PropertyListingPage.jsx";
 
 export default function App() {
+  const isListingPage = window.location.pathname === "/properties" ||
+    window.location.pathname === "/properties/" ||
+    window.location.pathname === "/roomo-search-results.html";
+
+  if (isListingPage) return <PropertyListingPage />;
+
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink">
       <Header />
