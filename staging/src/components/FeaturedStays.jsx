@@ -17,7 +17,7 @@ function resolveImageUrl(value) {
     const url = new URL(path, API_ORIGIN);
     // Old upload rows can contain a Vite-hosted localhost URL; uploads are
     // actually exposed from the backend's /uploads static directory.
-    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port === "5173" && /^\\/uploads\\//.test(url.pathname)) {
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port === "5173" && url.pathname.startsWith("/uploads/")) {
       url.protocol = "http:";
       url.hostname = "localhost";
       url.port = "5001";
