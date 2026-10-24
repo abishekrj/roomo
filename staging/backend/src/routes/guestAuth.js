@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const { z } = require("zod");
 const prisma = require("../lib/prisma");
+const { GUEST_COOKIE, setSessionCookie, clearSessionCookie, parseCookies, csrfProtection } = require("../lib/sessionCookies");
 
 const router = express.Router();
 const googleClient = new OAuth2Client();
@@ -241,7 +242,8 @@ router.post("/login", async (req, res, next) => {
         code: "EMAIL_NOT_VERIFIED",
       });
     }
-    return res.json({ message: "Sign-in successful.", user: publicUser(user), token: createGuestToken(user) });
+    setSessionCookie(res, GUEST_COOKIE, createGuestToken(user), 60 * 60 * 1000);
+    return res.json({ message: "Sign-in successful.", user: publicUser(user) });
   } catch (error) { next(error); }
 });
 
@@ -289,7 +291,8 @@ router.post("/google", async (req, res, next) => {
         },
       });
     }
-    return res.json({ message: "Signed in with Google successfully.", user: publicUser(user), token: createGuestToken(user) });
+    setSessionCookie(res, GUEST_COOKIE, createGuestToken(user), 60 * 60 * 1000);
+    return res.json({ message: "Signed in with Google successfully.", user: publicUser(user) });
   } catch (error) {
     if (error.code === "P2002") {
       return res.status(409).json({ message: "An account already exists with this email. Please sign in using that account." });
@@ -300,8 +303,9 @@ router.post("/google", async (req, res, next) => {
 
 router.get("/me", async (req, res, next) => {
   try {
+    const cookies = parseCookies(req);
     const authorization = req.headers.authorization;
-    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    const token = cookies[GUEST_COOKIE] || (authorization?.startsWith("Bearer ") ? authorization.slice(7) : null);
     if (!token) return res.status(401).json({ message: "Authentication required." });
     let decoded;
     try { decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest", algorithms: ["HS256"] }); }
