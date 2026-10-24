@@ -286,7 +286,7 @@ export default function PropertyDetails() {
             </div>
           </div>}
 
-          <nav aria-label="On this page" className="sticky top-0 z-20 mb-8 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white/95 py-2 backdrop-blur">{sectionLink("overview","Overview")}{sectionLink("rooms","Rooms & prices")}{sectionLink("facilities","Facilities")}{sectionLink("enquiry","Enquire")}</nav>
+          <nav aria-label="On this page" className="sticky top-0 z-20 mb-8 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white/95 py-2 backdrop-blur">{sectionLink("overview","Overview")}{sectionLink("rooms","Rooms & prices")}{sectionLink("facilities","Facilities")}{sectionLink("location","Location")}{sectionLink("reviews","Reviews")}{sectionLink("policies","Policies")}{sectionLink("enquiry","Enquire")}</nav>
 
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div className="min-w-0 space-y-8">
@@ -313,6 +313,31 @@ export default function PropertyDetails() {
               <section id="facilities" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Facilities & amenities</h2>
                 {amenities.length ? <div className="mt-4 space-y-6">{amenityGroups.map(({ group, items }) => <div key={group || "other-facilities"}>{group && <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-800">{group}</h3>}<div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((name,index) => <div key={name + index} className="flex items-start gap-2 text-sm text-slate-700"><span className="font-semibold text-emerald-700" aria-hidden="true">✓</span><span>{name}</span></div>)}</div></div>)}</div> : <p className="mt-3 text-sm leading-6 text-slate-600">Please contact the property to confirm available facilities and amenities.</p>}
+              </section>
+
+              <section id="location" className="scroll-mt-20 border-t border-slate-200 pt-7">
+                <h2 className="text-xl font-semibold">Location & nearby places</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{location || "Location details will be shared by the property."}</p>
+                {property.nearbyLandmarks?.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-2">{property.nearbyLandmarks.map((place,index) => { const name = typeof place === "string" ? place : place?.name || place?.title; const distance = typeof place === "object" ? place?.distance || place?.distanceText : ""; return <div key={name || index} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-lg text-[#2563a6]" aria-hidden="true">⌖</span><div><p className="text-sm font-medium text-slate-800">{name}</p>{distance && <p className="mt-1 text-xs text-slate-500">{distance}</p>}</div></div>; })}</div>}
+                {(property.mapUrl || property.googleMapsUrl || property.latitude || property.longitude) && <a href={property.mapUrl || property.googleMapsUrl || (property.latitude && property.longitude ? "https://www.google.com/maps?q=" + property.latitude + "," + property.longitude : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(location))} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Open in Google Maps ↗</a>}
+              </section>
+
+              <section id="reviews" className="scroll-mt-20 border-t border-slate-200 pt-7">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div><h2 className="text-xl font-semibold">Guest reviews</h2><p className="mt-1 text-sm text-slate-500">Guest feedback for this stay</p></div>
+                  {rating != null && <div className="flex items-center gap-3 rounded-lg bg-[#2563a6] px-4 py-3 text-white"><span className="text-2xl font-semibold">{Number(rating).toFixed(1)}</span><span className="text-xs leading-5">Overall rating<br/>{property.reviewCount != null ? property.reviewCount + " reviews" : "Property rating"}</span></div>}
+                </div>
+                {Array.isArray(property.reviews) && property.reviews.length > 0 ? <div className="mt-4 grid gap-3 md:grid-cols-2">{property.reviews.map((review,index) => <article key={review.id || index} className="rounded-lg border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold">{review.guestName || review.name || "Guest"}</p>{review.rating != null && <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-[#2563a6]">{review.rating} ★</span>}</div><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{review.comment || review.text || review.review || "Shared feedback for this stay."}</p>{review.createdAt && <p className="mt-3 text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>}</article>)}</div> : <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"><p className="text-sm font-medium text-slate-700">Reviews will appear here when available.</p><p className="mt-1 text-sm leading-6 text-slate-500">For current guest feedback, contact the property team before confirming your stay.</p></div>}
+              </section>
+
+              <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
+                <h2 className="text-xl font-semibold">Property policies</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Check-in & check-out</h3><p className="mt-2 text-sm leading-6 text-slate-600">Check-in: {property.checkInTime || "Please confirm with property"}</p><p className="text-sm leading-6 text-slate-600">Check-out: {property.checkOutTime || "Please confirm with property"}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Cancellation</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.cancellationPolicy || property.cancellation || "Cancellation terms vary by property and room. Please confirm the applicable policy with the property before making arrangements."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Children & extra beds</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.childrenPolicy || "Please contact the property to confirm child occupancy and extra-bed arrangements."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Pets & smoking</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.petsPolicy || property.smokingPolicy || "Please check the property's rules before arrival."}</p></article>
+                </div>
               </section>
             </div>
 
