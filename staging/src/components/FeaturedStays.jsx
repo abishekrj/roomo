@@ -36,6 +36,12 @@ export default function FeaturedStays() {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const trackRef = useRef(null);
+  const [favourites, setFavourites] = useState([]);
+  const [favouriteNotice, setFavouriteNotice] = useState("");
+  const readGuestSession = () => { const token=sessionStorage.getItem("roomoGuestToken")||localStorage.getItem("roomoGuestToken"); const raw=sessionStorage.getItem("roomoGuest")||localStorage.getItem("roomoGuest"); let user=null; try{user=raw?JSON.parse(raw):null;}catch{} return {token,user}; };
+  const favouriteKey = user => "roomoFavourites:" + String(user?.id || user?.guestId || user?.email || "guest");
+  useEffect(() => { const {user}=readGuestSession(); if(!user){setFavourites([]);return;} try{const stored=JSON.parse(localStorage.getItem(favouriteKey(user))||"[]");setFavourites(Array.isArray(stored)?stored.map(String):[]);}catch{setFavourites([]);} }, []);
+  const toggleFavourite = stay => { if(!stay?.id)return; const {token,user}=readGuestSession(); if(!token||!user){const returnUrl=new URL(window.location.href);returnUrl.searchParams.set("favorite",String(stay.id));window.location.assign("/staging/login?returnTo="+encodeURIComponent(returnUrl.pathname+returnUrl.search+returnUrl.hash));return;} const id=String(stay.id),current=favourites.includes(id),updated=current?favourites.filter(item=>item!==id):[...favourites,id];localStorage.setItem(favouriteKey(user),JSON.stringify(updated));setFavourites(updated);setFavouriteNotice(current?"Stay removed from your favourites.":"Stay added to your favourites."); };
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +100,7 @@ export default function FeaturedStays() {
             rating: property.rating,
             amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
             highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
+            verified: property.isVerified === true || property.verificationStatus === "VERIFIED",
             badge: property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isGreatLocation ? "Great location" : ""),
             url: property.url || property.href
               ? (((property.url || property.href).startsWith("http://") || (property.url || property.href).startsWith("https://")) || (property.url || property.href).startsWith("/staging/") ? (property.url || property.href) : (property.url || property.href).startsWith("/") ? "/staging" + (property.url || property.href) : "/staging/" + (property.url || property.href))
@@ -148,6 +155,7 @@ export default function FeaturedStays() {
           </div>
         </div>
 
+        {favouriteNotice && <div role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{favouriteNotice}</div>}
         {loading ? (
           <div className="flex gap-5 overflow-hidden" aria-label="Loading featured stays">
             {[0, 1, 2, 3].map(item => <div key={item} className="w-[min(280px,84vw)] shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"><div className="h-48 animate-pulse bg-slate-100" /><div className="space-y-3 p-4"><div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" /><div className="h-3 w-full animate-pulse rounded bg-slate-100" /></div></div>)}
@@ -159,43 +167,17 @@ export default function FeaturedStays() {
         ) : (
           <div ref={trackRef} className="roomo-featured-stays-track flex snap-x snap-mandatory gap-5 overflow-x-auto" aria-label="Featured stays carousel">
             {stays.map((stay, index) => (
-              <article key={stay.id || stay.name || index} data-featured-stay-card className="group flex w-[min(280px,84vw)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-shadow duration-200 hover:shadow-lg sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
-                <a href={stay.url || stay.href || "/staging/properties"} className="flex h-full flex-col">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                    {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => {
-                      const image = event.currentTarget;
-                      const candidates = stay.imageCandidates || [];
-                      const currentIndex = Number(image.dataset.imageCandidateIndex || 0);
-                      const nextIndex = currentIndex + 1;
-                      if (nextIndex < candidates.length) {
-                        image.dataset.imageCandidateIndex = String(nextIndex);
-                        image.src = candidates[nextIndex];
-                        return;
-                      }
-                      const fallback = stay.fallbackImg;
-                      if (fallback && image.src !== fallback) {
-                        image.src = fallback;
-                        return;
-                      }
-                      image.style.display = "none";
-                    }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />}
-                    {(stay.badge || stay.type) && <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">{stay.badge || stay.type}</span>}
-                  </div>
-                  <div className="flex min-h-[190px] flex-1 flex-col p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="line-clamp-2 text-base font-semibold leading-6 text-[#212529]">{stay.name || ""}</h3>
-                      <StarRating value={stay.rating} />
-                    </div>
-                    {stay.location && <p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">⌖ {stay.location}</p>}
-                    {Array.isArray(stay.amenities) && stay.amenities.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{stay.amenities.slice(0, 3).map((amenity, amenityIndex) => <span key={`${amenity}-${amenityIndex}`} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-600">{String(amenity).toLowerCase().includes("wifi") ? "Free Wi-Fi" : amenity}</span>)}</div>}
-                    {Array.isArray(stay.highlights) && stay.highlights.length > 0 && <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-emerald-700">{stay.highlights.map((item, highlightIndex) => <span key={`${item}-${highlightIndex}`}>✓ {item}</span>)}</div>}
-                    <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-                      {stay.reviews != null && <span className="text-xs text-slate-500">{stay.reviews} {content?.featuredReviewLabel || ""}</span>}
-                      {stay.price != null && <span className="ml-auto whitespace-nowrap text-right text-sm text-slate-600">{content?.featuredPricePrefix || ""}<strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix || "per night"}</span></span>}
-                    </div>
-                  </div>
-                </a>
-              </article>
+              <article key={stay.id || stay.name || index} data-featured-stay-card className="group relative flex w-[min(280px,84vw)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-shadow duration-200 hover:shadow-lg sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100"><a href={stay.url || stay.href || "/staging/properties"} className="absolute inset-0 block">{stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event=>{const image=event.currentTarget,candidates=stay.imageCandidates||[],next=Number(image.dataset.imageCandidateIndex||0)+1;if(next<candidates.length){image.dataset.imageCandidateIndex=String(next);image.src=candidates[next];return;}if(stay.fallbackImg&&image.src!==stay.fallbackImg){image.src=stay.fallbackImg;return;}image.style.display="none";}} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>}</a>
+                  {stay.verified&&<span className="pointer-events-none absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-800 shadow-sm">✓ ROOMO verified</span>}
+                  <button type="button" onClick={()=>toggleFavourite(stay)} aria-label={favourites.includes(String(stay.id))?`Remove ${stay.name||"stay"} from favourites`:`Add ${stay.name||"stay"} to favourites`} aria-pressed={favourites.includes(String(stay.id))} title={favourites.includes(String(stay.id))?"Remove from favourites":"Add to favourites"} className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-slate-600 shadow-md hover:text-rose-500"><svg viewBox="0 0 24 24" className={`h-5 w-5 ${favourites.includes(String(stay.id))?"fill-rose-500 text-rose-500":"fill-transparent text-slate-700"}`} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>
+                </div>
+                <div className="flex min-h-[205px] flex-1 flex-col p-4"><div className="flex items-start justify-between gap-2"><div className="min-w-0">{stay.type&&<p className="mb-1 text-xs font-medium text-[#2563a6]">{stay.type}</p>}<a href={stay.url||stay.href||"/staging/properties"} className="line-clamp-2 text-base font-semibold leading-6 text-[#212529] hover:text-[#2563a6]">{stay.name||""}</a></div><StarRating value={stay.rating}/></div>
+                  {stay.location&&<p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">⌖ {stay.location}</p>}
+                  {Array.isArray(stay.amenities)&&stay.amenities.length>0&&<div className="mt-3 flex flex-wrap gap-1.5">{stay.amenities.slice(0,3).map((amenity,i)=><span key={`${amenity}-${i}`} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-600">{String(amenity).toLowerCase().includes("wifi")?"Free Wi-Fi":amenity}</span>)}</div>}
+                  <div className="mt-auto flex items-end justify-between gap-3 pt-4"><a href={stay.url||stay.href||"/staging/properties"} className="inline-flex min-h-9 items-center rounded-lg border border-[#2563a6] px-3 py-2 text-xs font-semibold text-[#2563a6] hover:bg-blue-50">View stay →</a>{stay.price!=null&&Number(stay.price)>0&&<span className="whitespace-nowrap text-right text-sm text-slate-600"><strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix||"per night"}</span></span>}</div>
+                </div>
+              </article>    </article>
             ))}
           </div>
         )}
