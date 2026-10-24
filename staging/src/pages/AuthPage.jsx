@@ -129,9 +129,16 @@ export default function AuthPage({ mode = "login" }) {
       } catch {
         throw new Error("Unable to connect to ROOMO. Make sure the backend is running on port 5001.");
       }
-      const data = await response.json().catch(() => ({}));
+      const responseText = await response.text();
+      let data = {};
+      try { data = responseText ? JSON.parse(responseText) : {}; } catch { data = {}; }
       if (!response.ok) {
-        const error = new Error(data.message || "Authentication failed. Please try again.");
+        const fallbackMessage = response.status === 429
+          ? "Too many sign-in attempts. Please wait 15 minutes before trying again."
+          : response.status >= 500
+            ? "ROOMO could not complete sign-in because of a server error. Check the backend terminal for details."
+            : `Sign-in failed (HTTP ${response.status}). Please check your details and try again.`;
+        const error = new Error(data.message || fallbackMessage);
         error.code = data.code;
         throw error;
       }
