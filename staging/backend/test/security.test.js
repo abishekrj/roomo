@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const jwt = require("jsonwebtoken");
 const authenticateToken = require("../src/middleware/auth");
 const { assertSecurityConfig } = require("../src/lib/securityConfig");
+const sessionCookies = require("../src/lib/sessionCookies");
 
 const secret = "test-only-roomo-jwt-secret-with-more-than-32-characters";
 
@@ -110,4 +111,49 @@ test("production configuration accepts required values with HTTPS and a strong s
 
 test("development configuration still requires database and JWT secrets", () => {
   assert.throws(() => assertSecurityConfig({ NODE_ENV: "development" }), /DATABASE_URL and JWT_SECRET/);
+});
+
+test("session cookies are HttpOnly, SameSite=Lax, scoped to the app, and expire with the JWT", () => {
+  const originalEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  let cookie;
+  sessionCookies.setSessionCookie({ cookie(name, value, options) { cookie = { name, value, options }; } }, sessionCookies.GUEST_COOKIE, "signed-session", 60 * 60 * 1000);
+  if (originalEnv === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = originalEnv;
+  assert.equal(cookie.name, "roomo_guest_session");
+  assert.equal(cookie.value, "signed-session");
+  assert.equal(cookie.options.httpOnly, true);
+  assert.equal(cookie.options.secure, true);
+  assert.equal(cookie.options.sameSite, "lax");
+  assert.equal(cookie.options.path, "/");
+  assert.equal(cookie.options.maxAge, 60 * 60 * 1000);
+});
+
+test("CSRF middleware rejects cookie-authenticated writes without a matching token", () => {
+  const req = {
+    method: "POST",
+    path: "/api/admin/properties",
+    headers: { cookie: "roomo_admin_session=signed; roomo_csrf=expected" },
+    get(name) { return name.toLowerCase() === "x-csrf-token" ? "wrong" : undefined; },
+  };
+  const res = mockResponse();
+  let nextCalled = false;
+  sessionCookies.csrfProtection(req, res, () => { nextCalled = true; });
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.code, "CSRF_INVALID");
+  assert.equal(nextCalled, false);
+});
+
+test("CSRF middleware accepts a cookie-authenticated write with a matching token", () => {
+  const req = {
+    method: "POST",
+    path: "/api/admin/properties",
+    headers: { cookie: "roomo_admin_session=signed; roomo_csrf=matching-token" },
+    get(name) { return name.toLowerCase() === "x-csrf-token" ? "matching-token" : undefined; },
+  };
+  const res = mockResponse();
+  let nextCalled = false;
+  sessionCookies.csrfProtection(req, res, () => { nextCalled = true; });
+  assert.equal(nextCalled, true);
+  assert.equal(res.statusCode, 200);
 });
