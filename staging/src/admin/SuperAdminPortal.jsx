@@ -230,8 +230,6 @@ export default function SuperAdminPortal() {
           <p className="mt-5 text-xs leading-5 text-slate-500">Administrator permissions are verified by the ROOMO backend.</p>
         </div>
       </section> : <section>
-        <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{isHomePageEditor ? (pageTitles[homePageSection] || "Home Page") : adminPageTitles[adminPageKey] || (activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard")}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
-        {notice && <p role="status" className="mb-5 rounded-roomo border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}
         <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
@@ -245,6 +243,8 @@ export default function SuperAdminPortal() {
             <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Platform administration</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
           </aside>
           <div className="min-w-0">
+            <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{isHomePageEditor ? (pageTitles[homePageSection] || "Home Page") : adminPageTitles[adminPageKey] || (activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard")}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
+            {notice && <p role="status" className="mb-5 rounded-roomo border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}
             {isHeroEditor && <section className="rounded-roomo border border-slate-200 bg-white shadow-sm">
               <div className="border-b border-slate-200 p-5 sm:p-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Home Page / Hero Banner</p><h2 className="mt-2 text-xl font-semibold">Edit hero banner</h2><p className="mt-2 text-sm leading-6 text-slate-500">Edit the badge, heading, supporting text and hero image. Save Draft first; publish the saved homepage draft when ready.</p></div>
               {heroLoading ? <p className="p-6 text-sm text-slate-500">Loading saved hero content…</p> : <form onSubmit={saveHeroDraft} className="space-y-5 p-5 sm:p-6">
