@@ -59,6 +59,90 @@
     }
   }
 
+
+  function initAdminNotifications() {
+    const host = document.querySelector(".topbar");
+    if (!host || document.getElementById("roomoAdminNotifications")) return;
+    const wrap = document.createElement("div");
+    wrap.className = "admin-notification-wrap notranslate";
+    wrap.setAttribute("translate", "no");
+    wrap.innerHTML = '<button id="roomoAdminNotifications" class="admin-notification-button" type="button" aria-label="Notifications" aria-expanded="false"><i class="bi bi-bell" aria-hidden="true"></i><span class="admin-notification-dot" aria-hidden="true"></span></button><section id="roomoAdminNotificationMenu" class="admin-notification-menu" hidden><div class="admin-notification-heading"><strong>Notifications</strong><button type="button" id="roomoAdminNotificationRefresh">Refresh</button></div><div id="roomoAdminNotificationList" class="admin-notification-list" aria-live="polite"><p class="admin-notification-empty">Loading notifications…</p></div></section>';
+    const language = document.getElementById("roomoAdminLanguage");
+    if (language?.parentElement === host) {
+      language.insertAdjacentElement("afterend", wrap);
+      language.style.marginLeft = "auto";
+    } else host.appendChild(wrap);
+    const button = wrap.querySelector("#roomoAdminNotifications");
+    const menu = wrap.querySelector("#roomoAdminNotificationMenu");
+    const list = wrap.querySelector("#roomoAdminNotificationList");
+    const refresh = wrap.querySelector("#roomoAdminNotificationRefresh");
+    const formatWhen = value => {
+      if (!value) return "Recent activity";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "Recent activity" : date.toLocaleString();
+    };
+    const addItem = (items, title, detail, when, href) => items.push({title, detail, when: when || null, href});
+    async function loadNotifications() {
+      list.replaceChildren();
+      const loading = document.createElement("p");
+      loading.className = "admin-notification-empty";
+      loading.textContent = "Loading notifications…";
+      list.appendChild(loading);
+      if (!token) {
+        loading.textContent = "Sign in to view administrator notifications.";
+        return;
+      }
+      const tasks = await Promise.allSettled([
+        request("/admin/properties"),
+        request("/admin/registered-users")
+      ]);
+      const items = [];
+      if (tasks[0].status === "fulfilled") {
+        const values = Array.isArray(tasks[0].value.properties) ? tasks[0].value.properties : [];
+        values.slice().sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0,10).forEach(property => {
+          addItem(items, "Property listing", (property.title || "A property") + " · " + (property.status || "DRAFT"), property.createdAt, "rooms-listings.html");
+        });
+      }
+      if (tasks[1].status === "fulfilled") {
+        const values = Array.isArray(tasks[1].value.users) ? tasks[1].value.users : [];
+        values.slice().sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0,10).forEach(user => {
+          addItem(items, "New guest registration", (user.fullName || "Guest") + (user.email ? " · " + user.email : ""), user.createdAt, "registered-users.html");
+        });
+      }
+      items.sort((a,b) => new Date(b.when || 0) - new Date(a.when || 0));
+      list.replaceChildren();
+      if (!items.length) {
+        const empty = document.createElement("p");
+        empty.className = "admin-notification-empty";
+        empty.textContent = tasks.every(task => task.status === "rejected") ? "Notifications could not be loaded. Check the backend connection." : "No notifications yet.";
+        list.appendChild(empty);
+        return;
+      }
+      items.forEach(item => {
+        const link = document.createElement("a");
+        link.className = "admin-notification-item";
+        link.href = item.href;
+        const title = document.createElement("strong"); title.textContent = item.title;
+        const detail = document.createElement("span"); detail.textContent = item.detail;
+        const time = document.createElement("small"); time.textContent = formatWhen(item.when);
+        link.append(title, detail, time); list.appendChild(link);
+      });
+    }
+    button.addEventListener("click", () => {
+      const open = menu.hidden;
+      menu.hidden = !open;
+      button.setAttribute("aria-expanded", String(open));
+      if (open) loadNotifications();
+    });
+    refresh.addEventListener("click", loadNotifications);
+    document.addEventListener("click", event => {
+      if (!wrap.contains(event.target)) { menu.hidden = true; button.setAttribute("aria-expanded", "false"); }
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") { menu.hidden = true; button.setAttribute("aria-expanded", "false"); button.focus(); }
+    });
+  }
+
   function notice(message, type = "info") {
     const el = $("pageNotice");
     if (!el) return;
@@ -570,5 +654,5 @@
       });
     }
   }
-  document.addEventListener("DOMContentLoaded", () => { initAdminLanguageControl(); init(); });
+  document.addEventListener("DOMContentLoaded", () => { initAdminLanguageControl(); initAdminNotifications(); init(); });
 })();
