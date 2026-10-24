@@ -1,7 +1,26 @@
 import { useEffect, useState } from "react";
 import desktopHeroImage from "../../../roomo-frontend/assets/hero-desktop.png";
 
+const API_URL = "http://localhost:5001/api/homepage";
+
 export default function HeroBanner() {
+  const [content, setContent] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(API_URL, { cache: "no-store" })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!cancelled) setContent(data?.content || null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  const badge = content?.heroBadge || "Abode of Silence & Divine Fire (Agni Sthalam)";
+  const titleLine = content?.heroTitleLine || "Find Sacred Solace at";
+  const titleAccent = content?.heroTitleAccent || "Holy Arunachala";
+  const description = content?.heroDescription || "Hand-curated sanctuary stays, peaceful ashram guest rooms, and heritage havelis situated in revered proximity to Annamalaiyar Temple & Sri Ramanasramam.";
+  const heroImage = content?.heroImageUrl || desktopHeroImage;
+
   return (
     <section aria-labelledby="home-hero-title" className="overflow-hidden border-b border-slate-200 bg-[#f7f5f0]">
       <div className="block w-full leading-none md:hidden">
@@ -14,8 +33,8 @@ export default function HeroBanner() {
             <span>{badge}</span>
           </div>
           <h1 id="home-hero-title" className="max-w-2xl text-[2.5rem] font-normal leading-[1.12] tracking-tight text-[#212529]">
-            Find Sacred Solace at
-            <span className="mt-1 block font-semibold text-[#2563a6]">Holy Arunachala</span>
+            {titleLine}
+            <span className="mt-1 block font-semibold text-[#2563a6]">{titleAccent}</span>
             <span className="sr-only"> stays and accommodation in Tiruvannamalai</span>
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">{description}</p>
