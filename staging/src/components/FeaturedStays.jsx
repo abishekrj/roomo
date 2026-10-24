@@ -78,7 +78,9 @@ export default function FeaturedStays() {
             amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
             highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
             badge: property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isGreatLocation ? "Great location" : ""),
-            url: property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
+            url: property.url || property.href
+              ? (/^https?:\\/\\//i.test(property.url || property.href) || (property.url || property.href).startsWith("/staging/") ? (property.url || property.href) : (property.url || property.href).startsWith("/") ? "/staging" + (property.url || property.href) : "/staging/" + (property.url || property.href))
+              : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
             sortOrder: property.featuredSortOrder ?? 999
           };
         })
