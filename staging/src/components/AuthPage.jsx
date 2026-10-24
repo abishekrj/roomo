@@ -74,19 +74,8 @@ export default function AuthPage({ mode = "login" }) {
 
   return <main className="mx-auto w-full max-w-7xl flex-1 bg-white font-sans text-[#212529]">
     <div className="grid min-h-[680px] lg:grid-cols-2">
-      <section className="relative hidden min-h-screen overflow-hidden bg-[#f0f5f8] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <a href="/staging" aria-label="ROOMO Sacred home" className="relative z-10 inline-flex w-fit rounded-lg bg-white p-3"><img src={roomoLogo} alt="ROOMO Sacred" className="h-auto w-44 object-contain" /></a>
-        <div className="relative z-10 max-w-xl py-12">
-          <span className="mb-5 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[.12em] text-[#2563a6]">✦ Your sacred journey begins here</span>
-          <h1 className="text-4xl font-semibold leading-tight tracking-tight text-[#183b56] xl:text-5xl">Find peace.<br/>Feel at home.</h1>
-          <p className="mt-5 max-w-lg text-base leading-7 text-slate-600">Discover thoughtfully chosen stays near Arunachala, Annamalaiyar Temple and the sacred Girivalam path.</p>
-        </div>
-        <p className="relative z-10 max-w-md border-l-2 border-[#d6b46a] pl-4 text-sm leading-6 text-slate-600">“A peaceful place to rest is part of a meaningful pilgrimage.”<span className="mt-2 block text-xs font-semibold tracking-[.12em] text-[#183b56]">ROOMO SACRED · TIRUVANNAMALAI</span></p>
-        <div aria-hidden="true" className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full border-[48px] border-white/70" />
-      </section>
-      <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
+      <section className="flex min-h-[680px] items-center justify-center px-5 py-10 sm:px-8">
         <div className="w-full max-w-md">
-          <a href="/staging" aria-label="ROOMO Sacred home" className="mb-8 inline-flex lg:hidden"><img src={roomoLogo} alt="ROOMO Sacred" className="h-auto w-40 object-contain" /></a>
           <div className="mb-7">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[.14em] text-[#9a7132]">{isSignup ? "BEGIN YOUR JOURNEY" : "WELCOME BACK"}</p>
             <h2 className="text-3xl font-semibold tracking-tight text-[#212529]">{isSignup ? "Create your account" : "Welcome back"}</h2>
