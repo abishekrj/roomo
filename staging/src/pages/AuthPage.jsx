@@ -17,6 +17,7 @@ export default function AuthPage({ mode = "login" }) {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
   const [googleReady, setGoogleReady] = useState(false);
+  const [googleConfigMessage, setGoogleConfigMessage] = useState("");
   const [googleBusy, setGoogleBusy] = useState(false);
 
   const notify = (text, type = "error") => { setMessage(text); setMessageType(type); };
@@ -107,10 +108,7 @@ export default function AuthPage({ mode = "login" }) {
         if (window.google?.accounts?.id) renderGoogleButton(data.googleClientId);
       })
       .catch(error => {
-        if (!cancelled) {
-          const container = document.getElementById("roomo-google-signin");
-          if (container) container.dataset.error = error.message || "Google sign-in is unavailable.";
-        }
+        if (!cancelled) setGoogleConfigMessage(error.message || "Google sign-in is unavailable.");
       });
 
     return () => { cancelled = true; };
@@ -199,6 +197,7 @@ export default function AuthPage({ mode = "login" }) {
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
             <span className="h-px flex-1 bg-slate-200"></span><span className="text-xs font-medium uppercase tracking-wider text-slate-400">or continue with</span><span className="h-px flex-1 bg-slate-200"></span>
           </div>
+          {googleConfigMessage && <p role="status" className="mb-3 text-center text-xs leading-5 text-slate-500">{googleConfigMessage}</p>}
           <div className="flex min-h-10 w-full justify-center" aria-label={isSignup ? "Sign up with Google" : "Sign in with Google"}>
             <div id="roomo-google-signin" className="flex w-full justify-center"></div>
           </div>
