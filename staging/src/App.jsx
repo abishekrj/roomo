@@ -10,9 +10,13 @@ import Gallery from "./components/Gallery.jsx";
 import ShoppingDirectory from "./components/ShoppingDirectory.jsx";
 import Testimonials from "./components/Testimonials.jsx";
 import PropertyListingPage from "./components/PropertyListingPage.jsx";
+import AuthPage from "./components/AuthPage.jsx";
 
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/staging/login" || path === "/login") return <AuthPage mode="login" />;
+  if (path === "/staging/signup" || path === "/signup") return <AuthPage mode="signup" />;
+
   const isListingPage = path === "/staging/properties" ||
     path === "/staging/roomo-search-results.html" ||
     path === "/properties" ||
