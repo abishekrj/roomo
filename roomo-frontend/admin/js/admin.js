@@ -21,10 +21,12 @@
       const host = document.querySelector(".topbar") || document.body;
       const select = document.createElement("select");
       select.id = "roomoAdminLanguage";
+      select.className = "notranslate";
+      select.setAttribute("translate", "no");
       select.setAttribute("aria-label", "Choose language");
       select.style.cssText = "margin-left:auto;padding:8px 10px;border:1px solid #d8e0e8;border-radius:8px;background:#fff;color:#183b56;font:inherit;cursor:pointer";
       [["en","English"],["ta","தமிழ்"],["te","తెలుగు"],["kn","ಕನ್ನಡ"]].forEach(([value,label]) => {
-        const option = document.createElement("option"); option.value = value; option.textContent = label; select.appendChild(option);
+        const option = document.createElement("option"); option.value = value; option.textContent = label; option.className = "notranslate"; option.setAttribute("translate", "no"); select.appendChild(option);
       });
       if (host.classList.contains("topbar")) host.appendChild(select);
       else { select.style.cssText += ";position:fixed;top:12px;right:12px;z-index:9999"; document.body.appendChild(select); }
