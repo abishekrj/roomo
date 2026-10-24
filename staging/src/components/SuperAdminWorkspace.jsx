@@ -63,7 +63,6 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
         if (id) { setSelectedProperty(id); result = await api("/admin/room-types?propertyId=" + encodeURIComponent(id), token); }
         else result = { roomTypes: [] };
       } else if (pageKey === "rooms/filters") result = await api("/admin/room-filters", token);
-      else if (pageKey === "rooms/listing-display") result = await api("/listing-display-settings/admin", token);
       else if (pageKey === "cms-pages") result = await api("/admin/cms-pages", token);
       else if (pageKey === "destinations") {
         const [places, suggestions] = await Promise.all([api("/admin/homepage/destinations", token), api("/admin/homepage/destination-suggestions", token)]);
@@ -130,7 +129,9 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 
   if (pageKey === "rooms/types") return <RoomTypes token={token} data={data} properties={properties} selectedProperty={selectedProperty} setSelectedProperty={setSelectedProperty} load={load} busy={busy} setBusy={setBusy} notify={notify} />;
 
-  if (pageKey === "rooms/listing-display") return <ListingDisplayEditor token={token} settings={data?.settings||{}} notify={notify} busy={busy} />;\n\n  if (pageKey === "rooms/filters") return <FilterManager token={token} groups={data?.groups||[]} load={load} notify={notify} busy={busy} runAction={runAction} />;
+  if (pageKey === "rooms/listing-display") return <ListingDisplayEditor token={token} settings={data?.settings||{}} notify={notify} busy={busy} />;
+
+  if (pageKey === "rooms/filters") return <FilterManager token={token} groups={data?.groups||[]} load={load} notify={notify} busy={busy} runAction={runAction} />;
 
   if (pageKey === "cms-pages") return <CmsManager token={token} pages={data?.pages||[]} load={load} notify={notify} runAction={runAction} busy={busy} />;
 
