@@ -229,6 +229,10 @@ router.get("/:id", async (req, res, next) => {
       },
       include: {
         images: { orderBy: { sortOrder: "asc" } },
+        roomTypes: {
+          where: { isActive: true, quantity: { gt: 0 } },
+          orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        },
       },
     });
 
