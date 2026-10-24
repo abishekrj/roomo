@@ -11,6 +11,7 @@ async function authenticateGuest(req, res, next) {
     decoded = jwt.verify(token, process.env.JWT_SECRET, {
       issuer: "roomo-api",
       audience: "roomo-guest",
+      algorithms: ["HS256"],
     });
   } catch {
     return res.status(401).json({ message: "Your session is invalid or expired. Please sign in again.", code: "GUEST_SESSION_INVALID" });
