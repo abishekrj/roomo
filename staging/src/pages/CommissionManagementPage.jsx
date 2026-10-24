@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 
-const API = "http://localhost:5001/api";
+const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const money = value => new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:2 }).format(Number(value)||0);
 export default function CommissionManagementPage() {
   const [reservations,setReservations]=useState([]);
@@ -14,8 +15,8 @@ export default function CommissionManagementPage() {
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState("");
   const [error,setError]=useState(false);
-  const token=localStorage.getItem("roomoAdminToken")||localStorage.getItem("roomoToken")||sessionStorage.getItem("roomoAdminToken")||"";
-  const request=useCallback(async(path,options={})=>{const response=await fetch(API+path,{...options,headers:{...(options.headers||{}),Authorization:"Bearer "+token,...(options.body?{"Content-Type":"application/json"}:{})}});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||"Request failed. Sign in as an administrator and try again.");return data;},[token]);
+  const token="cookie-session";
+  const request=useCallback(async(path,options={})=>{const response=await fetch(API+path,{...options,credentials:"include",headers:{...csrfHeaders(),...(options.headers||{}),...(options.body?{"Content-Type":"application/json"}:{})}});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||"Request failed. Sign in as an administrator and try again.");return data;},[token]);
   const load=useCallback(async()=>{if(!token){setError(true);setMessage("Admin sign-in is required. Sign in through the ROOMO admin portal, then reopen this page.");return;}setBusy(true);try{const [ledger,ownerData,notificationData]=await Promise.all([request("/admin/commissions"),request("/admin/commissions/owners"),request("/admin/commissions/notifications?limit=50")]);setReservations(ledger.reservations||[]);setTotals(ledger.totals||{});setOwners(ownerData.owners||[]);setNotifications(notificationData.notifications||[]);setMessage("Loaded "+(ledger.reservations||[]).length+" reservation record(s).");setError(false);}catch(e){setMessage(e.message||"Unable to load commission records.");setError(true);}finally{setBusy(false);}},[request,token]);
   useEffect(()=>{load();},[load]);
   useEffect(()=>{setRate(String(owners.find(o=>String(o.id)===String(ownerId))?.commissionRate??""));},[ownerId,owners]);

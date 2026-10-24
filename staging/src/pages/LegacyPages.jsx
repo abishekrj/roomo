@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 
-const API = "http://localhost:5001/api";
+const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 
 function PageShell({ children }) {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main><Footer /></div>;
@@ -24,7 +25,7 @@ export function PostPropertyPage() {
   const fieldClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100";
   async function submit(event) {
     event.preventDefault(); setBusy(true); setNotice("");
-    const token = localStorage.getItem("roomoToken") || sessionStorage.getItem("roomoToken") || localStorage.getItem("roomo_owner_token") || "";
+    const token = "cookie-session";
     if (!token) { setNoticeType("error"); setNotice("Please sign in to your owner account before submitting a property."); setBusy(false); return; }
     const imageUrls = images.map(x => x.trim()).filter(Boolean);
     if (imageUrls.some(url => { try { return !["http:","https:"].includes(new URL(url).protocol); } catch { return true; } })) {
@@ -33,7 +34,7 @@ export function PostPropertyPage() {
     const payload = { ...values, nightlyPrice:Number(values.nightlyPrice), maxGuests:Number(values.maxGuests), totalUnits:Number(values.totalUnits), bedrooms:Number(values.bedrooms), bathrooms:Number(values.bathrooms), imageUrls };
     ["postalCode"].forEach(key => { if (!payload[key]) delete payload[key]; });
     try {
-      const response = await fetch(API + "/properties", { method:"POST", headers:{ "Content-Type":"application/json", Authorization:"Bearer " + token }, body:JSON.stringify(payload) });
+      const response = await fetch(API + "/properties", { method:"POST", headers:{ "Content-Type":"application/json", ...csrfHeaders() }, credentials:"include", body:JSON.stringify(payload) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to submit your property.");
       setNoticeType("success"); setNotice("Your property has been saved as a draft. Property ID: " + (data.property?.id ?? "created") + ". It is not publicly listed yet.");
@@ -77,7 +78,7 @@ export function ShoppingPage({ detail = false }) {
 }
 
 export function MyBookingsPage() {
-  const token=localStorage.getItem("roomoGuestToken")||sessionStorage.getItem("roomoGuestToken")||"";
+  const token=localStorage.getItem("roomoGuest") ? "cookie-session" : "";
   const [message,setMessage]=useState(token?"Loading your saved stays…":"Sign in to view your reservations and saved favourite stays.");
   const [favouriteIds,setFavouriteIds]=useState([]);
   const [properties,setProperties]=useState([]);

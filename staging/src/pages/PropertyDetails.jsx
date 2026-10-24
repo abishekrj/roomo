@@ -3,7 +3,7 @@ import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import SearchSection from "../components/SearchSection.jsx";
 
-const API_ORIGIN = "http://localhost:5001";
+const API_ORIGIN = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api").replace(/\/api$/, "");
 const PROPERTIES_API = API_ORIGIN + "/api/properties";
 
 function imageUrl(value) {
@@ -103,8 +103,8 @@ export default function PropertyDetails() {
 
   useEffect(() => {
     if (!property?.id) return;
-    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
-    const rawGuest = sessionStorage.getItem("roomoGuest") || localStorage.getItem("roomoGuest");
+    const rawGuest = localStorage.getItem("roomoGuest");
+    const token = rawGuest ? "cookie-session" : null;
     let guest = null;
     try { guest = rawGuest ? JSON.parse(rawGuest) : null; } catch { guest = null; }
     const storageKey = "roomoFavourites:" + String(guest?.id || guest?.guestId || guest?.email || "guest");
@@ -303,7 +303,8 @@ export default function PropertyDetails() {
     try {
       const response = await fetch(API_ORIGIN + "/api/enquiries", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(() => { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; })() },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
       const data = await response.json().catch(() => ({}));

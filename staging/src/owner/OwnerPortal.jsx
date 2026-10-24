@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 
-const API = "http://localhost:5001/api";
+const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const menu = [
   { id: "dashboard", label: "Dashboard", icon: "▦" },
   { id: "properties", label: "My Properties", icon: "⌂" },
@@ -19,12 +20,10 @@ function dateRange(item) {
 }
 
 export default function OwnerPortal() {
-  const [token, setToken] = useState(() => localStorage.getItem("roomo_owner_token") || "");
+  const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [owner, setOwner] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("roomo_owner") || "null"); } catch { return null; }
-  });
+  const [owner, setOwner] = useState(null);
   const [enquiries, setEnquiries] = useState([]);
   const [properties, setProperties] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -37,12 +36,10 @@ export default function OwnerPortal() {
   const [query, setQuery] = useState("");
 
   const request = useCallback(async (path, authToken = token) => {
-    const response = await fetch(API + path, { headers: { Authorization: "Bearer " + authToken }, cache: "no-store" });
+    const response = await fetch(API + path, { headers: csrfHeaders(), credentials: "include", cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        localStorage.removeItem("roomo_owner_token");
-        localStorage.removeItem("roomo_owner");
         setToken(""); setOwner(null);
       }
       throw new Error(data.message || "Unable to load owner dashboard data. Please try again.");
@@ -67,32 +64,36 @@ export default function OwnerPortal() {
     } finally { setBusy(false); }
   }, [request, token]);
 
-  useEffect(() => { if (token && owner) loadDashboard(token); }, []); // Load once for a saved session.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(API + "/auth/me", { credentials: "include", cache: "no-store" })
+      .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "No active owner session."); return data; })
+      .then(data => { if (cancelled || !data.owner || data.owner.role !== "OWNER") return; setOwner(data.owner); setToken("cookie-session"); loadDashboard("cookie-session"); })
+      .catch(() => { if (!cancelled) { setOwner(null); setToken(""); } });
+    return () => { cancelled = true; };
+  }, []); // Restore the owner session from the HttpOnly cookie.
 
   async function signIn(event) {
     event.preventDefault();
     setBusy(true); setMessage("");
     try {
       const response = await fetch(API + "/auth/login", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim().toLowerCase(), password })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
       if (data.owner?.role !== "OWNER") throw new Error("This login is for property owner accounts.");
-      localStorage.setItem("roomo_owner_token", data.token);
-      localStorage.setItem("roomo_owner", JSON.stringify(data.owner));
-      setToken(data.token); setOwner(data.owner);
-      await loadDashboard(data.token);
+      setToken("cookie-session"); setOwner(data.owner);
+      await loadDashboard("cookie-session");
       window.location.href = routePrefix + "/dashboard";
     } catch (error) { setMessage(error.message || "Unable to sign in."); }
     finally { setBusy(false); }
   }
 
-  function signOut() {
-    localStorage.removeItem("roomo_owner_token"); localStorage.removeItem("roomo_owner");
-    setToken(""); setOwner(null); setEnquiries([]); setProperties([]); setReservations([]);
-    setPassword(""); setMessage(""); window.location.href = routePrefix + "/login";
+  async function signOut() {
+    try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); }
+    finally { setToken(""); setOwner(null); setEnquiries([]); setProperties([]); setReservations([]); setPassword(""); setMessage(""); window.location.href = routePrefix + "/login"; }
   }
 
   const filteredEnquiries = useMemo(() => enquiries.filter((item) =>

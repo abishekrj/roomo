@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header.jsx";
 import SuperAdminWorkspace from "./SuperAdminWorkspace.jsx";
 
-const API = "http://localhost:5001/api";
+const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const homeSections = [
   ["header", "Header"], ["hero-banner", "Hero Banner"], ["search-section", "Search Section"],
   ["featured-stays", "Featured Stays"], ["upcoming-festival", "Upcoming Festival"],
@@ -26,7 +27,8 @@ export default function SuperAdminPortal() {
   const [heroLoading, setHeroLoading] = useState(false);
   const [heroUploadBusy, setHeroUploadBusy] = useState(false);
 
-  const token = localStorage.getItem("roomoAdminToken") || sessionStorage.getItem("roomoAdminToken") || "";
+  const [token, setToken] = useState("");
+  const [authReady, setAuthReady] = useState(false);
   const currentPath = path.replace(/\/+$/, "") || "/";
   const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
   const routePrefix = currentPath.startsWith("/staging/admin") ? "/staging/admin" : "/admin";
@@ -45,16 +47,23 @@ export default function SuperAdminPortal() {
   const pageTitles = Object.fromEntries(homeSections);
 
   useEffect(() => {
-    if (!loginPage && !token) window.location.replace("/staging/admin/login");
-  }, [loginPage, token]);
+    if (loginPage) { setAuthReady(true); return; }
+    let cancelled = false;
+    fetch(API + "/auth/me", { credentials: "include", cache: "no-store" })
+      .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
+      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken("cookie-session"); else if (!cancelled) window.location.replace("/staging/admin/login"); })
+      .catch(() => { if (!cancelled) window.location.replace("/staging/admin/login"); })
+      .finally(() => { if (!cancelled) setAuthReady(true); });
+    return () => { cancelled = true; };
+  }, [loginPage]);
 
   useEffect(() => {
     if (loginPage || !token || isHomePageEditor) return;
     let cancelled = false;
-    const headers = { Authorization: "Bearer " + token };
+    const headers = {};
     Promise.all([
-      fetch(API + "/admin/properties", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
-      fetch(API + "/admin/registered-users", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; })
+      fetch(API + "/admin/properties", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
+      fetch(API + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; })
     ]).then(([p, u]) => {
       if (cancelled) return;
       setProperties(p.properties || []);
@@ -68,7 +77,7 @@ export default function SuperAdminPortal() {
     if (loginPage || !token || !isHeroEditor) return;
     let cancelled = false;
     setHeroLoading(true);
-    fetch(API + "/admin/homepage", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+    fetch(API + "/admin/homepage", { credentials: "include", cache: "no-store" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Could not load the saved homepage draft.");
@@ -91,14 +100,14 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/auth/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim().toLowerCase(), password })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
-      if (!data.token || data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
-      localStorage.setItem("roomoAdminToken", data.token);
-      sessionStorage.removeItem("roomoAdminToken");
+      if (data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
+      setToken("cookie-session");
       window.location.href = "/staging/admin/dashboard";
     } catch (e) {
       setError(e.message || "Unable to sign in.");
@@ -107,11 +116,7 @@ export default function SuperAdminPortal() {
     }
   }
 
-  function signOut() {
-    localStorage.removeItem("roomoAdminToken");
-    sessionStorage.removeItem("roomoAdminToken");
-    window.location.href = "/staging/admin/login";
-  }
+  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { setToken(""); window.location.href = "/staging/admin/login"; } }
 
   function updateHeroField(event) {
     setHeroDraft(current => ({ ...current, [event.target.name]: event.target.value }));
@@ -124,7 +129,8 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/admin/homepage", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(heroDraft)
       });
       const data = await response.json().catch(() => ({}));
@@ -144,7 +150,8 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/admin/homepage/publish", {
         method: "POST",
-        headers: { Authorization: "Bearer " + token }
+        credentials: "include",
+        headers: csrfHeaders()
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to publish homepage.");
@@ -176,7 +183,8 @@ export default function SuperAdminPortal() {
     try {
       const response = await fetch(API + "/admin/homepage/hero-image", {
         method: "POST",
-        headers: { Authorization: "Bearer " + token },
+        credentials: "include",
+        headers: csrfHeaders(),
         body: formData
       });
       const data = await response.json().catch(() => ({}));

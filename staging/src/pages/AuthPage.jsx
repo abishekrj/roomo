@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
-const API_BASE = "http://localhost:5001";
-const TOKEN_KEY = "roomoGuestToken";
-const USER_KEY = "roomoGuest";
+const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
 export default function AuthPage({ mode = "login" }) {
   const isSignup = mode === "signup";
@@ -12,7 +10,6 @@ export default function AuthPage({ mode = "login" }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
@@ -40,19 +37,17 @@ export default function AuthPage({ mode = "login" }) {
           setGoogleBusy(true);
           setMessage("");
           try {
-            const response = await fetch(`${API_BASE}/api/guest-auth/google`, {
+            const response = await fetch(`${API_BASE}/guest-auth/google`, {
               method: "POST",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ credential: credentialResponse.credential })
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.message || "Google sign-in failed. Please try again.");
-            if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
-            const storage = remember ? localStorage : sessionStorage;
-            storage.setItem(TOKEN_KEY, data.token);
-            storage.setItem(USER_KEY, JSON.stringify(data.user));
-            (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
-            (remember ? sessionStorage : localStorage).removeItem(USER_KEY);
+            if (!data.user) throw new Error("The server response is missing the guest profile.");
+      localStorage.setItem("roomoGuest", JSON.stringify(data.user));
+            localStorage.setItem("roomoGuest", JSON.stringify(data.user));
             const returnTo = new URLSearchParams(window.location.search).get("returnTo");
             if (returnTo) {
               try {
@@ -83,7 +78,7 @@ export default function AuthPage({ mode = "login" }) {
       setGoogleReady(true);
     };
 
-    fetch(`${API_BASE}/api/guest-auth/config`, { cache: "no-store" })
+    fetch(`${API_BASE}/guest-auth/config`, { cache: "no-store", credentials: "include" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Unable to load Google sign-in configuration.");
@@ -112,7 +107,7 @@ export default function AuthPage({ mode = "login" }) {
       });
 
     return () => { cancelled = true; };
-  }, [isSignup, remember]);
+  }, [isSignup]);
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
@@ -123,8 +118,9 @@ export default function AuthPage({ mode = "login" }) {
     try {
       let response;
       try {
-        response = await fetch(`${API_BASE}/api/guest-auth/${isSignup ? "register" : "login"}`, {
+        response = await fetch(`${API_BASE}/guest-auth/${isSignup ? "register" : "login"}`, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(isSignup
             ? { fullName: fullName.trim(), email: email.trim().toLowerCase(), password, ...(phoneNumber.trim() ? { phoneNumber: phoneNumber.trim() } : {}) }
@@ -143,12 +139,7 @@ export default function AuthPage({ mode = "login" }) {
         notify(data.message || "Account created. Check your email for the verification link.", "success");
         return;
       }
-      if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
-      const storage = remember ? localStorage : sessionStorage;
-      storage.setItem(TOKEN_KEY, data.token);
-      storage.setItem(USER_KEY, JSON.stringify(data.user));
-      (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
-      (remember ? sessionStorage : localStorage).removeItem(USER_KEY);
+      if (!data.user) throw new Error("The server response is missing the guest profile.");
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       if (returnTo) {
         try {
@@ -191,7 +182,7 @@ export default function AuthPage({ mode = "login" }) {
             <label className="block text-sm font-medium text-slate-700">Email address<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /></label>
             {isSignup && <label className="block text-sm font-medium text-slate-700">Mobile number <span className="font-normal text-slate-400">(optional)</span><input type="tel" autoComplete="tel" inputMode="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+919876543210" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /></label>}
             <label className="block text-sm font-medium text-slate-700">Password<div className="mt-2 flex rounded-lg border border-slate-300 focus-within:border-[#2563a6] focus-within:ring-2 focus-within:ring-blue-100"><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={isSignup ? 12 : 1} value={password} onChange={e => setPassword(e.target.value)} required placeholder={isSignup ? "At least 12 characters" : "Enter your password"} className="min-w-0 flex-1 rounded-l-lg px-4 py-3 text-sm font-normal outline-none" /><button type="button" onClick={() => setShowPassword(v => !v)} className="rounded-r-lg px-4 text-xs font-semibold text-[#2563a6] hover:bg-slate-50">{showPassword ? "Hide" : "Show"}</button></div></label>
-            {!isSignup && <div className="flex items-center justify-between gap-3"><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="h-4 w-4 accent-[#2563a6]" />Remember me</label><button type="button" onClick={() => notify("Password reset is not available yet. Please contact the ROOMO team for assistance.")} className="text-sm font-medium text-[#2563a6] hover:underline">Forgot password?</button></div>}
+            {!isSignup && <div className="flex items-center justify-between gap-3"><span className="text-xs text-slate-500">Your session expires automatically after 1 hour.</span><button type="button" onClick={() => notify("Password reset is not available yet. Please contact the ROOMO team for assistance.")} className="text-sm font-medium text-[#2563a6] hover:underline">Forgot password?</button></div>}
             <button type="submit" disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60">{busy ? "PLEASE WAIT…" : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}</button>
           </form>
           <div className="my-5 flex items-center gap-3" aria-hidden="true">
