@@ -38,11 +38,13 @@ export default function OwnerPropertyManager({ properties = [], onRefresh }) {
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [search, setSearch] = useState("");
+  const [imageFiles, setImageFiles] = useState([]);
+  const [videoFiles, setVideoFiles] = useState([]);
   const formRef = useRef(null);
   const filtered = useMemo(() => properties.filter(item => [item.title,item.city,item.status].some(v=>String(v||"").toLowerCase().includes(search.toLowerCase()))),[properties,search]);
   const update = (key,value) => setForm(current=>({...current,[key]:value}));
   const toggle = (key,value) => update(key, form[key].includes(value) ? form[key].filter(v=>v!==value) : [...form[key],value]);
-  const openNew = () => { setEditingId(""); setForm(emptyForm()); setNotice(""); };
+  const openNew = () => { setEditingId(""); setForm(emptyForm()); setImageFiles([]); setVideoFiles([]); setNotice(""); };
   const openEdit = property => {
     const value = emptyForm();
     const merged = {...value,...property,
@@ -51,16 +53,16 @@ export default function OwnerPropertyManager({ properties = [], onRefresh }) {
       totalUnits:String(property.totalUnits??1),availabilityCount:property.availabilityCount==null?"":String(property.availabilityCount),
       amenities:Array.isArray(property.amenities)?property.amenities:value.amenities,nearbyLandmarks:Array.isArray(property.nearbyLandmarks)?property.nearbyLandmarks:[],
       perks:Array.isArray(property.perks)?property.perks:[],imageUrls:[...(Array.isArray(property.images)?property.images.map(item=>item.imageUrl):Array.isArray(property.imageUrls)?property.imageUrls:[])],
-      policies:{...value.policies,...(property.policies||{})}};
+      policies:{...value.policies,...(property.policies||{})},media:Array.isArray(property.media)?property.media:[]};
     if (!merged.imageUrls.length) merged.imageUrls=[""];
-    setEditingId(property.id);setForm(merged);setNotice("");
+    setEditingId(property.id);setForm(merged);setImageFiles([]);setVideoFiles([]);setNotice("");
   };
   const payload = () => ({
     ...form, title:form.title.trim(), description:form.description.trim(), nightlyPrice:Number(form.nightlyPrice), maxGuests:Number(form.maxGuests),
     bedrooms:Number(form.bedrooms),bathrooms:Number(form.bathrooms),livingRooms:Number(form.livingRooms||0),kitchens:Number(form.kitchens||0),
     areaSquareMeters:form.areaSquareMeters===""?null:Number(form.areaSquareMeters),totalUnits:Number(form.totalUnits||1),
     availabilityCount:form.availabilityCount===""?null:Number(form.availabilityCount),imageUrls:form.imageUrls.map(v=>v.trim()).filter(Boolean),
-    amenities:form.amenities,nearbyLandmarks:form.nearbyLandmarks,perks:form.perks,media:[],isFeatured:false,featuredSortOrder:0
+    amenities:form.amenities,nearbyLandmarks:form.nearbyLandmarks,perks:form.perks,media:Array.isArray(form.media)?form.media:[],isFeatured:false,featuredSortOrder:0
   });
   async function api(path, options={}) {
     const response=await fetch(API+path,{...options,credentials:"include",headers:{...(options.body?{"Content-Type":"application/json"}:{}),...csrfHeaders(),...(options.headers||{})},cache:"no-store"});
@@ -75,6 +77,24 @@ export default function OwnerPropertyManager({ properties = [], onRefresh }) {
     setBusy(true);setNotice("");
     try {
       const body=payload();
+      if (body.imageUrls.length + imageFiles.length > 10) throw new Error("A property can have up to 10 photos. Remove a photo URL or choose fewer files.");
+      if (imageFiles.length) {
+        const fd = new FormData();
+        imageFiles.forEach(file => fd.append("images", file));
+        const response = await fetch(API + "/properties/owner/upload-images", { method:"POST", credentials:"include", headers:csrfHeaders(), body:fd });
+        const uploaded = await response.json().catch(()=>({}));
+        if (!response.ok) throw new Error(uploaded.message || "Image upload failed.");
+        const added = (uploaded.images||[]).map(item=>({type:"IMAGE",...item}));
+        body.imageUrls = [...body.imageUrls, ...added.map(item=>item.imageUrl)];
+        body.media = [...(body.media||[]), ...added];
+      }
+      for (const file of videoFiles) {
+        const fd = new FormData(); fd.append("video", file);
+        const response = await fetch(API + "/properties/owner/upload-video", { method:"POST", credentials:"include", headers:csrfHeaders(), body:fd });
+        const uploaded = await response.json().catch(()=>({}));
+        if (!response.ok) throw new Error(uploaded.message || "Video upload failed.");
+        body.media = [...(body.media||[]), {type:"VIDEO",mediaUrl:uploaded.mediaUrl,originalName:uploaded.originalName}];
+      }
       const saved=await api(editingId?"/properties/owner/"+editingId+"/draft":"/properties/owner",{
         method:editingId?"PATCH":"POST",body:JSON.stringify(body)
       });
@@ -86,7 +106,7 @@ export default function OwnerPropertyManager({ properties = [], onRefresh }) {
       } else {
         setNoticeType("success");setNotice(saved.message||"Property draft saved.");
       }
-      setForm(null);setEditingId("");await onRefresh?.();
+      setForm(null);setEditingId("");setImageFiles([]);setVideoFiles([]);await onRefresh?.();
     } catch(error) {setNoticeType("error");setNotice(error.message||"Unable to save property.");}
     finally {setBusy(false);}
   }
@@ -109,7 +129,7 @@ export default function OwnerPropertyManager({ properties = [], onRefresh }) {
       {section("4. Facilities","Select all facilities available at this property.",<div className="space-y-5">{facilityGroups.map(group=><div key={group.title}><h4 className="mb-3 text-sm font-semibold">{group.title}</h4><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{group.items.map(item=><label key={item} className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={form.amenities.includes(item)} onChange={()=>toggle("amenities",item)} className="h-4 w-4 rounded border-slate-300 accent-blue-700"/>{item}</label>)}</div></div>)}</div>)}
       {section("5. Nearby landmarks","Select nearby sacred and transport locations.",<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{landmarks.map(([value,label])=><label key={value} className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={form.nearbyLandmarks.includes(value)} onChange={()=>toggle("nearbyLandmarks",value)} className="h-4 w-4 rounded border-slate-300 accent-blue-700"/>{label}</label>)}</div>)}
       {section("6. Property highlights","Add the key benefits guests should notice.",<div className="space-y-3">{form.perks.map((perk,index)=><div key={index} className="flex gap-2"><input className={fieldClass+" mt-0"} value={perk} onChange={e=>update("perks",form.perks.map((v,i)=>i===index?e.target.value:v))} placeholder="e.g. Walking distance to temple"/><button type="button" className={secondaryClass} onClick={()=>update("perks",form.perks.filter((_,i)=>i!==index))}>Remove</button></div>)}<button type="button" className={secondaryClass} onClick={()=>update("perks",[...form.perks,""])}>＋ Add highlight</button></div>)}
-      {section("7. Property photos","Add direct image URLs (HTTPS preferred). You can add more than one photo.",<div className="space-y-3">{form.imageUrls.map((url,index)=><div key={index} className="flex gap-2"><input className={fieldClass+" mt-0"} type="url" value={url} onChange={e=>update("imageUrls",form.imageUrls.map((v,i)=>i===index?e.target.value:v))} placeholder="https://example.com/property-photo.jpg"/>{form.imageUrls.length>1&&<button type="button" className={secondaryClass} onClick={()=>update("imageUrls",form.imageUrls.filter((_,i)=>i!==index))}>Remove</button>}</div>)}<button type="button" disabled={form.imageUrls.length>=10} className={secondaryClass} onClick={()=>update("imageUrls",[...form.imageUrls,""])}>＋ Add photo URL (up to 10)</button></div>)}
+      {section("7. Property photos","Add direct image URLs (HTTPS preferred). You can add more than one photo.",<div className="space-y-3"><label className="block text-sm font-medium text-slate-700">Upload property photos (JPG, PNG, WebP or AVIF, up to 8 MB each)<input className={fieldClass} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple onChange={e=>setImageFiles(Array.from(e.target.files||[]).slice(0,10))}/></label>{imageFiles.length>0&&<p className="text-xs text-slate-500">{imageFiles.length} photo file(s) selected; files upload when you save.</p>}{form.imageUrls.map((url,index)=><div key={index} className="flex gap-2"><input className={fieldClass+" mt-0"} type="url" value={url} onChange={e=>update("imageUrls",form.imageUrls.map((v,i)=>i===index?e.target.value:v))} placeholder="https://example.com/property-photo.jpg"/>{form.imageUrls.length>1&&<button type="button" className={secondaryClass} onClick={()=>update("imageUrls",form.imageUrls.filter((_,i)=>i!==index))}>Remove</button>}</div>)}<button type="button" disabled={form.imageUrls.length>=10} className={secondaryClass} onClick={()=>update("imageUrls",[...form.imageUrls,""])}>＋ Add photo URL (up to 10)</button><label className="block text-sm font-medium text-slate-700">Upload property videos (MP4, WebM or MOV, up to 50 MB each)<input className={fieldClass} type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={e=>setVideoFiles(Array.from(e.target.files||[]).slice(0,5))}/></label>{videoFiles.length>0&&<p className="text-xs text-slate-500">{videoFiles.length} video file(s) selected; files upload when you save.</p>}{Array.isArray(form.media)&&form.media.filter(item=>item.type==="VIDEO").map((item,index)=><p key={item.mediaUrl||index} className="text-xs text-slate-600">Existing video: {item.originalName||item.mediaUrl}</p>)}</div>)}
       {section("8. Policies and payment","Set clear expectations for guests.",<div className="grid gap-4 md:grid-cols-2">{Object.entries(form.policies).map(([key,value])=><label key={key} className="block text-sm font-medium text-slate-700">{({checkIn:"Check-in",checkOut:"Check-out",cancellation:"Cancellation policy",children:"Children policy",pets:"Pets policy",smoking:"Smoking policy"})[key]||key}<textarea className={fieldClass} rows={2} value={value} onChange={e=>update("policies",{...form.policies,[key]:e.target.value})}/></label>)}<label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.showPolicies} onChange={e=>update("showPolicies",e.target.checked)} className="h-4 w-4"/>Show policies on listing</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.allowPayAtProperty} onChange={e=>update("allowPayAtProperty",e.target.checked)} className="h-4 w-4"/>Allow pay at property</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.noCreditCardRequired} onChange={e=>update("noCreditCardRequired",e.target.checked)} className="h-4 w-4"/>No credit card required</label></div>)}
       {notice&&<p role="alert" className={"rounded-lg border p-3 text-sm "+(noticeType==="error"?"border-red-200 bg-red-50 text-red-800":"border-emerald-200 bg-emerald-50 text-emerald-800")}>{notice}</p>}
       <div className="flex flex-wrap justify-end gap-3 rounded-lg border border-slate-200 bg-white p-4"><button type="button" className={secondaryClass} onClick={()=>setForm(null)} disabled={busy}>Cancel</button><button type="submit" className={secondaryClass} disabled={busy}>{busy?"Saving…":"Save draft"}</button><button type="button" className={buttonClass} disabled={busy} onClick={()=>save(null,true)}>{busy?"Submitting…":"Save & submit for approval →"}</button></div>
