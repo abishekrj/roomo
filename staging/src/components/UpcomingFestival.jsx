@@ -18,7 +18,7 @@ function getTimeLeft(targetDate, now) {
 
 function CountdownUnit({ value, label }) {
   return (
-    <div className="min-w-0 rounded-lg border border-white/20 bg-white/10 px-2 py-3 text-center sm:px-4 sm:py-4">
+    <div className="min-w-0 rounded-lg border border-white/25 bg-white/10 px-2 py-3 text-center sm:px-4 sm:py-4">
       <div className="text-2xl font-semibold tabular-nums text-white sm:text-3xl">{String(value).padStart(2, "0")}</div>
       <div className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white/75 sm:text-xs">{label}</div>
     </div>
@@ -48,28 +48,28 @@ export default function UpcomingFestival() {
   }).format(new Date(festivalDate));
 
   return (
-    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#212529] px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
+    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#2563A6] px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
       <div className="mx-auto grid w-full max-w-7xl items-center gap-8 md:grid-cols-[1fr_.9fr] md:gap-12">
         <div className="max-w-2xl">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#D6B46A] sm:text-sm">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/85 sm:text-sm">
             {content?.festivalEyebrow || "Upcoming Festival"}
           </p>
           <h2 id="upcoming-festival-title" className="text-2xl font-semibold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
             {content.festivalTitle}
           </h2>
           {content.festivalDescription && (
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/85 sm:text-base sm:leading-7">
               {content.festivalDescription}
             </p>
           )}
-          <p className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#D6B46A] sm:text-base">
+          <p className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white sm:text-base">
             <span aria-hidden="true">◷</span>
             {dateLabel}
           </p>
         </div>
 
-        <div className="rounded-lg border border-white/15 bg-white/[0.04] p-4 sm:p-6">
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/65 sm:text-sm">
+        <div className="rounded-lg border border-white/25 bg-white/[0.08] p-4 sm:p-6">
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.18em] text-white/85 sm:text-sm">
             {countdown?.passed ? (content?.festivalCountdownCompleteLabel || "Festival day has arrived") : (content?.festivalCountdownLabel || "Time until the celebration")}
           </p>
           {countdown ? (
@@ -80,7 +80,7 @@ export default function UpcomingFestival() {
               <CountdownUnit value={countdown.seconds} label="Seconds" />
             </div>
           ) : (
-            <p className="text-center text-sm text-white/70">Festival date will be announced soon.</p>
+            <p className="text-center text-sm text-white/85">Festival date will be announced soon.</p>
           )}
         </div>
       </div>
