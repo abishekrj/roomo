@@ -125,14 +125,17 @@ router.patch("/owner/:id/draft", authenticateToken, async (req, res, next) => {
   const parsed = propertyInput.safeParse(req.body);
   if (!id.success || !parsed.success) return res.status(400).json({ message: "Please check the property details.", errors: parsed.success ? [] : parsed.error.issues.map(issue => ({ field: issue.path.join("."), message: issue.message })) });
   try {
-    const owner = await prisma.owner.findUnique({ where: { id: req.owner.sub }, select: { id: true, role: true } });
+    const owner = await prisma.owner.findUnique({ where: { id: req.owner.sub }, select: { id: true, role: true, canEditProperties: true } });
     if (!owner || owner.role !== "OWNER") return res.status(403).json({ message: "Owner account required." });
     const existing = await prisma.property.findFirst({ where: { id: id.data, ownerId: owner.id } });
     if (!existing) return res.status(404).json({ message: "Property not found in your owner account." });
-    if (!["DRAFT", "REJECTED"].includes(existing.status)) return res.status(409).json({ message: "Only draft or returned properties can be edited here." });
+    if (existing.status === "PENDING_APPROVAL") return res.status(409).json({ message: "This property is already waiting for Super Admin approval." });
+    if (!["DRAFT", "REJECTED", "PUBLISHED"].includes(existing.status)) return res.status(409).json({ message: "This property cannot be edited in its current status." });
+    if (existing.status === "PUBLISHED" && !owner.canEditProperties) return res.status(403).json({ message: "Property editing is currently disabled by ROOMO administration." });
     const { imageUrls, ...data } = parsed.data;
+    const nextStatus = existing.status === "PUBLISHED" ? "PENDING_APPROVAL" : existing.status === "REJECTED" ? "REJECTED" : "DRAFT";
     const property = await prisma.$transaction(async tx => {
-      await tx.property.update({ where: { id: id.data }, data: { ...data, isFeatured: false, featuredSortOrder: 0, status: existing.status === "REJECTED" ? "REJECTED" : "DRAFT" } });
+      await tx.property.update({ where: { id: id.data }, data: { ...data, isFeatured: false, featuredSortOrder: 0, status: nextStatus } });
       await tx.propertyImage.deleteMany({ where: { propertyId: id.data } });
       if (imageUrls.length) await tx.propertyImage.createMany({ data: imageUrls.map((imageUrl, index) => ({ propertyId: id.data, imageUrl, sortOrder: index })) });
       return tx.property.findUnique({ where: { id: id.data }, include: { images: { orderBy: { sortOrder: "asc" } } } });
@@ -150,6 +153,7 @@ router.post("/owner/:id/submit", authenticateToken, async (req, res, next) => {
     if (!owner || owner.role !== "OWNER") return res.status(403).json({ message: "Owner account required." });
     const property = await prisma.property.findFirst({ where: { id: id.data, ownerId: owner.id } });
     if (!property) return res.status(404).json({ message: "Property not found in your owner account." });
+    if (property.status === "PENDING_APPROVAL") return res.json({ message: "Property submitted for Super Admin approval.", property });
     if (!["DRAFT", "REJECTED"].includes(property.status)) return res.status(409).json({ message: "This property has already been submitted or published." });
     const updated = await prisma.property.update({ where: { id: property.id }, data: { status: "PENDING_APPROVAL" } });
     res.json({ message: "Property submitted for Super Admin approval.", property: updated });
