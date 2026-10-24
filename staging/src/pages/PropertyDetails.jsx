@@ -62,6 +62,9 @@ export default function PropertyDetails() {
   const [enquiryPhone, setEnquiryPhone] = useState("");
   const [enquiryMessage, setEnquiryMessage] = useState("");
   const [enquiryState, setEnquiryState] = useState({ busy: false, message: "", success: false });
+  const [similarStays, setSimilarStays] = useState([]);
+  const [favourite, setFavourite] = useState(false);
+  const [favouriteNotice, setFavouriteNotice] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -96,6 +99,47 @@ export default function PropertyDetails() {
     load();
     return () => controller.abort();
   }, [propertyId]);
+
+  useEffect(() => {
+    if (!property?.id) return;
+    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+    const rawGuest = sessionStorage.getItem("roomoGuest") || localStorage.getItem("roomoGuest");
+    let guest = null;
+    try { guest = rawGuest ? JSON.parse(rawGuest) : null; } catch { guest = null; }
+    const storageKey = "roomoFavourites:" + String(guest?.id || guest?.guestId || guest?.email || "guest");
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(storageKey) || "[]"); } catch { saved = []; }
+    const pending = new URLSearchParams(window.location.search).get("favorite");
+    if (Array.isArray(saved) && saved.map(String).includes(String(property.id))) setFavourite(true);
+    if (token && guest && pending === String(property.id)) {
+      const next = Array.isArray(saved) ? saved.map(String) : [];
+      if (!next.includes(String(property.id))) next.push(String(property.id));
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      setFavourite(true);
+      setFavouriteNotice("This stay has been added to your favourites.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("favorite");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  }, [property?.id]);
+
+  useEffect(() => {
+    if (!property?.id) return;
+    const controller = new AbortController();
+    fetch(PROPERTIES_API + "?limit=50&sort=newest", { cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error("Unable to load similar stays");
+        return response.json();
+      })
+      .then(json => {
+        const list = Array.isArray(json) ? json : (json?.properties || json?.data?.properties || json?.data || []);
+        const sameArea = normalizeList(list).filter(item => String(item.id) !== String(property.id) && String(item.status || "PUBLISHED").toUpperCase() === "PUBLISHED")
+          .sort((a, b) => Number(String(b.city || "").toLowerCase() === String(property.city || "").toLowerCase()) - Number(String(a.city || "").toLowerCase() === String(property.city || "").toLowerCase()));
+        setSimilarStays(sameArea.slice(0, 3));
+      })
+      .catch(error => { if (error.name !== "AbortError") setSimilarStays([]); });
+    return () => controller.abort();
+  }, [property?.id, property?.city]);
 
   const media = useMemo(() => {
     if (!property) return [];
@@ -175,6 +219,47 @@ export default function PropertyDetails() {
     ? Number(selectedRoomPrice) * stayNights * rooms
     : null;
   const currentMedia = media[activeMedia];
+  const nearbyLabels = {
+    "annamalaiyar-temple": "Annamalaiyar Temple",
+    "sri-ramanasramam": "Sri Ramanasramam",
+    "girivalam-path": "Girivalam pathway",
+    "arunachala-hill": "Arunachala Hill",
+    "skandashramam": "Skandashramam",
+    "virupaksha-cave": "Virupaksha Cave",
+    "sathanur-dam": "Sathanur Dam",
+    "central-bus-stand": "Central bus stand",
+    "railway-station": "Railway station",
+    "yogi-ram-surathkumar-ashram": "Yogi Ramsuratkumar Ashram"
+  };
+  const nearbyPlaces = normalizeList(property?.nearbyLandmarks).map(place => {
+    const rawName = typeof place === "string" ? place : place?.name || place?.title || "";
+    return { rawName, name: nearbyLabels[rawName] || rawName, distance: typeof place === "object" ? place?.distance || place?.distanceText || "" : "", address: typeof place === "object" ? place?.address || "" : "" };
+  }).filter(place => place.name);
+  const mapQuery = property?.latitude && property?.longitude ? property.latitude + "," + property.longitude : (property?.mapLocation || location);
+  const mapHref = property?.mapUrl || property?.googleMapsUrl || (mapQuery ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery) : "");
+  const directionsHref = mapQuery ? "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(mapQuery) : "";
+  const toggleFavourite = () => {
+    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
+    const rawGuest = sessionStorage.getItem("roomoGuest") || localStorage.getItem("roomoGuest");
+    let guest = null;
+    try { guest = rawGuest ? JSON.parse(rawGuest) : null; } catch { guest = null; }
+    if (!token || !guest) {
+      const returnUrl = new URL(window.location.href);
+      returnUrl.searchParams.set("favorite", String(property.id));
+      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+      return;
+    }
+    const key = "roomoFavourites:" + String(guest.id || guest.guestId || guest.email || "guest");
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(key) || "[]"); } catch { saved = []; }
+    if (!Array.isArray(saved)) saved = [];
+    const id = String(property.id);
+    const next = saved.map(String).includes(id) ? saved.map(String).filter(item => item !== id) : [...saved.map(String), id];
+    localStorage.setItem(key, JSON.stringify(next));
+    const isSaved = next.includes(id);
+    setFavourite(isSaved);
+    setFavouriteNotice(isSaved ? "This stay has been added to your favourites." : "This stay has been removed from your favourites.");
+  };
   useEffect(() => {
     if (!galleryOpen) return;
     const onKeyDown = event => {
@@ -252,11 +337,13 @@ export default function PropertyDetails() {
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
-              <button type="button" onClick={() => { if (navigator.share) navigator.share({ title, url: window.location.href }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(window.location.href); }} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium hover:bg-slate-50">↗ Share</button>
+              <button type="button" onClick={toggleFavourite} aria-pressed={favourite} className={"rounded-lg border px-4 py-2.5 text-sm font-medium " + (favourite ? "border-rose-200 bg-rose-50 text-rose-700" : "border-slate-200 text-slate-700 hover:bg-slate-50")}>{favourite ? "♥ Saved" : "♡ Save stay"}</button>
+              <button type="button" onClick={() => { if (navigator.share) navigator.share({ title, url: window.location.href }).catch(() => {}); else if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href).then(() => setFavouriteNotice("Stay link copied to clipboard.")).catch(() => {}); } }} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium hover:bg-slate-50">↗ Share</button>
               <a href="#enquiry" className="rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4f86]">Enquire now</a>
             </div>
           </header>
 
+          {favouriteNotice && <p role="status" className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">{favouriteNotice} <a href="/staging/my-bookings" className="ml-1 font-semibold underline">View favourites</a></p>}
           <section aria-label="Property photos and videos" className="mb-6">
             {media.length ? <div className="relative overflow-hidden rounded-lg">
               <div className="grid grid-cols-1 gap-2 md:aspect-[2.78/1] md:grid-cols-[1.78fr_1fr] md:gap-2">
@@ -376,10 +463,13 @@ export default function PropertyDetails() {
               </section>
 
               <section id="location" className="scroll-mt-20 border-t border-slate-200 pt-7">
-                <h2 className="text-xl font-semibold">Location & nearby places</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{location || "Location details will be shared by the property."}</p>
-                {property.nearbyLandmarks?.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-2">{property.nearbyLandmarks.map((place,index) => { const name = typeof place === "string" ? place : place?.name || place?.title; const distance = typeof place === "object" ? place?.distance || place?.distanceText : ""; return <div key={name || index} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-lg text-[#2563a6]" aria-hidden="true">⌖</span><div><p className="text-sm font-medium text-slate-800">{name}</p>{distance && <p className="mt-1 text-xs text-slate-500">{distance}</p>}</div></div>; })}</div>}
-                {(property.mapUrl || property.googleMapsUrl || property.latitude || property.longitude) && <a href={property.mapUrl || property.googleMapsUrl || (property.latitude && property.longitude ? "https://www.google.com/maps?q=" + property.latitude + "," + property.longitude : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(location))} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Open in Google Maps ↗</a>}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div><h2 className="text-xl font-semibold">Location & nearby places</h2><p className="mt-2 text-sm leading-6 text-slate-600">{location || "Location details will be shared by the property."}</p></div>
+                  {directionsHref && <a href={directionsHref} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Get directions ↗</a>}
+                </div>
+                {nearbyPlaces.length > 0 ? <div className="mt-4 grid gap-3 sm:grid-cols-2">{nearbyPlaces.map((place,index) => <article key={place.rawName || index} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-lg text-[#2563a6]" aria-hidden="true">⌖</span><div className="min-w-0 flex-1"><p className="text-sm font-medium text-slate-800">{place.name}</p>{place.distance ? <p className="mt-1 text-xs text-slate-500">{place.distance}</p> : <p className="mt-1 text-xs text-slate-500">Distance not provided by the property</p>}{(place.address || place.name) && <a href={"https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(place.address || place.name + ", Tiruvannamalai")} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-xs font-semibold text-[#2563a6] hover:underline">Directions ↗</a>}</div></article>)}</div> : <p className="mt-4 rounded-lg border border-dashed border-slate-300 p-4 text-sm leading-6 text-slate-600">Nearby places have not been added to this listing yet. Open the map to explore the surrounding area.</p>}
+                {mapHref && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200"><iframe title={"Map showing " + title} src={"https://maps.google.com/maps?q=" + encodeURIComponent(mapQuery) + "&output=embed"} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-64 w-full border-0" allowFullScreen /><div className="flex flex-wrap gap-3 border-t border-slate-200 p-3"><a href={mapHref} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#2563a6] hover:underline">Open map ↗</a>{directionsHref && <a href={directionsHref} target="_blank" rel="noreferrer" className="text-sm font-semibold text-[#2563a6] hover:underline">Plan route ↗</a>}</div></div>}
+                <div className="mt-4 rounded-lg bg-amber-50 p-4"><h3 className="text-sm font-semibold text-amber-950">Planning your visit</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-amber-900"><li>During Pournami and major temple festivals, allow extra time for local travel and parking.</li><li>Confirm current temple access, Girivalam route conditions and any traffic restrictions before you set out.</li><li>Ask the property about parking, late arrival and the easiest approach road for your travel dates.</li></ul><p className="mt-2 text-xs leading-5 text-amber-800">Travel guidance only. Festival schedules, access and traffic arrangements can change; confirm current information locally.</p></div>
               </section>
 
               <section id="reviews" className="scroll-mt-20 border-t border-slate-200 pt-7">
@@ -387,8 +477,10 @@ export default function PropertyDetails() {
                   <div><h2 className="text-xl font-semibold">Guest reviews</h2><p className="mt-1 text-sm text-slate-500">Guest feedback for this stay</p></div>
                   {rating != null && <div className="flex items-center gap-3 rounded-lg bg-[#2563a6] px-4 py-3 text-white"><span className="text-2xl font-semibold">{Number(rating).toFixed(1)}</span><span className="text-xs leading-5">Overall rating<br/>{property.reviewCount != null ? property.reviewCount + " reviews" : "Property rating"}</span></div>}
                 </div>
-                {Array.isArray(property.reviews) && property.reviews.length > 0 ? <div className="mt-4 grid gap-3 md:grid-cols-2">{property.reviews.map((review,index) => <article key={review.id || index} className="rounded-lg border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold">{review.guestName || review.name || "Guest"}</p>{review.rating != null && <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-[#2563a6]">{review.rating} ★</span>}</div><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{review.comment || review.text || review.review || "Shared feedback for this stay."}</p>{review.createdAt && <p className="mt-3 text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>}</article>)}</div> : <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"><p className="text-sm font-medium text-slate-700">Reviews will appear here when available.</p><p className="mt-1 text-sm leading-6 text-slate-500">For current guest feedback, contact the property team before confirming your stay.</p></div>}
+                {Array.isArray(property.reviews) && property.reviews.length > 0 ? <div className="mt-4 grid gap-3 md:grid-cols-2">{property.reviews.map((review,index) => <article key={review.id || index} className="rounded-lg border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold">{review.guestName || review.name || "Guest"}</p>{review.rating != null && <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-[#2563a6]">{review.rating} ★</span>}</div><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{review.comment || review.text || review.review || "Shared feedback for this stay."}</p>{review.createdAt && <p className="mt-3 text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>}</article>)}</div> : <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"><p className="text-sm font-medium text-slate-700">No guest reviews yet</p><p className="mt-1 text-sm leading-6 text-slate-500">ROOMO will show verified-stay feedback here when review data is available. No ratings or reviews are displayed unless they are supplied by the property data.</p></div>}
               </section>
+
+              {similarStays.length > 0 && <section id="similar-stays" className="scroll-mt-20 border-t border-slate-200 pt-7"><div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">Similar stays nearby</h2><p className="mt-1 text-sm text-slate-500">Explore other published ROOMO properties{property.city ? " in " + property.city : ""}.</p></div><a href="/staging/properties" className="text-sm font-semibold text-[#2563a6] hover:underline">View all stays ↗</a></div><div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{similarStays.map((stay,index) => { const stayImage = mediaSource(normalizeList(stay.images)[0] || normalizeList(stay.media)[0] || { url: "" }); const stayName = stay.title || stay.name || "ROOMO stay"; return <a key={stay.id || index} href={"/staging/property-details?id=" + encodeURIComponent(stay.id)} className="overflow-hidden rounded-lg border border-slate-200 transition hover:border-slate-300 hover:shadow-sm">{stayImage ? <img src={stayImage} alt={stayName} loading="lazy" className="aspect-[4/3] w-full object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center bg-slate-100 text-sm text-slate-500">Photo coming soon</div>}<div className="p-3"><p className="font-semibold text-slate-800">{stayName}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{[stay.locality, stay.city].filter(Boolean).join(", ") || "Tiruvannamalai"}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">{money(stay.nightlyPrice ?? stay.startingPrice ?? stay.price)} <span className="font-normal text-slate-500">/ night</span></p></div></a>; })}</div></section>}
 
               {property.showPolicies !== false && <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Property policies</h2>
