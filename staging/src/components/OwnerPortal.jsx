@@ -112,7 +112,7 @@ export default function OwnerPortal() {
   ];
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink">
-    <Header />
+    <Header ownerPortal />
     {!token || !owner ? <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-7 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">ROOMO Partner Portal</p>
