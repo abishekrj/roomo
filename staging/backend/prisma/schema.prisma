@@ -137,7 +137,9 @@ model PropertyImage {
 
 enum PropertyStatus {
   DRAFT
+  PENDING_APPROVAL
   PUBLISHED
+  REJECTED
   ARCHIVED
 }
 
