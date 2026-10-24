@@ -172,7 +172,7 @@ router.post("/register", async (req, res, next) => {
         ? "Account created. Check your inbox and click the verification link before signing in."
         : "Account created for local development. Email verification is disabled only for this local environment.",
       email: user.email,
-      verificationRequired: !allowUnverifiedLocalGuests,
+      verificationRequired: verificationEmailConfigured || !allowUnverifiedLocalGuests,
     });
   } catch (error) {
     if (error.code === "P2002") {
