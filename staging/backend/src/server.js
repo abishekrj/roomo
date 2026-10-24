@@ -32,20 +32,24 @@ const cmsPagesRoutes = require("./routes/cmsPages");
 const adminCmsPagesRoutes = require("./routes/adminCmsPages");
 const authenticateToken = require("./middleware/auth");
 const { assertSecurityConfig } = require("./lib/securityConfig");
+const { ensureCsrfCookie, csrfProtection } = require("./lib/sessionCookies");
 
 assertSecurityConfig(process.env);
 
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(ensureCsrfCookie);
 
 app.use(cors({
   origin: process.env.CLIENT_URL || (process.env.NODE_ENV === "production" ? false : "http://localhost:5173"),
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+  credentials: true,
 }));
 
 app.use(express.json({ limit: "20kb" }));
+app.use(csrfProtection);
 // Serve both the staging backend uploads and the legacy ROOMO uploads. Existing database URLs may reference files in either directory.
 const stagingUploadsRoot = path.resolve(path.join(__dirname, "../uploads"));
 const sharedUploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../roomo-backend/uploads"));
