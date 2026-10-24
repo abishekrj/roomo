@@ -21,7 +21,7 @@ const fallbackPhotos = [
 ];
 
 function shopName(shop) {
-  return String(shop?.name || "").replace(/^SAMPLE\\s*[—–-]\\s*/i, "").trim();
+  return String(shop?.name || "").replace(/^SAMPLE\s*[—–-]\s*/i, "").trim();
 }
 function shopImage(shop) {
   if (shop.imageUrl) return shop.imageUrl;
@@ -36,7 +36,7 @@ function directionsUrl(shop) {
 }
 function offerLabel(value) {
   const label = String(value || "").trim();
-  return /^\\d+(?:\\.\\d+)?\\s*%\\s*(?:OFF)?$/i.test(label) && !/\\bOFF\\b/i.test(label) ? label + " OFF" : label;
+  return /^\d+(?:\.\d+)?\s*%\s*(?:OFF)?$/i.test(label) && !/\bOFF\b/i.test(label) ? label + " OFF" : label;
 }
 
 function ShopCard({ shop }) {
