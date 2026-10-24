@@ -12,9 +12,11 @@ import Testimonials from "./components/Testimonials.jsx";
 import PropertyListingPage from "./components/PropertyListingPage.jsx";
 
 export default function App() {
-  const isListingPage = window.location.pathname === "/properties" ||
-    window.location.pathname === "/properties/" ||
-    window.location.pathname === "/roomo-search-results.html";
+  const path = window.location.pathname.replace(/\\/+$/, "") || "/";
+  const isListingPage = path === "/staging/properties" ||
+    path === "/staging/roomo-search-results.html" ||
+    path === "/properties" ||
+    path === "/roomo-search-results.html";
 
   if (isListingPage) return <PropertyListingPage />;
 
