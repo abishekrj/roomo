@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
@@ -12,11 +12,22 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   const [language, setLanguage] = useState(() => languages.find(item => item.code === localStorage.getItem("roomoLanguage")) || languages[0]);
   const [user, setUser] = useState(() => readSession().user);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsMessage, setNotificationsMessage] = useState("");
+
+  useEffect(() => {
+    const closeOnOutsideClick = event => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) setMenuOpen(false);
+    };
+    const closeOnEscape = event => { if (event.key === "Escape") setMenuOpen(false); };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => { document.removeEventListener("pointerdown", closeOnOutsideClick); document.removeEventListener("keydown", closeOnEscape); };
+  }, []);
 
   useEffect(() => {
     let lastY = window.scrollY, frame = 0;
@@ -91,10 +102,11 @@ export default function Header({ ownerPortal = false, adminNotifications = false
               {notifications.length ? notifications.map((item, index) => <a key={item.title + item.detail + index} href={item.href} className="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 text-slate-800 last:border-b-0 hover:bg-slate-50"><strong className="text-xs">{item.title}</strong><span className="break-words text-xs text-slate-600">{item.detail}</span><small className="text-[10px] text-slate-400">{item.date ? new Date(item.date).toLocaleString() : "Recent activity"}</small></a>) : <p className="px-4 py-6 text-center text-xs text-slate-500">{notificationsMessage || "No notifications yet."}</p>}
             </div>}
           </div>}
-          {!ownerPortal && <div className="relative">
-            <button className="inline-flex items-center gap-2 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3 sm:text-sm" type="button" aria-expanded={menuOpen} onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><i className="bi bi-person-circle text-base" /><span className="max-w-28 truncate sm:max-w-none">{user?.fullName || "Login / Signup"}</span><i className="bi bi-chevron-down text-[10px]" /></button>
+          {!ownerPortal && <a href="/staging/owner/signup" className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-roomo bg-[#feba02] px-3 py-2 text-xs font-semibold text-[#212529] shadow-sm transition hover:bg-[#e5a900] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88700] sm:px-4 sm:text-sm">Property owner</a>}
+          {!ownerPortal && <div className="relative" ref={menuRef}>
+            <button className="inline-flex items-center gap-2 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3 sm:text-sm" type="button" aria-expanded={menuOpen} aria-haspopup="true" onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><i className="bi bi-person-circle text-base" /><span className="max-w-28 truncate sm:max-w-none">{user?.fullName || "Login / Signup"}</span><i className="bi bi-chevron-down text-[10px]" /></button>
             {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
-              {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
+              {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/staging/owner/signup"><i className="bi bi-house-door mr-2" />Property Owner</a><hr className="my-1 border-slate-100" /></>}
               <a className={linkClass} href="/staging/my-bookings"><i className="bi bi-journal-bookmark mr-2" />My Pilgrimage Bookings</a>
               <a className={linkClass} href={user ? "/staging/my-bookings" : authHref("/staging/login")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
               {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
