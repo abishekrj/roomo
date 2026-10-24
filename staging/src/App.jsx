@@ -1,4 +1,6 @@
 import PropertyListingPage from "./pages/PropertyListingPage.jsx";
+import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
 import AuthPage from "./pages/AuthPage.jsx";
 import PropertyDetails from "./pages/PropertyDetails.jsx";
 import HomePage from "./pages/HomePage.jsx";
