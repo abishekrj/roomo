@@ -18,7 +18,43 @@ export default function SuperAdminPortal() {
   const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
   const routePrefix = currentPath.startsWith("/staging/admin") ? "/staging/admin" : "/admin";
   const activePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : "dashboard";
-  const menu = [{ id: "dashboard", label: "Dashboard", icon: "▦" }, { id: "properties", label: "Property Listings", icon: "⌂" }, { id: "users", label: "Registered Users", icon: "♙" }];
+  const menu = [
+    { id: "dashboard", label: "Dashboard", icon: "▦", href: routePrefix + "/dashboard" },
+    { id: "enquiries", label: "Enquiries", icon: "▤", href: "/staging/frontend/admin/enquiries.html" },
+    { id: "owners", label: "Owners", icon: "♙", href: "/staging/frontend/admin/owner.html" },
+    { id: "rooms", label: "Rooms", icon: "⌂", children: [
+      { label: "Add Rooms", href: "/staging/frontend/admin/rooms-listings.html#add-room" },
+      { label: "Room Listings", href: "/staging/frontend/admin/rooms-listings.html#room-listings" },
+      { label: "Room Types", href: "/staging/frontend/admin/room-types.html" },
+      { label: "Room Filters", href: "/staging/frontend/admin/room-filters.html" },
+      { label: "Featured Rooms", href: "/staging/frontend/admin/featured-rooms.html" },
+      { label: "Listing Display Settings", href: "/staging/frontend/admin/listing-display.html" }
+    ] },
+    { id: "home-page", label: "Home Page", icon: "▧", children: [
+      { label: "Hero Banner", href: "/staging/frontend/admin/homepage.html#hero-banner" },
+      { label: "Search Section", href: "/staging/frontend/admin/homepage.html#search-section" },
+      { label: "Featured Stays", href: "/staging/frontend/admin/homepage.html#featured-stays" },
+      { label: "Upcoming Festival", href: "/staging/frontend/admin/homepage.html#upcoming-festival" },
+      { label: "Pilgrim Guide", href: "/staging/frontend/admin/pilgrim-guide.html" },
+      { label: "Nearby Locations", href: "/staging/frontend/admin/nearby-places.html" },
+      { label: "Galleries", href: "/staging/frontend/admin/galleries.html" },
+      { label: "Shopping Directory", href: "/staging/frontend/admin/shops.html" },
+      { label: "Testimonials", href: "/staging/frontend/admin/testimonials.html" },
+      { label: "Footer", href: "/staging/frontend/admin/homepage.html#footer" }
+    ] },
+    { id: "cms-pages", label: "CMS Pages", icon: "▤", href: "/staging/frontend/admin/cms-pages.html" },
+    { id: "destinations", label: "Destinations", icon: "⌖", href: "/staging/frontend/admin/destinations.html" },
+    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: "/staging/frontend/admin/nearby-places.html" },
+    { id: "shops", label: "Shopping Directory", icon: "▣", href: "/staging/frontend/admin/shops.html" },
+    { id: "testimonials", label: "Testimonials", icon: "❝", href: "/staging/frontend/admin/testimonials.html" },
+    { id: "gallery", label: "Gallery", icon: "▧", children: [
+      { label: "Add Gallery", href: "/staging/frontend/admin/galleries.html#add-gallery" },
+      { label: "Gallery List", href: "/staging/frontend/admin/galleries.html#gallery-list" }
+    ] },
+    { id: "reports", label: "Reports", icon: "▥", href: "/staging/frontend/admin/reports.html" },
+    { id: "properties", label: "Property Listings", icon: "⌂", href: routePrefix + "/properties" },
+    { id: "users", label: "Registered Users", icon: "♙", href: routePrefix + "/users" }
+  ];
 
   useEffect(() => {
     if (!loginPage && !token) window.location.replace("/staging/admin/login");
@@ -81,7 +117,7 @@ export default function SuperAdminPortal() {
           <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
             <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
-            <nav className="grid grid-cols-2 gap-2 xl:grid-cols-1" aria-label="Super Admin navigation">{menu.map(item => <a key={item.id} href={routePrefix + "/" + item.id} aria-current={activePage === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${activePage === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}</nav>
+            <nav className="space-y-1" aria-label="Super Admin navigation">{menu.map(item => item.children ? <details key={item.id} className="group rounded-lg" open={item.id === "home-page" || undefined}><summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span><span className="flex-1">{item.label}</span><span className="text-xs transition group-open:rotate-180" aria-hidden="true">⌄</span></summary><div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{item.children.map(child => <a key={child.label} href={child.href} className="block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white">{child.label}</a>)}</div></details> : <a key={item.id} href={item.href} aria-current={activePage === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${activePage === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}</nav>
             <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Platform administration</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
           </aside>
           <div className="min-w-0">{activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}{activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}{activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}</div>
