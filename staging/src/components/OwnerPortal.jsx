@@ -130,7 +130,7 @@ export default function OwnerPortal() {
       </div>
     </main> : <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div><p className="text-xs font-semibold uppercase tracking-widest text-blue-700">ROOMO Partner Portal</p><h1 className="mt-1 text-2xl font-semibold sm:text-3xl">Owner Dashboard</h1><p className="mt-1 text-sm text-slate-500">Welcome back, {owner.fullName}.</p></div>
+        <div><p className="text-xs font-semibold uppercase tracking-widest text-blue-700">ROOMO Partner Portal</p><h1 className="mt-1 text-2xl font-semibold sm:text-3xl">{({dashboard:"Owner Dashboard",properties:"My Properties",enquiries:"Enquiries",reports:"Reports"})[active] || "Owner Dashboard"}</h1><p className="mt-1 text-sm text-slate-500">Welcome back, {owner.fullName}.</p></div>
         <button onClick={() => loadDashboard()} disabled={busy} className="self-start rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 disabled:opacity-60">{busy ? "Refreshing…" : "↻ Refresh data"}</button>
       </div>
       {message && <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"><span>{message}</span><button onClick={() => loadDashboard()} className="shrink-0 font-semibold underline">Retry</button></div>}
