@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
-const API_BASE = "http://localhost:5001";
-const TOKEN_KEY = "roomoGuestToken";
-const USER_KEY = "roomoGuest";
+const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const languages = [{ code: "en", label: "English", short: "ENG" }, { code: "ta", label: "Tamil/தமிழ்", short: "Tamil" }, { code: "te", label: "Telugu/తెలుగు", short: "Telugu" }, { code: "kn", label: "Kannada/ಕನ್ನಡ", short: "Kannada" }];
 
-function readSession() {
-  const token = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
-  const raw = sessionStorage.getItem(USER_KEY) || localStorage.getItem(USER_KEY);
-  try { return { token, user: raw ? JSON.parse(raw) : null }; } catch { return { token, user: null }; }
-}
+function readSession() { return { user: null }; }
 const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
 export default function Header({ ownerPortal = false, adminNotifications = false } = {}) {
@@ -39,22 +34,18 @@ export default function Header({ ownerPortal = false, adminNotifications = false
 
   useEffect(() => {
     let cancelled = false;
-    const session = readSession();
-    if (!session.token) return;
-    fetch(API_BASE + "/api/guest-auth/me", { headers: { Authorization: "Bearer " + session.token }, cache: "no-store" })
-      .then(async response => { if (!response.ok) throw new Error("Session expired"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) { setUser(data.user); const store = sessionStorage.getItem(TOKEN_KEY) ? sessionStorage : localStorage; store.setItem(USER_KEY, JSON.stringify(data.user)); } })
-      .catch(() => { if (cancelled) return; sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); });
+    fetch(API_BASE + "/guest-auth/me", { credentials: "include", cache: "no-store" })
+      .then(async response => { if (!response.ok) throw new Error("No active guest session"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) setUser(data.user); })
+      .catch(() => { if (!cancelled) setUser(null); });
     return () => { cancelled = true; };
   }, []);
 
   const loadAdminNotifications = async () => {
-    const adminToken = localStorage.getItem("roomoAdminToken") || sessionStorage.getItem("roomoAdminToken");
-    if (!adminToken) { setNotifications([]); setNotificationsMessage("Sign in to view administrator notifications."); return; }
     setNotificationsMessage("Loading notifications…");
-    const headers = { Authorization: "Bearer " + adminToken };
+    const headers = {};
     const results = await Promise.allSettled([
-      fetch(API_BASE + "/api/admin/properties", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load property activity."); return d; }),
-      fetch(API_BASE + "/api/admin/registered-users", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load guest activity."); return d; })
+      fetch(API_BASE + "/admin/properties", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load property activity."); return d; }),
+      fetch(API_BASE + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load guest activity."); return d; })
     ]);
     const items = [];
     if (results[0].status === "fulfilled") (results[0].value.properties || []).forEach(p => items.push({ title: "Property listing", detail: (p.title || "Property") + " · " + (p.status || "DRAFT"), date: p.createdAt, href: "/staging/admin/dashboard" }));
@@ -64,7 +55,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     setNotificationsMessage(items.length ? "" : results.every(r => r.status === "rejected") ? "Could not load notifications. Check the backend connection." : "No notifications yet.");
   };
   const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
-  const logout = () => { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); setUser(null); window.location.reload(); };
+  const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { setUser(null); window.location.reload(); } };
   const chooseLanguage = item => {
     setLanguage(item); setLanguageOpen(false);
     try { localStorage.setItem("roomoLanguage", item.code); } catch {}
