@@ -243,12 +243,12 @@ export default function PropertyDetails() {
 
           <section aria-label="Property photos and videos" className="mb-6">
             {media.length ? <div className="relative overflow-hidden rounded-lg">
-              <div className="grid grid-cols-1 gap-2 md:aspect-[2.78/1] md:grid-cols-[1.78fr_1fr] md:gap-0">
+              <div className="grid grid-cols-1 gap-2 md:aspect-[2.78/1] md:grid-cols-[1.78fr_1fr] md:gap-3">
                 <button type="button" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }} className="relative block aspect-video w-full overflow-hidden rounded-lg bg-slate-100 text-left md:aspect-auto md:h-full md:min-h-0 md:rounded-r-none" aria-label="Open property photo gallery">
                   {media[0]?.kind === "video" ? <div className="flex h-full min-h-56 w-full items-center justify-center bg-slate-900 text-5xl text-white">▶</div> : <img src={media[0]?.src} alt={media[0]?.alt || title} className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [media[0]?.src]: true}))} />}
                   {failedMedia[media[0]?.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-sm text-slate-500">Photo unavailable</div>}
                 </button>
-                <div className="grid grid-cols-2 grid-rows-2 gap-0 overflow-hidden rounded-lg md:h-full md:rounded-l-none">
+                <div className="grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden rounded-lg md:h-full md:rounded-l-none">
                   {[0, 1, 2, 3].map(slot => {
                     const item = media[slot + 1];
                     const remainingCount = Math.max(0, media.length - 5);
