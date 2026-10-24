@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import mobileHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jpg";
 import desktopHeroImage from "../../../roomo-frontend/assets/hero-desktop.png";
 
 export default function HeroBanner() {
   return (
     <section aria-labelledby="home-hero-title" className="overflow-hidden border-b border-slate-200 bg-[#f7f5f0]">
       <div className="block w-full leading-none md:hidden">
-        <img src={mobileHeroImage} alt="ROOMO Sacred — Tiruvannamalai" className="block h-auto w-full object-contain" fetchPriority="high" decoding="async" />
+        <img src={heroImage} alt="ROOMO Sacred — Tiruvannamalai" className="block h-auto w-full object-contain" fetchPriority="high" decoding="async" />
       </div>
       <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 pb-8 pt-9 sm:px-7 sm:pb-12 sm:pt-14 md:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:px-8 lg:pb-14 lg:pt-12">
         <div className="relative z-10">
