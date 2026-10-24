@@ -56,6 +56,7 @@ export default function PropertyDetails() {
   const [checkOut, setCheckOut] = useState(params.get("checkOut") || "");
   const [adults, setAdults] = useState(Math.max(1, Number(params.get("adults") || 2)));
   const [rooms, setRooms] = useState(Math.max(1, Number(params.get("rooms") || 1)));
+  const [selectedRoomId, setSelectedRoomId] = useState("");
   const [enquiryName, setEnquiryName] = useState("");
   const [enquiryEmail, setEnquiryEmail] = useState("");
   const [enquiryPhone, setEnquiryPhone] = useState("");
@@ -99,9 +100,10 @@ export default function PropertyDetails() {
   const media = useMemo(() => {
     if (!property) return [];
     const gallery = normalizeList(property.gallery);
+    const savedMedia = normalizeList(property.media);
     const photos = normalizeList(property.images);
     const videos = normalizeList(property.videos);
-    const combined = [...gallery, ...photos, ...videos]
+    const combined = [...gallery, ...savedMedia, ...photos, ...videos]
       .map(item => typeof item === "string" ? { url: item } : item)
       .map(item => ({ ...item, src: mediaSource(item), kind: mediaKind(item) }))
       .filter(item => item.src);
@@ -163,6 +165,14 @@ export default function PropertyDetails() {
   const description = textValue(property?.description || property?.overview || property?.about);
   const rating = property?.rating ?? property?.averageRating;
   const startingPrice = property?.nightlyPrice ?? property?.startingPrice ?? property?.price;
+  const selectedRoom = roomTypes.find((room, index) => String(room.id || room.name || index) === selectedRoomId) || roomTypes[0] || null;
+  const selectedRoomPrice = selectedRoom?.nightlyPrice ?? selectedRoom?.price ?? selectedRoom?.pricePerNight ?? startingPrice;
+  const stayNights = checkIn && checkOut && checkOut > checkIn
+    ? Math.round((new Date(checkOut + "T00:00:00Z") - new Date(checkIn + "T00:00:00Z")) / 86400000)
+    : 0;
+  const estimatedTotal = stayNights > 0 && Number.isFinite(Number(selectedRoomPrice)) && Number(selectedRoomPrice) > 0
+    ? Number(selectedRoomPrice) * stayNights * rooms
+    : null;
   const currentMedia = media[activeMedia];
   useEffect(() => {
     if (!galleryOpen) return;
@@ -196,7 +206,12 @@ export default function PropertyDetails() {
       checkOut: checkOut || null,
       adults: Number(adults),
       rooms: Number(rooms),
-      message: enquiryMessage.trim()
+      message: [
+        selectedRoom ? "Preferred room: " + (selectedRoom.name || selectedRoom.title || "Selected room") : "",
+        stayNights > 0 ? "Stay length: " + stayNights + (stayNights === 1 ? " night" : " nights") : "",
+        estimatedTotal != null ? "Indicative room total: ₹" + estimatedTotal.toLocaleString("en-IN") + " (final price to be confirmed)" : "",
+        enquiryMessage.trim()
+      ].filter(Boolean).join("\n\n")
     };
     try {
       const response = await fetch(API_ORIGIN + "/api/enquiries", {
@@ -218,7 +233,7 @@ export default function PropertyDetails() {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-[#212529]">
     <Header />
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-5 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-5 sm:px-6 lg:px-8 lg:pb-12">
         <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500"><a href="/staging/" className="hover:text-[#2563a6]">Home</a><span className="mx-2">/</span><a href="/staging/properties" className="hover:text-[#2563a6]">Stays</a><span className="mx-2">/</span><span className="text-slate-700">{title}</span></nav>
         {loading ? <div className="space-y-5" aria-label="Loading property details"><div className="h-8 w-2/3 animate-pulse rounded-lg bg-slate-100"/><div className="h-72 animate-pulse rounded-lg bg-slate-100"/><div className="h-32 animate-pulse rounded-lg bg-slate-100"/></div>
         : error ? <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-6"><h1 className="text-lg font-semibold">Property details unavailable</h1><p className="mt-2 text-sm text-slate-600">{error}</p><a href="/staging/properties" className="mt-4 inline-flex rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Browse stays</a></div>
@@ -298,16 +313,60 @@ export default function PropertyDetails() {
               </section>
 
               <section id="rooms" className="scroll-mt-20 border-t border-slate-200 pt-7">
-                <div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">Room types & prices</h2><p className="mt-1 text-sm text-slate-500">Choose your dates to help the property confirm availability.</p></div>{startingPrice != null && <p className="text-sm text-slate-500">From <strong className="text-lg text-[#212529]">{money(startingPrice)}</strong> <span>/ night</span></p>}</div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <label className="text-sm font-medium text-slate-700">Check-in<input type="date" value={checkIn} min={new Date().toISOString().slice(0,10)} onChange={e => setCheckIn(e.target.value)} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal"/></label>
-                  <label className="text-sm font-medium text-slate-700">Check-out<input type="date" value={checkOut} min={checkIn || new Date().toISOString().slice(0,10)} onChange={e => setCheckOut(e.target.value)} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal"/></label>
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <div><h2 className="text-xl font-semibold">Choose your room</h2><p className="mt-1 text-sm text-slate-500">Select dates and a room to see an estimated stay total.</p></div>
+                  {startingPrice != null && <p className="text-sm text-slate-500">From <strong className="text-lg text-[#212529]">{money(startingPrice)}</strong> <span>/ night</span></p>}
                 </div>
+                <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2 sm:p-4">
+                  <label className="text-sm font-medium text-slate-700">Check-in
+                    <input type="date" value={checkIn} min={new Date().toISOString().slice(0,10)} onChange={e => { const next = e.target.value; setCheckIn(next); if (checkOut && next && checkOut <= next) setCheckOut(""); }} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100"/>
+                  </label>
+                  <label className="text-sm font-medium text-slate-700">Check-out
+                    <input type="date" value={checkOut} min={checkIn ? new Date(new Date(checkIn + "T00:00:00Z").getTime() + 86400000).toISOString().slice(0,10) : new Date().toISOString().slice(0,10)} onChange={e => setCheckOut(e.target.value)} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100"/>
+                  </label>
+                  <label className="text-sm font-medium text-slate-700">Adults
+                    <select value={adults} onChange={e => setAdults(Number(e.target.value))} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100">{[1,2,3,4,5,6,7,8].map(n=><option key={n} value={n}>{n} {n===1?"adult":"adults"}</option>)}</select>
+                  </label>
+                  <label className="text-sm font-medium text-slate-700">Rooms
+                    <select value={rooms} onChange={e => setRooms(Number(e.target.value))} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100">{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n} {n===1?"room":"rooms"}</option>)}</select>
+                  </label>
+                </div>
+                {stayNights > 0 && <p className="mt-3 text-sm text-slate-600"><strong className="text-slate-900">{stayNights} {stayNights===1?"night":"nights"}</strong> · {adults} {adults===1?"adult":"adults"} · {rooms} {rooms===1?"room":"rooms"}</p>}
                 {roomTypes.length ? <div className="mt-4 space-y-3">{roomTypes.map((room,index) => {
                   const roomName = room?.name || room?.title || room?.roomType || "Room option " + (index + 1);
-                  const price = room?.nightlyPrice ?? room?.price ?? room?.pricePerNight;
-                  return <article key={room.id || roomName + index} className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center"><div><h3 className="font-semibold">{roomName}</h3>{(room.maxGuests || room.capacity) && <p className="mt-1 text-sm text-slate-500">👤 Up to {room.maxGuests || room.capacity} guests</p>}{room.description && <p className="mt-1 text-sm leading-6 text-slate-600">{room.description}</p>}{room.available === false && <p className="mt-1 text-xs font-medium text-amber-700">Availability to be confirmed</p>}</div><div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end"><strong className="text-lg">{money(price ?? startingPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></strong><a href="#enquiry" className="rounded-lg bg-[#2563a6] px-3 py-2 text-sm font-semibold text-white">Enquire</a></div></article>;
+                  const roomKey = String(room.id || room.name || index);
+                  const price = room?.nightlyPrice ?? room?.price ?? room?.pricePerNight ?? startingPrice;
+                  const capacity = Number(room?.maxGuests || room?.capacity || property?.maxGuests || 0);
+                  const isSelected = selectedRoomId ? selectedRoomId === roomKey : index === 0;
+                  const imageList = normalizeList(room?.imageUrls || room?.images);
+                  const roomImage = imageList.length ? mediaSource(typeof imageList[0] === "string" ? { url: imageList[0] } : imageList[0]) : "";
+                  const roomTotal = stayNights > 0 && Number.isFinite(Number(price)) && Number(price)>0 ? Number(price)*stayNights*rooms : null;
+                  return <article key={room.id || roomName + index} className={"overflow-hidden rounded-lg border transition " + (isSelected ? "border-[#2563a6] bg-blue-50/40 ring-1 ring-[#2563a6]/20" : "border-slate-200 bg-white")}>
+                    <div className="flex flex-col sm:flex-row">
+                      {roomImage && <img src={roomImage} alt={roomName} loading="lazy" className="h-40 w-full object-cover sm:h-auto sm:w-36 sm:self-stretch" />}
+                      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-slate-900">{roomName}</h3>
+                          {capacity>0 && <p className="mt-1 text-sm text-slate-500">Up to {capacity} guests</p>}
+                          {Array.isArray(room?.bedConfiguration) && room.bedConfiguration.length>0 && <p className="mt-1 text-sm text-slate-600">{room.bedConfiguration.map(b=>typeof b==="string"?b:b?.name||b?.type||"").filter(Boolean).join(" · ")}</p>}
+                          {room.description && <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{room.description}</p>}
+                          {Array.isArray(room?.facilities) && room.facilities.length>0 && <p className="mt-2 text-xs leading-5 text-slate-500">{room.facilities.slice(0,4).map(f=>typeof f==="string"?f:f?.name||f?.label||"").filter(Boolean).join(" · ")}</p>}
+                          {room.quantity != null && <p className="mt-2 text-xs text-slate-500">Availability is confirmed by the property</p>}
+                        </div>
+                        <div className="flex shrink-0 items-center justify-between gap-4 border-t border-slate-100 pt-3 sm:flex-col sm:items-end sm:border-0 sm:pt-0">
+                          <div className="text-left sm:text-right"><strong className="text-lg text-slate-900">{money(price)}</strong><span className="text-xs font-normal text-slate-500"> / night</span>
+                            {roomTotal != null && <p className="mt-1 text-xs text-slate-500">Estimated total: <strong className="text-slate-800">{money(roomTotal)}</strong></p>}
+                          </div>
+                          <button type="button" onClick={()=>{setSelectedRoomId(roomKey);document.getElementById("enquiry")?.scrollIntoView({behavior:"smooth",block:"start"});}} className={"inline-flex shrink-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-200 " + (isSelected ? "border border-[#2563a6] bg-white text-[#2563a6]" : "bg-[#2563a6] text-white hover:bg-[#1d4f86]")}>{isSelected ? "Selected" : "Select room"}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>;
                 })}</div> : <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-medium">Room availability is confirmed by the property.</p><p className="mt-1 text-sm leading-6 text-slate-600">Send an enquiry with your dates, guest count and rooms requested to ask about current room options and rates.</p></div>}
+                {estimatedTotal != null && <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4">
+                  <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-semibold text-slate-900">Estimated stay total</p><p className="mt-1 text-xs leading-5 text-slate-600">{money(selectedRoomPrice)} × {stayNights} {stayNights===1?"night":"nights"} × {rooms} {rooms===1?"room":"rooms"}</p></div><p className="text-xl font-semibold text-slate-900">{money(estimatedTotal)}</p></div>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">Indicative room cost only. Taxes, extra charges and final availability must be confirmed by the property.</p>
+                </div>}
               </section>
 
               <section id="facilities" className="scroll-mt-20 border-t border-slate-200 pt-7">
