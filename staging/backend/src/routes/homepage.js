@@ -146,11 +146,22 @@ router.get("/", async (req, res, next) => {
           : defaults.pilgrimGuide.cards,
       },
     };
-    const featuredProperties = await prisma.property.findMany({
+    let featuredProperties = await prisma.property.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
       include: { images: { orderBy: { sortOrder: "asc" } } },
       orderBy: [{ featuredSortOrder: "asc" }, { createdAt: "desc" }]
     });
+    // Avoid an empty Featured Stays section on sites that have published listings
+    // but have not yet marked any of them as featured. Explicitly featured items
+    // always take priority; only fall back when there are no featured matches.
+    if (featuredProperties.length === 0) {
+      featuredProperties = await prisma.property.findMany({
+        where: { status: "PUBLISHED" },
+        include: { images: { orderBy: { sortOrder: "asc" } } },
+        orderBy: { createdAt: "desc" },
+        take: 8
+      });
+    }
     res.set("Cache-Control", "no-store");
     res.json({ content: { ...content, featuredProperties }, publishedAt: row?.publishedAt || null });
   } catch (error) { next(error); }
