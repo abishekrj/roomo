@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Header from "./Header.jsx";
-import Footer from "./Footer.jsx";
 
 const API = "http://localhost:5001/api";
 
@@ -72,12 +71,24 @@ export default function SuperAdminPortal() {
       </section> : <section>
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">Super Admin Dashboard</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div><button onClick={signOut} className="rounded-roomo border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-100">Sign out</button></div>
         {notice && <p role="status" className="mb-5 rounded-roomo border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <a href="/staging/admin/properties" className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">Manage properties <i className="bi bi-arrow-right" /></span></a>
-          <a href="/staging/admin/users" className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">View guest accounts <i className="bi bi-arrow-right" /></span></a>
+        <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
+            <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
+            <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
+            <nav className="grid grid-cols-1 gap-2" aria-label="Super Admin navigation">
+              <a href="/staging/admin/dashboard" className="flex items-center gap-3 rounded-lg bg-blue-600 px-3 py-3 text-sm font-medium text-white"><span className="w-5 text-center text-lg" aria-hidden="true">▦</span>Dashboard</a>
+              <a href="#property-listings" className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">⌂</span>Property listings</a>
+              <a href="#registered-guests" className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">♙</span>Registered guests</a>
+            </nav>
+            <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Platform administration</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
+          </aside>
+          <div className="grid content-start gap-4 sm:grid-cols-2">
+            <a id="property-listings" href="#property-listings" className="scroll-mt-28 rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">Property activity <i className="bi bi-arrow-right" /></span></a>
+            <a id="registered-guests" href="#registered-guests" className="scroll-mt-28 rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">Guest activity <i className="bi bi-arrow-right" /></span></a>
+          </div>
         </div>
       </section>}
     </main>
-    <Footer />
+    {!loginPage && <footer className="mt-auto border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500 sm:px-6">© {new Date().getFullYear()} ROOMO. All rights reserved.</footer>}
   </div>;
 }
