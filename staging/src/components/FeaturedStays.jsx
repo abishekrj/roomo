@@ -38,6 +38,10 @@ export default function FeaturedStays() {
     return () => { cancelled = true; };
   }, []);
 
+  const fallbackRooms = Array.isArray(content?.featuredRooms)
+    ? content.featuredRooms.filter(stay => stay && stay.featured !== false).sort((left, right) => (left.sortOrder ?? 999) - (right.sortOrder ?? 999))
+    : [];
+
   const stays = Array.isArray(content?.featuredProperties) && content.featuredProperties.length
     ? content.featuredProperties.map((property, index) => ({
         id: property.id,
@@ -45,7 +49,8 @@ export default function FeaturedStays() {
         type: property.propertyType,
         location: [property.address, property.city, property.state].filter(Boolean).join(", "),
         price: property.nightlyPrice,
-        img: resolveImageUrl(property.images?.[0]?.imageUrl || property.images?.[0]?.url || property.imageUrl || property.coverImage || ""),
+        img: resolveImageUrl(property.images?.[0]?.imageUrl || property.images?.[0]?.url || property.imageUrl || property.coverImage || "") || resolveImageUrl(fallbackRooms[index]?.img || fallbackRooms[index]?.imageUrl || fallbackRooms[index]?.image || ""),
+        fallbackImg: resolveImageUrl(fallbackRooms[index]?.img || fallbackRooms[index]?.imageUrl || fallbackRooms[index]?.image || ""),
         rating: property.rating,
         amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
         highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
@@ -53,10 +58,7 @@ export default function FeaturedStays() {
         url: property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
         sortOrder: property.featuredSortOrder ?? index
       }))
-    : Array.isArray(content?.featuredRooms)
-      ? content.featuredRooms.filter(stay => stay && stay.featured !== false).map(stay => ({ ...stay, img: resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image) }))
-          .sort((left, right) => (left.sortOrder ?? 999) - (right.sortOrder ?? 999))
-      : [];
+    : fallbackRooms.map(stay => ({ ...stay, img: resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image), fallbackImg: "" }));
   if (content?.featuredSectionEnabled === false) return null;
 
   const scroll = direction => {
@@ -117,7 +119,7 @@ export default function FeaturedStays() {
               <article key={stay.id || stay.name || index} data-featured-stay-card className="group flex w-[min(280px,84vw)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-shadow duration-200 hover:shadow-lg sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
                 <a href={stay.url || stay.href || "/roomo-search-results.html"} className="flex h-full flex-col">
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                    {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => { event.currentTarget.style.display = "none"; }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />}
+                    {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => { const fallback = stay.fallbackImg; if (fallback && event.currentTarget.src !== fallback) { event.currentTarget.src = fallback; return; } event.currentTarget.style.display = "none"; }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />}
                     {(stay.badge || stay.type) && <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">{stay.badge || stay.type}</span>}
                   </div>
                   <div className="flex min-h-[190px] flex-1 flex-col p-4">
