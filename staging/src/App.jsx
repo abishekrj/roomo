@@ -6,6 +6,7 @@ import FeaturedStays from "./components/FeaturedStays.jsx";
 import UpcomingFestival from "./components/UpcomingFestival.jsx";
 import PilgrimGuide from "./components/PilgrimGuide.jsx";
 import NearbyLocations from "./components/NearbyLocations.jsx";
+import Gallery from "./components/Gallery.jsx";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <UpcomingFestival />
         <PilgrimGuide />
         <NearbyLocations />
+        <Gallery />
         {/* Additional homepage sections will be migrated as reusable components. */}
       </main>
       <Footer />
