@@ -153,3 +153,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
   width: 0;
   height: 0;
 }
+
+
+/* Keep Google Translate's controls hidden; language is selected from ROOMO's own header. */
+#google_translate_element { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; }
+.goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe.goog-te-banner-frame, .goog-te-balloon-frame,
+#goog-gt-tt, .goog-te-balloon-frame, .goog-tooltip, .goog-tooltip:hover { display: none !important; visibility: hidden !important; }
+html, body { top: 0 !important; }
+body > .skiptranslate { display: none !important; }
