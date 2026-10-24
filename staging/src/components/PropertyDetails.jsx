@@ -98,17 +98,35 @@ export default function PropertyDetails() {
   }, [property]);
   const amenities = useMemo(() => {
     const values = property?.amenities || property?.facilities || [];
+    const categoryFor = name => {
+      const value = String(name || "").trim().toLowerCase();
+      const categories = [
+        ["Parking", ["parking", "street parking", "accessible parking", "valet parking", "electric vehicle charging"]],
+        ["Internet", ["wifi", "wi-fi", "internet", "broadband"]],
+        ["Kitchen", ["kitchen", "kitchenette", "refrigerator", "fridge", "microwave", "oven", "stovetop", "kettle", "toaster", "dining table", "cooking", "tea/coffee"]],
+        ["Bedroom", ["bed linen", "linen", "wardrobe", "closet", "alarm clock", "extra long beds"]],
+        ["Bathroom", ["bathroom", "toilet", "shower", "bathtub", "bath or shower", "towels", "hairdryer", "toilet paper", "free toiletries", "bathrobe", "slippers"]],
+        ["Media & technology", ["tv", "television", "flat-screen", "cable channels", "satellite channels", "streaming service", "telephone", "radio"]],
+        ["Room amenities", ["air conditioning", "heating", "fan", "soundproof", "iron", "desk", "sofa", "seating area", "tile/marble", "private entrance", "clothes rack", "socket near the bed"]],
+        ["Food & drink", ["restaurant", "bar", "breakfast", "room service", "minibar", "coffee", "food", "dining"]],
+        ["Services", ["front desk", "housekeeping", "laundry", "dry cleaning", "luggage storage", "concierge", "airport shuttle", "shuttle service", "wake-up service"]],
+        ["Safety & security", ["safe", "smoke alarm", "fire extinguisher", "security", "cctv", "carbon monoxide", "key card", "24-hour security"]],
+        ["Accessibility", ["lift", "elevator", "wheelchair", "accessible", "upper floors"]],
+        ["Outdoor & view", ["balcony", "terrace", "garden", "patio", "view", "outdoor furniture", "sun terrace"]],
+        ["General", ["family rooms", "non-smoking", "designated smoking", "pet-friendly", "pets allowed"]]
+      ];
+      return categories.find(([, keywords]) => keywords.some(keyword => value === keyword || value.includes(keyword)))?.[0] || "Other facilities";
+    };
     const normalizeItem = (item, fallbackGroup = "") => {
       if (typeof item === "string" || typeof item === "number") {
-        return { name: String(item), group: fallbackGroup };
+        const name = String(item).trim();
+        return name ? { name, group: fallbackGroup || categoryFor(name) } : null;
       }
       if (!item || typeof item !== "object") return null;
       const name = item.name || item.label || item.title || item.facilityName;
       if (!name) return null;
-      return {
-        name: String(name),
-        group: String(item.group || item.category || item.categoryName || item.section || item.groupName || fallbackGroup || "").trim()
-      };
+      const explicitGroup = String(item.group || item.category || item.categoryName || item.section || item.groupName || fallbackGroup || "").trim();
+      return { name: String(name), group: explicitGroup || categoryFor(name) };
     };
     if (Array.isArray(values)) return values.map(item => normalizeItem(item)).filter(Boolean);
     if (values && typeof values === "object") {
