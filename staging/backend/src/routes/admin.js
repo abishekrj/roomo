@@ -96,7 +96,7 @@ const propertySchema = z.object({
   imageUrls: z.array(z.string().url().max(2048)).max(30).default([]),
   isFeatured: z.boolean().default(false),
   featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0),
-  status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
 });
 
 const statusSchema = z.object({
@@ -432,6 +432,30 @@ router.patch("/properties/:id/status", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+
+// DELETE /api/admin/properties/:id/delete
+// Permanently remove a property only when no guest requests or reservations depend on it.
+router.delete("/properties/:id/delete", async (req, res, next) => {
+  try {
+    const idResult = z.string().uuid().safeParse(req.params.id);
+    if (!idResult.success) return res.status(400).json({ message: "Invalid property ID." });
+    const existing = await prisma.property.findUnique({
+      where: { id: idResult.data },
+      select: { id: true, title: true, _count: { select: { reservations: true, enquiries: true } } },
+    });
+    if (!existing) return res.status(404).json({ message: "Property not found." });
+    if (existing._count.reservations > 0 || existing._count.enquiries > 0) {
+      return res.status(409).json({ message: "This property has reservations or enquiries and cannot be permanently deleted. Hide it instead to remove it from guest listings." });
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.roomType.deleteMany({ where: { propertyId: idResult.data } });
+      await tx.propertyImage.deleteMany({ where: { propertyId: idResult.data } });
+      await tx.property.delete({ where: { id: idResult.data } });
+    });
+    res.json({ message: "Property deleted successfully.", propertyId: idResult.data });
+  } catch (error) { next(error); }
 });
 
 
