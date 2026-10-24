@@ -4,13 +4,15 @@ import Header from "./Header.jsx";
 const API = "http://localhost:5001/api";
 
 export default function SuperAdminPortal() {
-  const [path, setPath] = useState(window.location.pathname);
+  const [path] = useState(window.location.pathname);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [stats, setStats] = useState({ properties: 0, users: 0 });
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
   const token = localStorage.getItem("roomoAdminToken") || sessionStorage.getItem("roomoAdminToken") || "";
   const loginPage = /\/login\/?$/.test(path) || path === "/admin" || path === "/staging/admin";
 
@@ -25,7 +27,7 @@ export default function SuperAdminPortal() {
     Promise.all([
       fetch(API + "/admin/properties", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
       fetch(API + "/admin/registered-users", { headers, cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; })
-    ]).then(([p, u]) => { if (!cancelled) setStats({ properties: (p.properties || []).length, users: (u.users || []).length }); })
+    ]).then(([p, u]) => { if (!cancelled) setProperties(p.properties || []); setUsers(u.users || []); setStats({ properties: (p.properties || []).length, users: (u.users || []).length }); })
       .catch(e => { if (!cancelled) setNotice(e.message || "Unable to load dashboard data."); });
     return () => { cancelled = true; };
   }, [loginPage, token]);
@@ -54,7 +56,7 @@ export default function SuperAdminPortal() {
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink">
     <Header ownerPortal adminNotifications />
-    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:py-12">
+    <main className="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {loginPage ? <section className="mx-auto mt-4 max-w-md">
         <div className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">ROOMO Sacred · Super Admin</p>
@@ -69,23 +71,16 @@ export default function SuperAdminPortal() {
           <p className="mt-5 text-xs leading-5 text-slate-500">Administrator permissions are verified by the ROOMO backend.</p>
         </div>
       </section> : <section>
-        <div className="mb-8 flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">Super Admin Dashboard</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div><button onClick={signOut} className="rounded-roomo border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-100">Sign out</button></div>
+        <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard"}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
         {notice && <p role="status" className="mb-5 rounded-roomo border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}
         <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
             <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
-            <nav className="grid grid-cols-1 gap-2" aria-label="Super Admin navigation">
-              <a href="/staging/admin/dashboard" className="flex items-center gap-3 rounded-lg bg-blue-600 px-3 py-3 text-sm font-medium text-white"><span className="w-5 text-center text-lg" aria-hidden="true">▦</span>Dashboard</a>
-              <a href="#property-listings" className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">⌂</span>Property listings</a>
-              <a href="#registered-guests" className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">♙</span>Registered guests</a>
-            </nav>
+            <nav className="grid grid-cols-2 gap-2 xl:grid-cols-1" aria-label="Super Admin navigation">{menu.map(item => <a key={item.id} href={routePrefix + "/" + item.id} aria-current={activePage === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${activePage === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}</nav>
             <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Platform administration</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
           </aside>
-          <div className="grid content-start gap-4 sm:grid-cols-2">
-            <a id="property-listings" href="#property-listings" className="scroll-mt-28 rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">Property activity <i className="bi bi-arrow-right" /></span></a>
-            <a id="registered-guests" href="#registered-guests" className="scroll-mt-28 rounded-roomo border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-roomo-blue">Guest activity <i className="bi bi-arrow-right" /></span></a>
-          </div>
+          <div className="min-w-0">{activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}{activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}{activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}</div>
         </div>
       </section>}
     </main>
