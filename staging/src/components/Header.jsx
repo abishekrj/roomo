@@ -36,7 +36,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     let cancelled = false;
     fetch(API_BASE + "/guest-auth/me", { credentials: "include", cache: "no-store" })
       .then(async response => { if (!response.ok) throw new Error("No active guest session"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) setUser(data.user); })
-      .catch(() => { if (!cancelled) setUser(null); });
+      .catch(() => { if (!cancelled) { setUser(null); localStorage.removeItem("roomoGuest"); } });
     return () => { cancelled = true; };
   }, []);
 
@@ -55,7 +55,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     setNotificationsMessage(items.length ? "" : results.every(r => r.status === "rejected") ? "Could not load notifications. Check the backend connection." : "No notifications yet.");
   };
   const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
-  const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { setUser(null); window.location.reload(); } };
+  const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { localStorage.removeItem("roomoGuest"); setUser(null); window.location.reload(); } };
   const chooseLanguage = item => {
     setLanguage(item); setLanguageOpen(false);
     try { localStorage.setItem("roomoLanguage", item.code); } catch {}
