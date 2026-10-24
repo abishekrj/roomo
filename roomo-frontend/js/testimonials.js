@@ -41,14 +41,7 @@
   }
   document.addEventListener("click",event=>{
     const button=event.target.closest("[data-testimonial-scroll]"); if(!button)return;
-    const track = el("testimonialTrack");
-    if (track) {
-      const slide = track.querySelector(".testimonial-slide-item");
-      const styles = window.getComputedStyle(track);
-      const gap = Number.parseFloat(styles.columnGap || styles.gap) || 0;
-      const distance = slide ? slide.getBoundingClientRect().width + gap : track.clientWidth * 0.85;
-      track.scrollBy({ left: Number(button.dataset.testimonialScroll) * distance, behavior: "smooth" });
-    }
+    const track=el("testimonialTrack"); if(track)track.scrollBy({left:Number(button.dataset.testimonialScroll)*360,behavior:"smooth"});
   });
   async function initTestimonials(){
     const placeholder=el("roomoTestimonials"); if(!placeholder)return;
