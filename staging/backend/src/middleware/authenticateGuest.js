@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 const prisma = require("../lib/prisma");
+const { GUEST_COOKIE, parseCookies } = require("../lib/sessionCookies");
 
 async function authenticateGuest(req, res, next) {
+  const cookies = parseCookies(req);
   const authorization = req.headers.authorization;
-  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  const token = cookies[GUEST_COOKIE] || (authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() : null);
   if (!token) return res.status(401).json({ message: "Sign in to continue with a reservation.", code: "GUEST_AUTH_REQUIRED" });
 
   let decoded;
@@ -29,7 +31,7 @@ async function authenticateGuest(req, res, next) {
     if (!guest) return res.status(401).json({ message: "Guest account not found. Please sign in again." });
     if (!guest.emailVerified) return res.status(403).json({ message: "Verify your email before making a reservation.", code: "EMAIL_NOT_VERIFIED" });
     req.guest = guest;
-    next();
+    return next();
   } catch (error) {
     next(error);
   }
