@@ -242,18 +242,18 @@ export default function PropertyDetails() {
           </header>
 
           <section aria-label="Property photos and videos" className="mb-6">
-            {media.length ? <div className="relative grid cursor-pointer gap-2 overflow-hidden rounded-lg md:grid-cols-[1.5fr_1fr]" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }}>
-              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="relative min-h-64 overflow-hidden bg-slate-100 text-left md:min-h-[390px]" aria-label="Open property photo gallery">
-                {media[0]?.kind === "video" ? <div className="flex h-full min-h-64 items-center justify-center bg-slate-900 text-5xl text-white md:min-h-[390px]">▶</div> : <img src={media[0]?.src} alt={media[0]?.alt || title} className="h-full min-h-64 w-full object-cover md:min-h-[390px]" onError={() => setFailedMedia(prev => ({...prev, [media[0]?.src]: true}))} />}
+            {media.length ? <div className="relative overflow-hidden rounded-lg" onClick={() => { setActiveMedia(0); setGalleryOpen(true); }}>
+              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="relative block aspect-video w-full overflow-hidden bg-slate-100 text-left" aria-label="Open property photo gallery">
+                {media[0]?.kind === "video" ? <div className="flex h-full w-full items-center justify-center bg-slate-900 text-5xl text-white">▶</div> : <img src={media[0]?.src} alt={media[0]?.alt || title} className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [media[0]?.src]: true}))} />}
                 {failedMedia[media[0]?.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-sm text-slate-500">Photo unavailable</div>}
               </button>
-              <div className="hidden grid-cols-2 grid-rows-2 gap-2 md:grid">
-                {media.slice(1, 5).map((item, index) => <div key={item.src} className="relative min-h-28 overflow-hidden bg-slate-100">
-                  {item.kind === "video" ? <div className="flex h-full items-center justify-center bg-slate-800 text-3xl text-white">▶</div> : <img src={item.src} alt={item.alt || title + " photo " + (index + 2)} loading="lazy" className="h-full min-h-28 w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
+              {media.length > 1 && <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {media.slice(1).map((item, index) => <button type="button" key={item.src} onClick={event => { event.stopPropagation(); setActiveMedia(index + 1); setGalleryOpen(true); }} aria-label={"Open photo " + (index + 2)} className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 text-left">
+                  {item.kind === "video" ? <div className="flex h-full w-full items-center justify-center bg-slate-800 text-3xl text-white">▶</div> : <img src={item.src} alt={item.alt || title + " photo " + (index + 2)} loading="lazy" className="h-full w-full object-cover" onError={() => setFailedMedia(prev => ({...prev, [item.src]: true}))} />}
                   {failedMedia[item.src] && <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-xs text-slate-500">Photo unavailable</div>}
-                </div>)}
-              </div>
-              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="absolute bottom-3 right-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">▦ Show all photos & videos ({media.length})</button>
+                </button>)}
+              </div>}
+              <button type="button" onClick={event => { event.stopPropagation(); setActiveMedia(0); setGalleryOpen(true); }} className="absolute right-3 top-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">▦ Show all photos & videos ({media.length})</button>
             </div> : <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Property photos and videos will appear here when uploaded.</div>}
           </section>
           {galleryOpen && media.length > 0 && <div role="dialog" aria-modal="true" aria-label="Property photo gallery" className="fixed inset-0 z-[100] flex flex-col bg-slate-950/95 text-white" onMouseDown={event => { if (event.target === event.currentTarget) setGalleryOpen(false); }}>
