@@ -62,6 +62,10 @@ const authLimiter = rateLimit({
   limit: 10,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({
+    message: "Too many sign-in attempts. Please wait 15 minutes before trying again.",
+    code: "AUTH_RATE_LIMITED",
+  }),
 });
 
 app.get("/api/health", (req, res) => {
