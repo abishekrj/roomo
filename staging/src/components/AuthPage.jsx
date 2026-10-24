@@ -72,8 +72,8 @@ export default function AuthPage({ mode = "login" }) {
     }
   };
 
-  return <main className="min-h-screen bg-white font-sans text-[#212529]">
-    <div className="grid min-h-screen lg:grid-cols-2">
+  return <main className="mx-auto w-full max-w-7xl flex-1 bg-white font-sans text-[#212529]">
+    <div className="grid min-h-[680px] lg:grid-cols-2">
       <section className="relative hidden min-h-screen overflow-hidden bg-[#f0f5f8] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <a href="/staging" aria-label="ROOMO Sacred home" className="relative z-10 inline-flex w-fit rounded-lg bg-white p-3"><img src={roomoLogo} alt="ROOMO Sacred" className="h-auto w-44 object-contain" /></a>
         <div className="relative z-10 max-w-xl py-12">
