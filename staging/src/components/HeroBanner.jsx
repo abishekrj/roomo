@@ -19,7 +19,7 @@ export default function HeroBanner() {
             <span className="sr-only"> stays and accommodation in Tiruvannamalai</span>
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">Hand-curated sanctuary stays, peaceful ashram guest rooms, and heritage havelis situated in revered proximity to Annamalaiyar Temple &amp; Sri Ramanasramam.</p>
-          <a href="/properties" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#2563a6] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-[#2563a6] focus:ring-offset-2 sm:text-base">
+          <a href="/staging/properties" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#2563a6] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-[#2563a6] focus:ring-offset-2 sm:text-base">
             Browse Rooms
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
           </a>
