@@ -36,9 +36,9 @@ export default function FeaturedStays() {
         // the cards use the real uploaded property images instead of sample-room fallbacks.
         setContent(data ? {
           ...(data.content || {}),
-          featuredProperties: Array.isArray(data.featuredProperties)
-            ? data.featuredProperties
-            : (data.content?.featuredProperties || [])
+          featuredProperties: Array.isArray(data.content?.featuredProperties)
+            ? data.content.featuredProperties
+            : (Array.isArray(data.featuredProperties) ? data.featuredProperties : [])
         } : null);
       })
       .catch(() => { if (!cancelled) setContent(null); })
@@ -59,14 +59,19 @@ export default function FeaturedStays() {
         .sort((a, b) => (a.featuredSortOrder ?? 999) - (b.featuredSortOrder ?? 999))
         .map(property => {
           const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
-          const uploadedImage = images.map(image => resolveImageUrl(image?.imageUrl || image?.url)).find(Boolean) || "";
+          // Keep every uploaded image URL so a stale/missing first upload does not
+          // leave the whole card blank when another valid property image exists.
+          const imageCandidates = images
+            .map(image => resolveImageUrl(image?.imageUrl || image?.url || image?.path || image?.src))
+            .filter(Boolean);
           return {
             id: property.id,
             name: property.title,
             type: property.propertyType,
             location: [property.address, property.city, property.state].filter(Boolean).join(", "),
             price: property.nightlyPrice,
-            img: uploadedImage,
+            img: imageCandidates[0] || "",
+            imageCandidates,
             fallbackImg: "",
             rating: property.rating,
             amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
@@ -76,7 +81,10 @@ export default function FeaturedStays() {
             sortOrder: property.featuredSortOrder ?? 999
           };
         })
-    : fallbackRooms.map(stay => ({ ...stay, img: resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image), fallbackImg: "" }));
+    : fallbackRooms.map(stay => {
+        const img = resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image);
+        return { ...stay, img, imageCandidates: img ? [img] : [], fallbackImg: "" };
+      });
   if (content?.featuredSectionEnabled === false) return null;
 
   const scroll = direction => {
@@ -137,7 +145,23 @@ export default function FeaturedStays() {
               <article key={stay.id || stay.name || index} data-featured-stay-card className="group flex w-[min(280px,84vw)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-shadow duration-200 hover:shadow-lg sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
                 <a href={stay.url || stay.href || "/roomo-search-results.html"} className="flex h-full flex-col">
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                    {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => { const fallback = stay.fallbackImg; if (fallback && event.currentTarget.src !== fallback) { event.currentTarget.src = fallback; return; } event.currentTarget.style.display = "none"; }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />}
+                    {stay.img && <img src={stay.img} alt={stay.name || ""} loading="lazy" decoding="async" onError={event => {
+                      const image = event.currentTarget;
+                      const candidates = stay.imageCandidates || [];
+                      const currentIndex = Number(image.dataset.imageCandidateIndex || 0);
+                      const nextIndex = currentIndex + 1;
+                      if (nextIndex < candidates.length) {
+                        image.dataset.imageCandidateIndex = String(nextIndex);
+                        image.src = candidates[nextIndex];
+                        return;
+                      }
+                      const fallback = stay.fallbackImg;
+                      if (fallback && image.src !== fallback) {
+                        image.src = fallback;
+                        return;
+                      }
+                      image.style.display = "none";
+                    }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />}
                     {(stay.badge || stay.type) && <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">{stay.badge || stay.type}</span>}
                   </div>
                   <div className="flex min-h-[190px] flex-1 flex-col p-4">
