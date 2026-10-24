@@ -28,7 +28,10 @@ export default function OwnerPortal() {
   const [enquiries, setEnquiries] = useState([]);
   const [properties, setProperties] = useState([]);
   const [reservations, setReservations] = useState([]);
-  const [active, setActive] = useState("dashboard");
+  const currentPath = window.location.pathname.replace(/\\/+$/, "") || "/owner";
+  const routePrefix = currentPath.startsWith("/staging/owner") ? "/staging/owner" : "/owner";
+  const routePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
+  const [active, setActive] = useState(routePage);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
@@ -81,7 +84,7 @@ export default function OwnerPortal() {
       localStorage.setItem("roomo_owner", JSON.stringify(data.owner));
       setToken(data.token); setOwner(data.owner);
       await loadDashboard(data.token);
-      setActive("dashboard");
+      window.location.href = routePrefix + "/dashboard";
     } catch (error) { setMessage(error.message || "Unable to sign in."); }
     finally { setBusy(false); }
   }
@@ -89,7 +92,7 @@ export default function OwnerPortal() {
   function signOut() {
     localStorage.removeItem("roomo_owner_token"); localStorage.removeItem("roomo_owner");
     setToken(""); setOwner(null); setEnquiries([]); setProperties([]); setReservations([]);
-    setPassword(""); setMessage(""); setActive("dashboard");
+    setPassword(""); setMessage(""); window.location.href = routePrefix + "/login";
   }
 
   const filteredEnquiries = useMemo(() => enquiries.filter((item) =>
@@ -136,7 +139,7 @@ export default function OwnerPortal() {
           <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">OWNER PANEL</p></div>
           <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
           <nav className="grid grid-cols-2 gap-2 lg:grid-cols-1" aria-label="Owner dashboard navigation">
-            {menu.map((item) => <button key={item.id} onClick={() => { setActive(item.id); setQuery(""); }} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition ${active === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</button>)}
+            {menu.map((item) => <a key={item.id} href={`${routePrefix}/${item.id}`} onClick={() => setQuery("")} aria-current={active === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition ${active === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
           </nav>
           <div className="mt-6 border-t border-white/10 pt-4"><p className="truncate px-3 text-xs text-slate-300">{owner.email}</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
         </aside>
@@ -144,7 +147,7 @@ export default function OwnerPortal() {
           {active === "dashboard" && <>
             <div className="mb-5"><h2 className="text-xl font-semibold">Dashboard overview</h2><p className="mt-1 text-sm text-slate-500">A quick view of enquiries and room availability across your properties.</p></div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{stats.map((stat) => <article key={stat.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium text-slate-500">{stat.label}</p><p className="mt-3 text-3xl font-semibold tabular-nums text-slate-900">{stat.value}</p></div><span className={`grid h-11 w-11 place-items-center rounded-lg text-xl ${stat.tint}`}>{stat.icon}</span></div><p className="mt-3 text-xs text-slate-500">{stat.hint}</p></article>)}</div>
-            <div className="mt-5 rounded-lg border border-slate-200 bg-white p-5"><div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Recent enquiries</h3><p className="mt-1 text-sm text-slate-500">Latest guest requests for your properties.</p></div><button onClick={() => setActive("enquiries")} className="text-sm font-semibold text-blue-700 hover:text-blue-900">View all →</button></div>
+            <div className="mt-5 rounded-lg border border-slate-200 bg-white p-5"><div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold">Recent enquiries</h3><p className="mt-1 text-sm text-slate-500">Latest guest requests for your properties.</p></div><a href={`${routePrefix}/enquiries`} className="text-sm font-semibold text-blue-700 hover:text-blue-900">View all →</a></div>
               {enquiries.length ? <div className="mt-4 divide-y divide-slate-100">{enquiries.slice(0, 5).map((item) => <div key={item.id} className="flex flex-col justify-between gap-2 py-3 sm:flex-row sm:items-center"><div className="min-w-0"><p className="truncate text-sm font-semibold">{item.guestName} <span className="font-normal text-slate-500">· {item.property?.title || "Property"}</span></p><p className="mt-1 text-xs text-slate-500">{dateRange(item)} · {item.adults} adults · {item.rooms} room(s)</p></div><span className="w-fit rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{item.status || "NEW"}</span></div>)}</div> : <p className="py-8 text-center text-sm text-slate-500">{busy ? "Loading enquiries…" : "No enquiries have been received yet."}</p>}
             </div>
           </>}
