@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
+import SearchSection from "../components/SearchSection.jsx";
 
 const API_ORIGIN = "http://localhost:5001";
 const PROPERTIES_API = API_ORIGIN + "/api/properties";
@@ -406,19 +407,17 @@ export default function PropertyDetails() {
                   <div><h2 className="text-xl font-semibold">Choose your room</h2><p className="mt-1 text-sm text-slate-500">Select dates and a room to see an estimated stay total.</p></div>
                   {startingPrice != null && <p className="text-sm text-slate-500">From <strong className="text-lg text-[#212529]">{money(startingPrice)}</strong> <span>/ night</span></p>}
                 </div>
-                <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2 sm:p-4">
-                  <label className="text-sm font-medium text-slate-700">Check-in
-                    <input type="date" value={checkIn} min={new Date().toISOString().slice(0,10)} onChange={e => { const next = e.target.value; setCheckIn(next); if (checkOut && next && checkOut <= next) setCheckOut(""); }} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100"/>
-                  </label>
-                  <label className="text-sm font-medium text-slate-700">Check-out
-                    <input type="date" value={checkOut} min={checkIn ? new Date(new Date(checkIn + "T00:00:00Z").getTime() + 86400000).toISOString().slice(0,10) : new Date().toISOString().slice(0,10)} onChange={e => setCheckOut(e.target.value)} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100"/>
-                  </label>
-                  <label className="text-sm font-medium text-slate-700">Adults
-                    <select value={adults} onChange={e => setAdults(Number(e.target.value))} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100">{[1,2,3,4,5,6,7,8].map(n=><option key={n} value={n}>{n} {n===1?"adult":"adults"}</option>)}</select>
-                  </label>
-                  <label className="text-sm font-medium text-slate-700">Rooms
-                    <select value={rooms} onChange={e => setRooms(Number(e.target.value))} className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal focus:border-[#2563a6] focus:outline-none focus:ring-2 focus:ring-blue-100">{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n} {n===1?"room":"rooms"}</option>)}</select>
-                  </label>
+                <div className="mt-4">
+                  <SearchSection
+                    variant="inline"
+                    initialValues={{ destination: property.locality || property.city || "Tiruvannamalai", checkIn, checkOut, adults, rooms }}
+                    onSearch={({ checkIn: nextCheckIn, checkOut: nextCheckOut, adults: nextAdults, rooms: nextRooms }) => {
+                      setCheckIn(nextCheckIn);
+                      setCheckOut(nextCheckOut);
+                      setAdults(nextAdults);
+                      setRooms(nextRooms);
+                    }}
+                  />
                 </div>
                 {stayNights > 0 && <p className="mt-3 text-sm text-slate-600"><strong className="text-slate-900">{stayNights} {stayNights===1?"night":"nights"}</strong> · {adults} {adults===1?"adult":"adults"} · {rooms} {rooms===1?"room":"rooms"}</p>}
                 {roomTypes.length ? <div className="mt-4 space-y-3">{roomTypes.map((room,index) => {
