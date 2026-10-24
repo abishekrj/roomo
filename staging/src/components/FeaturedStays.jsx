@@ -50,22 +50,32 @@ export default function FeaturedStays() {
     ? content.featuredRooms.filter(stay => stay && stay.featured !== false).sort((left, right) => (left.sortOrder ?? 999) - (right.sortOrder ?? 999))
     : [];
 
-  const stays = Array.isArray(content?.featuredProperties) && content.featuredProperties.length
-    ? content.featuredProperties.map((property, index) => ({
-        id: property.id,
-        name: property.title,
-        type: property.propertyType,
-        location: [property.address, property.city, property.state].filter(Boolean).join(", "),
-        price: property.nightlyPrice,
-        img: resolveImageUrl(property.images?.[0]?.imageUrl || property.images?.[0]?.url || property.imageUrl || property.coverImage || "") || resolveImageUrl(fallbackRooms[index]?.img || fallbackRooms[index]?.imageUrl || fallbackRooms[index]?.image || ""),
-        fallbackImg: resolveImageUrl(fallbackRooms[index]?.img || fallbackRooms[index]?.imageUrl || fallbackRooms[index]?.image || ""),
-        rating: property.rating,
-        amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
-        highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
-        badge: property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isGreatLocation ? "Great location" : ""),
-        url: property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
-        sortOrder: property.featuredSortOrder ?? index
-      }))
+  // Real published properties are the source of truth. Sample featuredRooms
+  // are only used when the API has no published property records at all.
+  const hasPublishedProperties = Array.isArray(content?.featuredProperties) && content.featuredProperties.length > 0;
+  const stays = hasPublishedProperties
+    ? content.featuredProperties
+        .filter(property => property && property.status === "PUBLISHED" && property.isFeatured !== false)
+        .sort((a, b) => (a.featuredSortOrder ?? 999) - (b.featuredSortOrder ?? 999))
+        .map(property => {
+          const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
+          const uploadedImage = images.map(image => resolveImageUrl(image?.imageUrl || image?.url)).find(Boolean) || "";
+          return {
+            id: property.id,
+            name: property.title,
+            type: property.propertyType,
+            location: [property.address, property.city, property.state].filter(Boolean).join(", "),
+            price: property.nightlyPrice,
+            img: uploadedImage,
+            fallbackImg: "",
+            rating: property.rating,
+            amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
+            highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
+            badge: property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isGreatLocation ? "Great location" : ""),
+            url: property.url || property.href || "/roomo-stay-details.html?id=" + encodeURIComponent(property.id),
+            sortOrder: property.featuredSortOrder ?? 999
+          };
+        })
     : fallbackRooms.map(stay => ({ ...stay, img: resolveImageUrl(stay.img || stay.imageUrl || stay.coverImage || stay.image), fallbackImg: "" }));
   if (content?.featuredSectionEnabled === false) return null;
 
