@@ -30,11 +30,6 @@ function createToken(owner) {
 
 router.post("/register", async (req, res, next) => {
   try {
-    // Production owner accounts should be provisioned by an administrator until a verified onboarding flow exists.
-    if (process.env.NODE_ENV === "production") {
-      return res.status(403).json({ message: "Owner self-registration is disabled. Please contact the ROOMO team." });
-    }
-
     const parsed = registerSchema.safeParse(req.body);
 
     if (!parsed.success) {
