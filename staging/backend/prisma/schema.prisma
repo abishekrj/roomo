@@ -88,6 +88,7 @@ model Property {
   owner         Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   images        PropertyImage[]
   reservations  Reservation[]
+  enquiries     Enquiry[]
   roomTypes     RoomType[]
 
   @@index([ownerId])
@@ -322,4 +323,26 @@ model CMSPage {
 
   @@index([isPublished, updatedAt])
   @@map("cms_pages")
+}
+
+
+model Enquiry {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid @map("property_id")
+  guestName  String   @map("guest_name") @db.VarChar(120)
+  email      String   @db.VarChar(254)
+  phone      String   @db.VarChar(32)
+  checkIn    DateTime? @db.Date @map("check_in")
+  checkOut   DateTime? @db.Date @map("check_out")
+  adults     Int      @default(2)
+  rooms      Int      @default(1)
+  message    String   @default("") @db.Text
+  status     String   @default("NEW") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, createdAt])
+  @@index([status, createdAt])
+  @@map("enquiries")
 }
