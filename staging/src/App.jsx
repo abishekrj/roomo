@@ -4,6 +4,7 @@ import SearchSection from "./components/SearchSection.jsx";
 import Footer from "./components/Footer.jsx";
 import FeaturedStays from "./components/FeaturedStays.jsx";
 import UpcomingFestival from "./components/UpcomingFestival.jsx";
+import PilgrimGuide from "./components/PilgrimGuide.jsx";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <SearchSection />
         <FeaturedStays />
         <UpcomingFestival />
+        <PilgrimGuide />
         {/* Additional homepage sections will be migrated as reusable components. */}
       </main>
       <Footer />
