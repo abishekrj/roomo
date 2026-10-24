@@ -25,13 +25,37 @@ const arrayValue = value => Array.isArray(value) ? value : value && typeof value
 const formatPrice = value => Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 const propertyType = property => property.propertyType || "Stay";
 const API_ORIGIN = "http://localhost:5001";
+const resolvePropertyImage = item => {
+  const raw = typeof item === "string" ? item : (
+    item?.imageUrl || item?.imagePath || item?.fileUrl || item?.mediaUrl ||
+    item?.thumbnailUrl || item?.url || item?.path || item?.src ||
+    item?.filename || item?.fileName || item?.location || ""
+  );
+  if (typeof raw !== "string" || !raw.trim()) return "";
+  const value = raw.trim().replace(/\\\\/g, "/");
+  try {
+    // Uploaded files are served by Express, not by Vite. If an older upload
+    // record saved the Vite origin, keep its path but point it at the API server.
+    const parsed = new URL(value, API_ORIGIN);
+    if (["localhost", "127.0.0.1"].includes(parsed.hostname) && parsed.port === "5173" && /^\\/uploads\\//.test(parsed.pathname)) {
+      parsed.protocol = "http:";
+      parsed.hostname = "localhost";
+      parsed.port = "5001";
+    }
+    if (!/^https?:$/.test(parsed.protocol)) return "";
+    return parsed.href;
+  } catch {
+    const path = value.replace(/^\\.\\//, "").replace(/^uploads\\//i, "/uploads/");
+    return path.startsWith("/") ? new URL(path, API_ORIGIN).href : "";
+  }
+};
 const propertyImages = property => {
-  const values = [...(Array.isArray(property.images) ? property.images : []), property.coverImage, property.imageUrl, property.featuredImage, property.thumbnailUrl];
-  return [...new Set(values.map(item => {
-    const value = typeof item === "string" ? item : item?.imageUrl || item?.imagePath || item?.url || item?.path || item?.src || item?.fileUrl || item?.thumbnailUrl;
-    if (typeof value !== "string" || !value.trim()) return "";
-    try { return new URL(value.trim(), API_ORIGIN).href; } catch { return ""; }
-  }).filter(Boolean))];
+  const values = [
+    ...(Array.isArray(property.images) ? property.images : []),
+    property.coverImage, property.imageUrl, property.featuredImage,
+    property.thumbnailUrl, property.mainImage, property.photo
+  ];
+  return [...new Set(values.map(resolvePropertyImage).filter(Boolean))];
 };
 
 function Icon({ name, className = "h-4 w-4" }) {
