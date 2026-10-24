@@ -3,6 +3,7 @@ import HeroBanner from "./components/HeroBanner.jsx";
 import SearchSection from "./components/SearchSection.jsx";
 import Footer from "./components/Footer.jsx";
 import FeaturedStays from "./components/FeaturedStays.jsx";
+import UpcomingFestival from "./components/UpcomingFestival.jsx";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <HeroBanner />
         <SearchSection />
         <FeaturedStays />
+        <UpcomingFestival />
         {/* Additional homepage sections will be migrated as reusable components. */}
       </main>
       <Footer />
