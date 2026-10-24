@@ -304,7 +304,7 @@ router.get("/me", async (req, res, next) => {
     const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
     if (!token) return res.status(401).json({ message: "Authentication required." });
     let decoded;
-    try { decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest" }); }
+    try { decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest", algorithms: ["HS256"] }); }
     catch { return res.status(401).json({ message: "Invalid or expired guest session." }); }
     const user = await prisma.guestUser.findUnique({ where: { id: decoded.sub } });
     if (!user || !user.emailVerified) return res.status(401).json({ message: "Guest account not found or email is not verified." });
