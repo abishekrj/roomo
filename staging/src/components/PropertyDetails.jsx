@@ -98,10 +98,36 @@ export default function PropertyDetails() {
   }, [property]);
   const amenities = useMemo(() => {
     const values = property?.amenities || property?.facilities || [];
-    if (Array.isArray(values)) return values.map(item => typeof item === "string" ? item : item?.name || item?.label).filter(Boolean);
-    if (values && typeof values === "object") return Object.entries(values).flatMap(([group, items]) => Array.isArray(items) ? items.map(item => typeof item === "string" ? item : item?.name || item?.label).filter(Boolean).map(name => ({ group, name })) : []);
+    const normalizeItem = (item, fallbackGroup = "") => {
+      if (typeof item === "string" || typeof item === "number") {
+        return { name: String(item), group: fallbackGroup };
+      }
+      if (!item || typeof item !== "object") return null;
+      const name = item.name || item.label || item.title || item.facilityName;
+      if (!name) return null;
+      return {
+        name: String(name),
+        group: String(item.group || item.category || item.categoryName || item.section || item.groupName || fallbackGroup || "").trim()
+      };
+    };
+    if (Array.isArray(values)) return values.map(item => normalizeItem(item)).filter(Boolean);
+    if (values && typeof values === "object") {
+      return Object.entries(values).flatMap(([group, items]) => {
+        const list = Array.isArray(items) ? items : items && typeof items === "object" ? Object.values(items) : [];
+        return list.map(item => normalizeItem(item, group)).filter(Boolean);
+      });
+    }
     return [];
   }, [property]);
+  const amenityGroups = useMemo(() => {
+    const groups = new Map();
+    amenities.forEach(item => {
+      const group = item.group || "";
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(item.name);
+    });
+    return Array.from(groups, ([group, items]) => ({ group, items }));
+  }, [amenities]);
   const roomTypes = normalizeList(property?.roomTypes || property?.rooms);
   const title = textValue(property?.title || property?.name) || "Property details";
   const location = [property?.address, property?.locality, property?.city, property?.state].filter(Boolean).join(", ");
@@ -249,7 +275,7 @@ export default function PropertyDetails() {
 
               <section id="facilities" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Facilities & amenities</h2>
-                {amenities.length ? <div className="mt-4 grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">{amenities.map((item,index) => { const name = typeof item === "string" ? item : item.name; const group = typeof item === "string" ? "" : item.group; return <div key={name + index} className="flex items-start gap-2 text-sm text-slate-700"><span className="font-semibold text-emerald-700" aria-hidden="true">✓</span><span>{group && <span className="block text-xs text-slate-500">{group}</span>}{name}</span></div>; })}</div> : <p className="mt-3 text-sm leading-6 text-slate-600">Please contact the property to confirm available facilities and amenities.</p>}
+                {amenities.length ? <div className="mt-4 space-y-6">{amenityGroups.map(({ group, items }) => <div key={group || "other-facilities"}>{group && <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold text-slate-800">{group}</h3>}<div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((name,index) => <div key={name + index} className="flex items-start gap-2 text-sm text-slate-700"><span className="font-semibold text-emerald-700" aria-hidden="true">✓</span><span>{name}</span></div>)}</div></div>)}</div> : <p className="mt-3 text-sm leading-6 text-slate-600">Please contact the property to confirm available facilities and amenities.</p>}
               </section>
             </div>
 
