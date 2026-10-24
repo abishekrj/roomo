@@ -52,6 +52,7 @@ const featuredSectionSchema = z.object({
 });
 
 const homepageSchema = z.object({
+  searchSuggestionLimit: z.coerce.number().int().min(1).max(10).default(5),
   siteTitle: z.string().trim().min(5).max(160),
   heroBadge: z.string().trim().min(1).max(160),
   heroTitleLine: z.string().trim().min(1).max(120),
