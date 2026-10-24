@@ -301,6 +301,11 @@ router.post("/google", async (req, res, next) => {
   }
 });
 
+router.post("/logout", csrfProtection, (req, res) => {
+  clearSessionCookie(res, GUEST_COOKIE);
+  res.json({ message: "Signed out successfully." });
+});
+
 router.get("/me", async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
