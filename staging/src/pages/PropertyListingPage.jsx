@@ -138,8 +138,7 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
          <div><span className="text-xs text-slate-500">Price per night</span>{Number(property.nightlyPrice)>0?<p className="mt-0.5 text-xl font-semibold text-[#212529]">₹{formatPrice(property.nightlyPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></p>:<p className="mt-0.5 text-sm font-medium text-slate-700">Contact for price</p>}{property.reviewCount!=null&&Number(property.reviewCount)>0&&<p className="mt-1 text-xs text-slate-500">{property.reviewCount} {Number(property.reviewCount)===1?"review":"reviews"}</p>}</div>
          <a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View rooms &amp; enquire <Icon name="arrow" className="h-4 w-4"/></a>
        </div>
-        <a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View stay <Icon name="arrow" className="h-4 w-4"/></a>
-      </div>
+        
     </div>
   </article>;
 }
