@@ -1,4 +1,16 @@
 const homepageDefaults = {
+  nearbyLocations: {
+    enabled: true,
+    eyebrow: "Explore Tiruvannamalai",
+    title: "Nearby Locations",
+    description: "Discover sacred landmarks and peaceful places to include in your Tiruvannamalai visit.",
+    items: [
+      { id: "annamalaiyar-temple", category: "Temple", title: "Arunachaleswarar Temple", shortDescription: "Visit the renowned Shiva temple at the heart of Tiruvannamalai.", description: "A major sacred landmark dedicated to Lord Shiva, closely associated with Arunachala and the Agni element. Check current temple timings before your visit.", distance: "Town centre", address: "Tiruvannamalai, Tamil Nadu", mapUrl: "https://www.google.com/maps/search/?api=1&query=Arunachaleswarar+Temple+Tiruvannamalai" },
+      { id: "sri-ramanasramam", category: "Ashram", title: "Sri Ramanasramam", shortDescription: "Spend a quiet moment at the ashram associated with Sri Ramana Maharshi.", description: "A spiritual ashram at the foothills of Arunachala. Visitors should respect the ashram's quiet atmosphere and check visitor guidance before travelling.", distance: "Arunachala foothills", address: "Sri Ramanasramam, Tiruvannamalai, Tamil Nadu", mapUrl: "https://www.google.com/maps/search/?api=1&query=Sri+Ramanasramam+Tiruvannamalai" },
+      { id: "virupaksha-cave", category: "Sacred site", title: "Virupaksha Cave", shortDescription: "Explore a historic meditation cave on Arunachala hill.", description: "A cave on Arunachala associated with meditation and the life of Sri Ramana Maharshi. The approach is a hill walk; wear suitable footwear and check access conditions locally.", distance: "Hill walk", address: "Arunachala Hill, Tiruvannamalai, Tamil Nadu", mapUrl: "https://www.google.com/maps/search/?api=1&query=Virupaksha+Cave+Tiruvannamalai" },
+      { id: "girivalam-path", category: "Pilgrimage route", title: "Girivalam Path", shortDescription: "Plan the sacred circumambulation route around Arunachala.", description: "The traditional route around Arunachala is approximately 14 km. Allow time for breaks, carry drinking water, and take extra care during busy full-moon periods.", distance: "Approx. 14 km circuit", address: "Girivalam Road, Tiruvannamalai, Tamil Nadu", mapUrl: "https://www.google.com/maps/search/?api=1&query=Girivalam+Path+Tiruvannamalai" }
+    ]
+  },
   pilgrimGuide: {
     enabled: true,
     eyebrow: "Pilgrim Compendium",
