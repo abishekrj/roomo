@@ -44,7 +44,12 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: "20kb" }));
-// Keep uploaded property media in the shared backend upload directory so the staging API can serve files uploaded by the legacy backend too. Override with ROOMO_UPLOAD_DIR when deploying to a different layout.\nconst uploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../roomo-backend/uploads"));\napp.use("/uploads", express.static(uploadsRoot, { dotfiles: "deny", index: false, maxAge: "1d" }));
+// Serve both the staging backend uploads and the legacy ROOMO uploads. Existing database URLs may reference files in either directory.
+const stagingUploadsRoot = path.resolve(path.join(__dirname, "../uploads"));
+const sharedUploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../roomo-backend/uploads"));
+const uploadStaticOptions = { dotfiles: "deny", index: false, maxAge: "1d" };
+app.use("/uploads", express.static(stagingUploadsRoot, uploadStaticOptions));
+if (sharedUploadsRoot !== stagingUploadsRoot) app.use("/uploads", express.static(sharedUploadsRoot, uploadStaticOptions));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
