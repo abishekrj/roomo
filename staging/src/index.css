@@ -24,3 +24,121 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border-radius: 8px;
   background: #cbd5e1;
 }
+
+
+/* Local Shopping Guide — isolated styles for the React staging homepage. */
+.roomo-shopping-section {
+  border-top: 1px solid #e6ebef;
+  border-bottom: 1px solid #e6ebef;
+  background: #fff;
+}
+.roomo-shopping-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+.roomo-shopping-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #9a7132;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .14em;
+}
+.roomo-shopping-heading h2 {
+  margin: 0 0 8px;
+  color: #183b56;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+.roomo-shopping-heading p {
+  margin: 0;
+  color: #61717e;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.roomo-shopping-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.roomo-shopping-view-all,
+.roomo-shopping-arrow,
+.roomo-shop-directions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid #d7e0e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #183b56;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+.roomo-shopping-view-all { padding: 0 16px; white-space: nowrap; }
+.roomo-shopping-view-all:hover { background: #0058bc; border-color: #0058bc; color: #fff; }
+.roomo-shopping-arrow { width: 42px; height: 42px; padding: 0; font-size: 24px; cursor: pointer; }
+.roomo-shopping-arrow:hover:not(:disabled) { background: #eaf0f5; border-color: #c5d4e0; }
+.roomo-shopping-arrow:disabled { cursor: not-allowed; opacity: .45; }
+.roomo-shopping-track {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 1px 12px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.roomo-shopping-track::-webkit-scrollbar { display: none; }
+.roomo-shop-card {
+  display: flex;
+  flex: 0 0 calc((100% - 54px) / 4);
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e0e7ed;
+  border-radius: 8px;
+  background: #fff;
+  scroll-snap-align: start;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.roomo-shop-card:hover { border-color: #cbd8e2; box-shadow: 0 8px 24px rgba(15,44,89,.09); }
+.roomo-shop-card-main { display: block; min-width: 0; color: inherit; text-decoration: none; }
+.roomo-shop-card-image { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #edf2f5; }
+.roomo-shop-card-image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.roomo-shop-card:hover .roomo-shop-card-image img { transform: scale(1.035); }
+.roomo-shop-image-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: #54748a; font-size: 42px; }
+.roomo-shop-offer { position: absolute; top: 12px; right: 12px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 24px); padding: 7px 10px; border-radius: 8px; background: #198754; color: #fff; box-shadow: 0 2px 8px #0002; font-size: 11px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.roomo-shop-card-copy { padding: 14px 16px 8px; }
+.roomo-shop-category { display: inline-block; border: 1px solid #c6d9e8; border-radius: 8px; padding: 4px 8px; background: #eaf2f8; color: #2563a6; font-size: 10px; font-weight: 600; line-height: 1.4; }
+.roomo-shop-card-copy h3 { margin: 9px 0 7px; color: #183b56; font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.roomo-shop-card-copy p { display: flex; align-items: flex-start; gap: 7px; margin: 4px 0; color: #61717e; font-size: 12px; font-weight: 400; line-height: 1.6; }
+.roomo-shop-card-copy p span { flex: 0 0 auto; color: #b8893b; }
+.roomo-shop-directions { align-self: flex-start; margin: 0 16px 16px; padding: 0 14px; }
+.roomo-shop-directions:hover { background: #f2f6f8; border-color: #c5d4e0; }
+@media (max-width: 1023px) {
+  .roomo-shop-card { flex-basis: calc((100% - 36px) / 3); }
+}
+@media (max-width: 767px) {
+  .roomo-shopping-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .roomo-shopping-controls { width: 100%; justify-content: space-between; }
+  .roomo-shop-card { flex: 0 0 min(84%, 320px); width: min(84%, 320px); }
+  .roomo-shopping-track { gap: 14px; }
+}
