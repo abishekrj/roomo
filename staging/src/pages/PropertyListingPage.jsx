@@ -92,7 +92,12 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
   const amenities = arrayValue(property.amenities).slice(0, 4);
   const highlights = arrayValue(property.highlights || property.propertyHighlights || property.specialFeatures).slice(0, 2);
   const nearby = arrayValue(property.nearbyLandmarks);
-  const badgeLabel = property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isFeatured ? "Popular choice" : property.isGreatLocation ? "Great location" : "");
+  const distanceSource = property.landmarkDistances || property.distances || property.nearbyLandmarks;
+  const sacredDistances = (Array.isArray(distanceSource) ? distanceSource : []).filter(item => item && typeof item === "object").map(item => ({ name: item.landmark || item.name || item.title || item.location, distance: item.distance || item.distanceText || item.approxDistance })).filter(item => item.name && item.distance && /Annamalaiyar|Ramanasramam|Girivalam|Arunachala/i.test(String(item.name))).slice(0, 3);
+  const policies = property.showPolicies === false ? null : property.policies;
+  const policyHighlights = policies && typeof policies === "object" ? [policies.cancellationPolicy && (typeof policies.cancellationPolicy === "string" ? policies.cancellationPolicy : policies.cancellationPolicy.label || policies.cancellationPolicy.summary), policies.paymentTerms && (typeof policies.paymentTerms === "string" ? policies.paymentTerms : policies.paymentTerms.label || policies.paymentTerms.summary), policies.childrenAllowed === true ? "Children welcome" : policies.childrenAllowed === false ? "Adults only" : null, policies.petsAllowed === true ? "Pets allowed" : policies.petsAllowed === false ? "No pets" : null].filter(Boolean).slice(0, 2) : [];
+  const isVerified = property.isVerified === true || property.verificationStatus === "VERIFIED";
+  const badgeLabel = isVerified ? "ROOMO verified" : (property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isFeatured ? "Popular choice" : property.isGreatLocation ? "Great location" : ""));
   const configuredHref = property.url || property.href;
   const href = configuredHref
     ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
@@ -122,13 +127,17 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
         {property.rating != null && <div className="shrink-0 rounded-lg bg-[#2563a6] px-2 py-1 text-sm font-semibold text-white">{Number(property.rating).toFixed(1)} ★</div>}
       </div>
       <p className="mt-2 flex items-start gap-1.5 text-sm leading-6 text-slate-500"><Icon name="pin" className="mt-1 h-4 w-4 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}{property.distanceToLandmark ? ` · approx. ${property.distanceToLandmark}` : property.nearestLandmark ? ` · near ${property.nearestLandmark}` : ""}</span></p>
+       {sacredDistances.length > 0 && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600" aria-label="Distances to sacred places">{sacredDistances.map((item,index)=><span key={item.name+index}>⌖ {item.name}: <strong className="font-semibold text-slate-700">{item.distance}</strong></span>)}</div>}
       <div className="mt-4 flex flex-wrap gap-2">
         {amenities.map((item, index) => <span key={String(item) + index} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">{AMENITY_LABELS[normalize(item)] || item}</span>)}
         {property.sacredViews && <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">Sacred views</span>}
       </div>
       {highlights.length > 0 && <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-emerald-700">{highlights.map((item, index) => <span key={String(item) + index}>✓ {item}</span>)}</div>}
-      <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4 mt-4">
-        <div><span className="text-xs text-slate-500">Price per night</span><p className="mt-0.5 text-xl font-semibold text-[#212529]">₹{formatPrice(property.nightlyPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></p></div>
+      {policyHighlights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{policyHighlights.map((item,index)=><span key={item+index} className="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-800">{item}</span>)}</div>}
+       <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4 mt-4">
+         <div><span className="text-xs text-slate-500">Price per night</span>{Number(property.nightlyPrice)>0?<p className="mt-0.5 text-xl font-semibold text-[#212529]">₹{formatPrice(property.nightlyPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></p>:<p className="mt-0.5 text-sm font-medium text-slate-700">Contact for price</p>}{property.reviewCount!=null&&Number(property.reviewCount)>0&&<p className="mt-1 text-xs text-slate-500">{property.reviewCount} {Number(property.reviewCount)===1?"review":"reviews"}</p>}</div>
+         <a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View rooms &amp; enquire <Icon name="arrow" className="h-4 w-4"/></a>
+       </div>
         <a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View stay <Icon name="arrow" className="h-4 w-4"/></a>
       </div>
     </div>
