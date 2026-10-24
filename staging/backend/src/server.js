@@ -117,14 +117,16 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
         fullName: true,
         email: true,
         role: true,
+        isActive: true,
         canEditProperties: true,
       },
     });
 
     if (!owner) {
-      return res.status(401).json({
-        message: "Owner account not found.",
-      });
+      return res.status(401).json({ message: "Owner account not found." });
+    }
+    if (owner.isActive === false) {
+      return res.status(403).json({ message: "This owner account has been disabled. Please contact ROOMO support." });
     }
 
     res.json({ owner });

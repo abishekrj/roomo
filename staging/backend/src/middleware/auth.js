@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken");
 const { ADMIN_COOKIE, parseCookies } = require("../lib/sessionCookies");
+const prisma = require("../lib/prisma");
 
 const TOKEN_ISSUER = "roomo-api";
 const OWNER_ADMIN_AUDIENCE = "roomo-admin";
 
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const cookies = parseCookies(req);
   const authorization = req.headers.authorization;
   // Cookie sessions are the primary authentication mechanism. Bearer support remains
@@ -22,9 +23,13 @@ function authenticateToken(req, res, next) {
     if (!decoded || typeof decoded.sub !== "string" || !decoded.sub) {
       return res.status(401).json({ message: "Invalid or expired token." });
     }
+    const owner = await prisma.owner.findUnique({ where: { id: decoded.sub }, select: { id: true, isActive: true } });
+    if (!owner) return res.status(401).json({ message: "Account not found. Please sign in again." });
+    if (owner.isActive === false) return res.status(403).json({ message: "This owner account has been disabled. Please contact ROOMO support." });
     req.owner = decoded;
     return next();
-  } catch {
+  } catch (error) {
+    if (error?.name === "PrismaClientKnownRequestError" || error?.name === "PrismaClientInitializationError") return next(error);
     return res.status(401).json({ message: "Invalid or expired session. Please sign in again." });
   }
 }

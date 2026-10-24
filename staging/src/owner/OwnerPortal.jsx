@@ -84,7 +84,7 @@ export default function OwnerPortal() {
     try {
       const response = await fetch(API + "/auth/register", {
         method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName: fullName.trim(), email: email.trim().toLowerCase(), ...(phoneNumber.trim() ? { phoneNumber: phoneNumber.trim() } : {}), password })
+        body: JSON.stringify({ fullName: fullName.trim(), email: email.trim().toLowerCase(), phoneNumber: phoneNumber.trim(), password })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to create your owner account.");
@@ -146,7 +146,7 @@ export default function OwnerPortal() {
         <form onSubmit={signupMode ? signUp : signIn} className="mt-6 space-y-4">
           {signupMode && <label className="block text-sm font-medium">Full name<input required minLength={2} autoComplete="name" value={fullName} onChange={event => setFullName(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>}
           <label className="block text-sm font-medium">Email address<input required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>
-          {signupMode && <label className="block text-sm font-medium">Mobile number <span className="font-normal text-slate-400">(optional)</span><input type="tel" autoComplete="tel" placeholder="+919876543210" value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>}
+          {signupMode && <label className="block text-sm font-medium">Mobile number <span className="text-red-600">*</span><input required type="tel" autoComplete="tel" inputMode="tel" pattern="\\+[1-9][0-9]{7,14}" title="Enter your mobile number with country code, for example +919876543210" placeholder="+919876543210" value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /><span className="mt-1 block text-xs font-normal text-slate-500">Include your country code (e.g. +91).</span></label>}
           <label className="block text-sm font-medium">Password<input required type="password" autoComplete={signupMode ? "new-password" : "current-password"} minLength={signupMode ? 12 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>
           {message && <p role="status" className={`rounded-lg p-3 text-sm ${/successfully|created/i.test(message) ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>{message}</p>}
           <button disabled={busy} className="w-full rounded-lg bg-[#feba02] px-4 py-3 font-semibold text-[#212529] transition hover:bg-[#e5a900] disabled:opacity-60">{busy ? (signupMode ? "Creating account…" : "Signing in…") : signupMode ? "Create owner account" : "Sign in"}</button>

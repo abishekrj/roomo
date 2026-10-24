@@ -465,7 +465,7 @@ router.post("/owners", async (req, res, next) => {
     fullName: z.string().trim().min(2).max(100),
     email: z.string().trim().email().max(254),
     password: z.string().min(12).max(72),
-    phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/).optional().or(z.literal("")),
+    phoneNumber: z.string().trim().regex(/^\+[1-9]\d{7,14}$/),
   }).safeParse(req.body);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -473,7 +473,7 @@ router.post("/owners", async (req, res, next) => {
       fullName: "Enter the owner's full name (at least 2 characters).",
       email: "Enter a valid email address.",
       password: "Use a password between 12 and 72 characters.",
-      phoneNumber: "Enter the phone with country code, for example +919876543210, or leave it blank.",
+      phoneNumber: "Enter a mobile number with country code, for example +919876543210.",
     };
     return res.status(400).json({
       message: fieldMessages[issue.path[0]] || "Please check the owner details.",
@@ -485,7 +485,7 @@ router.post("/owners", async (req, res, next) => {
       data: {
         fullName: parsed.data.fullName,
         email: parsed.data.email.toLowerCase(),
-        phoneNumber: parsed.data.phoneNumber || null,
+        phoneNumber: parsed.data.phoneNumber,
         passwordHash: await bcrypt.hash(parsed.data.password, 12),
         role: "OWNER",
         canEditProperties: false,
@@ -522,7 +522,7 @@ router.get("/owners", async (req, res, next) => {
       where: { role: "OWNER" },
       select: {
         id: true, fullName: true, email: true, phoneNumber: true,
-        canEditProperties: true, createdAt: true,
+        canEditProperties: true, isActive: true, createdAt: true,
         _count: { select: { properties: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -550,6 +550,18 @@ router.post("/owners/:id/reset-password", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+router.patch("/owners/:id/status", async (req, res, next) => {
+  const id = z.string().uuid().safeParse(req.params.id);
+  const body = z.object({ isActive: z.boolean() }).safeParse(req.body);
+  if (!id.success || !body.success) return res.status(400).json({ message: "Choose a valid owner and account status." });
+  try {
+    const owner = await prisma.owner.findFirst({ where: { id: id.data, role: "OWNER" }, select: { id: true } });
+    if (!owner) return res.status(404).json({ message: "Owner account not found." });
+    const updated = await prisma.owner.update({ where: { id: owner.id }, data: { isActive: body.data.isActive }, select: { id: true, fullName: true, isActive: true } });
+    res.json({ message: updated.isActive ? "Owner account enabled." : "Owner account disabled.", owner: updated });
+  } catch (error) { next(error); }
 });
 
 router.patch("/owners/:id/property-edit-permission", async (req, res, next) => {
