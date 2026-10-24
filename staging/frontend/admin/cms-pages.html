@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>ROOMO Admin | CMS Pages</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+      html,
+      body,
+      body *:not(i):not([class^="bi"]):not([class*=" bi-"]) {
+        font-family: 'Poppins', sans-serif !important
+      }
+
+      body,
+      body * {
+        font-weight: 400
+      }
+
+      h1,
+      h2,
+      h3,
+      label,
+      strong {
+        font-weight: 600 !important
+      }
+
+      .cms-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+        gap: 20px
+      }
+
+      .cms-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px
+      }
+
+      .cms-fields .full {
+        grid-column: 1/-1
+      }
+
+      .cms-fields label {
+        margin-bottom: 6px
+      }
+
+      .cms-fields textarea {
+        min-height: 105px
+      }
+
+      .cms-section {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        margin: 12px 0;
+        background: #fff
+      }
+
+      .cms-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px
+      }
+
+      .cms-page-row {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 10px;
+        background: #fff
+      }
+
+      .cms-page-row p {
+        margin: 4px 0;
+        color: var(--muted);
+        font-size: 12px
+      }
+
+      .cms-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px
+      }
+
+      .cms-actions .button {
+        padding: 8px 11px
+      }
+
+      .cms-status {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #f1f5f9
+      }
+
+      .cms-status.live {
+        background: #dcfce7;
+        color: #166534
+      }
+
+      .cms-help {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5
+      }
+
+      .cms-form-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px
+      }
+
+      .button-danger {
+        background: #fff0ef;
+        color: #b42318;
+        border: 1px solid #ffd1ce
+      }
+
+      @media(max-width:1000px) {
+        .cms-layout {
+          grid-template-columns: 1fr
+        }
+      }
+
+      @media(max-width:650px) {
+        .cms-fields {
+          grid-template-columns: 1fr
+        }
+
+        .cms-fields .full {
+          grid-column: auto
+        }
+
+        .cms-page-row {
+          align-items: flex-start;
+          flex-direction: column
+        }
+      }
+    </style>
+    <script src="../js/favicon.js"></script>
+  </head>
+  <body data-page="cms-pages">
+    <header class="topbar">
+      <div class="brand">ROOMO <span>PROPERTY MANAGEMENT</span>
+      </div>
+      <button id="logoutButton" class="button button-secondary" type="button">Sign out</button>
+    </header>
+    <main class="page">
+      <div class="admin-shell">
+        <aside class="admin-sidebar">
+          <div class="sidebar-brand">ROOMO</div>
+          <div class="sidebar-subtitle">ADMIN PANEL</div>
+          <div class="sidebar-label">WORKSPACE</div>
+          <nav class="sidebar-nav" aria-label="Admin navigation">
+            <a class="sidebar-link" href="dashboard.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
+              </span>Dashboard </a>
+            <a class="sidebar-link" href="enquiries.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-inbox-fill" aria-hidden="true"></i>
+              </span>Enquiries </a>
+            <a class="sidebar-link" href="owner.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
+              </span>Owners </a>
+            <details class="sidebar-accordion">
+              <summary class="sidebar-link sidebar-accordion-trigger">
+                <span class="sidebar-icon">
+                  <i class="bi bi-houses-fill" aria-hidden="true"></i>
+                </span>
+                <span>Rooms</span>
+                <i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i>
+              </summary>
+              <div class="sidebar-subnav">
+                <a class="sidebar-sublink" href="homepage.html?section=header">Header</a>
+                <a class="sidebar-sublink" href="homepage.html?section=hero-banner">Hero Banner</a>
+                <a class="sidebar-sublink" href="homepage.html?section=upcoming-festival">Upcoming Festival</a>
+                <a class="sidebar-sublink" href="homepage.html?section=footer">Footer</a>
+                <a class="sidebar-sublink" href="pilgrim-guide.html">Pilgrim Guide</a>
+              </div>
+            </details>
+            <a class="sidebar-link active" href="cms-pages.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-file-earmark-richtext-fill" aria-hidden="true"></i>
+              </span>CMS Pages </a>
+            <a class="sidebar-link" href="destinations.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+              </span>Destinations </a>
+            <a class="sidebar-link" href="nearby-places.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-signpost-2-fill" aria-hidden="true"></i>
+              </span>Nearby Locations </a>
+            <a class="sidebar-link" href="testimonials.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-chat-quote-fill" aria-hidden="true"></i>
+              </span>Testimonials </a>
+            <details class="sidebar-accordion">
+              <summary class="sidebar-link sidebar-accordion-trigger">
+                <span class="sidebar-icon">
+                  <i class="bi bi-images" aria-hidden="true"></i>
+                </span>
+                <span>Gallery</span>
+                <i class="bi bi-chevron-down accordion-chevron" aria-hidden="true"></i>
+              </summary>
+              <div class="sidebar-subnav">
+                <a class="sidebar-sublink" href="galleries.html#add-gallery">Add Gallery</a>
+                <a class="sidebar-sublink" href="galleries.html#gallery-list">Gallery List</a>
+              </div>
+            </details>
+            <a class="sidebar-link" href="reports.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
+              </span>Reports </a>
+            <a class="sidebar-link" href="registered-users.html">
+              <span class="sidebar-icon">
+                <i class="bi bi-people-fill" aria-hidden="true"></i>
+              </span>Registered Users </a>
+          </nav>
+        </aside>
+        <div class="admin-content">
+          <div id="pageNotice" class="notice" role="status"></div>
+          <div class="page-heading">
+            <div>
+              <h1>CMS Pages</h1>
+              <p class="muted">Create, edit, save drafts and publish helpful destination landing pages.</p>
+            </div>
+            <button id="newPageButton" class="button button-primary" type="button">
+              <i class="bi bi-plus-lg"></i> New page </button>
+          </div>
+          <div class="panel">
+            <div class="section-heading">
+              <div>
+                <h2>SEO landing pages</h2>
+                <p class="muted small">The five suggested pages are created as drafts when the CMS is first opened.</p>
+              </div>
+              <button id="refreshPagesButton" class="button button-secondary" type="button">Refresh</button>
+            </div>
+            <div id="cmsPageList">
+              <p class="muted">Loading pages…</p>
+            </div>
+          </div>
+          <div class="panel" id="cmsEditor" hidden>
+            <div class="section-heading">
+              <div>
+                <h2 id="editorHeading">Create CMS page</h2>
+                <p class="muted small">Use original, practical information. Avoid unverified distance, availability or price claims.</p>
+              </div>
+              <button id="closeEditorButton" class="button button-secondary" type="button">Close editor</button>
+            </div>
+            <form id="cmsPageForm">
+              <input id="pageId" type="hidden">
+              <div class="cms-fields">
+                <div>
+                  <label for="pageTitle">Page heading</label>
+                  <input id="pageTitle" required maxlength="180">
+                </div>
+                <div>
+                  <label for="pageSlug">URL slug</label>
+                  <input id="pageSlug" required maxlength="180" pattern="[a-z0-9]+(?:-[a-z0-9]+)*">
+                  <span class="cms-help">Lowercase words separated by hyphens.</span>
+                </div>
+                <div>
+                  <label for="seoTitle">SEO title</label>
+                  <input id="seoTitle" required maxlength="160">
+                </div>
+                <div>
+                  <label for="heroImageUrl">Hero image URL (optional)</label>
+                  <input id="heroImageUrl" type="url" maxlength="2000" placeholder="https://…">
+                </div>
+                <div class="full">
+                  <label for="seoDescription">SEO description</label>
+                  <textarea id="seoDescription" required maxlength="300"></textarea>
+                </div>
+                <div class="full">
+                  <label for="pageSubtitle">Subtitle</label>
+                  <input id="pageSubtitle" maxlength="300">
+                </div>
+                <div class="full">
+                  <label for="pageIntro">Introduction</label>
+                  <textarea id="pageIntro" required minlength="20" maxlength="5000"></textarea>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:22px">
+                <h3 style="margin:0">Content sections</h3>
+                <button id="addSectionButton" class="button button-secondary" type="button">Add section</button>
+              </div>
+              <p class="cms-help">Each section has a heading and detailed text. Use blank lines to separate paragraphs; the public page formats them automatically.</p>
+              <div id="cmsSections"></div>
+              <div class="cms-fields" style="margin-top:18px">
+                <div class="full">
+                  <label for="ctaTitle">Call-to-action heading</label>
+                  <input id="ctaTitle" maxlength="180">
+                </div>
+                <div class="full">
+                  <label for="ctaText">Call-to-action text</label>
+                  <textarea id="ctaText" maxlength="1000"></textarea>
+                </div>
+                <div>
+                  <label for="ctaLabel">Button label</label>
+                  <input id="ctaLabel" maxlength="100" value="Explore stays">
+                </div>
+                <div>
+                  <label for="ctaUrl">Button URL</label>
+                  <input id="ctaUrl" maxlength="500" value="roomo-search-results.html">
+                </div>
+              </div>
+              <div class="cms-form-actions">
+                <button class="button button-secondary" type="submit" id="saveDraftButton">Save Draft</button>
+                <button class="button button-primary" type="button" id="publishPageButton">Save &amp; Publish</button>
+                <button class="button button-secondary" type="button" id="previewPageButton">Preview</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="js/admin.js" defer></script>
+    <script src="js/cms-pages.js" defer></script>
+  </body>
+</html>

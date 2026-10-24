@@ -1,0 +1,325 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id           String     @id @default(uuid()) @db.Uuid
+  fullName     String     @map("full_name")
+  role         String     @default("OWNER")
+  canEditProperties Boolean @default(false) @map("can_edit_properties")
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  phoneNumber  String?    @unique @map("phone_number")
+  phoneVerified Boolean  @default(false) @map("phone_verified")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  commissionRate Decimal @default(10.00) @db.Decimal(5, 2) @map("commission_rate")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  properties   Property[]
+
+  @@map("owners")
+}
+
+model GuestUser {
+  id           String   @id @default(uuid()) @db.Uuid
+  fullName     String   @map("full_name")
+  email        String   @unique
+  phoneNumber  String?  @unique @map("phone_number")
+  phoneVerified Boolean @default(false) @map("phone_verified")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  passwordHash String?  @map("password_hash")
+  googleId     String?  @unique @map("google_id")
+  authProvider String   @default("EMAIL") @map("auth_provider")
+  emailVerified Boolean  @default(true) @map("email_verified")
+  emailVerificationTokenHash String? @unique @map("email_verification_token_hash")
+  emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  reservations Reservation[]
+  favorites    GuestFavorite[]
+
+  @@map("guest_users")
+}
+
+model Property {
+  id            String         @id @default(uuid()) @db.Uuid
+  ownerId       String         @db.Uuid @map("owner_id")
+  title         String
+  description   String         @db.Text
+  propertyType  String         @map("property_type")
+  address       String
+  mapLocation   String?        @map("map_location") @db.VarChar(1000)
+  city          String
+  state         String
+  country       String         @default("India")
+  postalCode    String?        @map("postal_code")
+  nightlyPrice  Decimal        @db.Decimal(10, 2) @map("nightly_price")
+  maxGuests     Int            @map("max_guests")
+  bedrooms      Int            @default(1)
+  bathrooms     Int            @default(1)
+  livingRooms   Int            @default(0) @map("living_rooms")
+  kitchens      Int            @default(0)
+  areaSquareMeters Decimal?    @db.Decimal(8, 2) @map("area_square_meters")
+  bedConfiguration Json         @default("[]") @map("bed_configuration")
+  allowPayAtProperty Boolean   @default(false) @map("allow_pay_at_property")
+  noCreditCardRequired Boolean @default(false) @map("no_credit_card_required")
+  availabilityCount Int?        @map("availability_count")
+  totalUnits    Int            @default(1) @map("total_units")
+  amenities     Json           @default("[]")
+  nearbyLandmarks Json         @default("[]") @map("nearby_landmarks")
+  perks         Json           @default("[]")
+  isFeatured    Boolean        @default(false) @map("is_featured")
+  featuredSortOrder Int        @default(0) @map("featured_sort_order")
+  status        PropertyStatus @default(DRAFT)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  owner         Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images        PropertyImage[]
+  reservations  Reservation[]
+  roomTypes     RoomType[]
+
+  @@index([ownerId])
+  @@index([city, status])
+  @@map("properties")
+}
+
+
+model RoomType {
+  id               String        @id @default(uuid()) @db.Uuid
+  propertyId       String        @db.Uuid @map("property_id")
+  name             String        @db.VarChar(120)
+  description      String        @default("") @db.Text
+  nightlyPrice     Decimal       @db.Decimal(10, 2) @map("nightly_price")
+  maxGuests        Int           @default(2) @map("max_guests")
+  quantity         Int           @default(1)
+  bedConfiguration Json          @default("[]") @map("bed_configuration")
+  facilities       Json          @default("[]")
+  imageUrls        Json          @default("[]") @map("image_urls")
+  isActive         Boolean       @default(true) @map("is_active")
+  sortOrder        Int           @default(0) @map("sort_order")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reservations     Reservation[]
+
+  @@unique([propertyId, name])
+  @@index([propertyId, isActive, sortOrder])
+  @@map("room_types")
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid @map("property_id")
+  imageUrl   String   @map("image_url")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+enum PropertyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model HomepageConfig {
+  id          Int      @id @default(1)
+  draft       Json?
+  published   Json?
+  publishedAt DateTime? @map("published_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("homepage_config")
+}
+
+model GalleryItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String
+  description  String   @default("") @db.Text
+  type         String
+  sourceType   String   @map("source_type")
+  mediaUrl     String   @map("media_url") @db.Text
+  thumbnailUrl String?  @map("thumbnail_url") @db.Text
+  status       String   @default("DRAFT")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([status, type, sortOrder])
+  @@map("gallery_items")
+}
+
+model GalleryConfig {
+  id          Int      @id @default(1)
+  initialized Boolean  @default(false)
+  sampleVideosInitialized Boolean @default(false) @map("sample_videos_initialized")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("gallery_config")
+}
+
+
+enum ReservationStatus {
+  REQUESTED
+  CONFIRMED
+  CANCELLED
+}
+
+model Reservation {
+  id              String            @id @default(uuid()) @db.Uuid
+  reservationCode String            @unique @map("reservation_code")
+  guestId         String            @db.Uuid @map("guest_id")
+  propertyId      String            @db.Uuid @map("property_id")
+  checkIn         DateTime          @db.Date @map("check_in")
+  checkOut        DateTime          @db.Date @map("check_out")
+  adults          Int
+  children        Int               @default(0)
+  roomCount       Int               @default(1) @map("room_count")
+  nights          Int
+  nightlyPrice    Decimal           @db.Decimal(10, 2) @map("nightly_price")
+  totalAmount     Decimal           @db.Decimal(12, 2) @map("total_amount")
+  commissionRateSnapshot Decimal    @default(10.00) @db.Decimal(5, 2) @map("commission_rate_snapshot")
+  commissionAmount Decimal          @default(0.00) @db.Decimal(12, 2) @map("commission_amount")
+  ownerPayoutAmount Decimal         @default(0.00) @db.Decimal(12, 2) @map("owner_payout_amount")
+  commissionStatus String           @default("DUE") @map("commission_status")
+  commissionPaidAt DateTime?        @map("commission_paid_at")
+  commissionNotes String?           @db.Text @map("commission_notes")
+  status          ReservationStatus @default(REQUESTED)
+  specialRequests String?           @db.VarChar(1000) @map("special_requests")
+  contactPhone    String?           @db.VarChar(32) @map("contact_phone")
+  cancelledAt     DateTime?         @map("cancelled_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  guest           GuestUser         @relation(fields: [guestId], references: [id], onDelete: Restrict)
+  property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  roomTypeId      String?           @db.Uuid @map("room_type_id")
+  roomType        RoomType?         @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+  notifications   NotificationLog[]
+
+  @@index([roomTypeId, checkIn, checkOut, status])
+  @@index([propertyId, checkIn, checkOut, status])
+  @@index([guestId, createdAt])
+  @@map("reservations")
+}
+
+
+model MobileOtp {
+  id          String   @id @default(uuid()) @db.Uuid
+  accountType String   @map("account_type")
+  accountId   String   @db.Uuid @map("account_id")
+  phoneNumber String   @map("phone_number")
+  otpHash     String   @map("otp_hash")
+  expiresAt   DateTime @map("expires_at")
+  attempts    Int      @default(0)
+  consumedAt  DateTime? @map("consumed_at")
+  lastSentAt  DateTime @default(now()) @map("last_sent_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([accountType, accountId, createdAt])
+  @@index([phoneNumber, createdAt])
+  @@map("mobile_otps")
+}
+
+model NotificationLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  reservationId     String   @db.Uuid @map("reservation_id")
+  channel           String
+  recipientType     String   @map("recipient_type")
+  recipientPhone    String   @map("recipient_phone")
+  messageType       String   @map("message_type")
+  status            String   @default("PENDING")
+  providerMessageId String?  @map("provider_message_id")
+  errorMessage      String?  @db.Text @map("error_message")
+  sentAt            DateTime? @map("sent_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  reservation       Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId, createdAt])
+  @@index([status, createdAt])
+  @@map("notification_logs")
+}
+
+
+model GuestFavorite {
+  id               String   @id @default(uuid()) @db.Uuid
+  guestId          String   @db.Uuid @map("guest_id")
+  propertyId       String   @map("property_id") @db.VarChar(100)
+  propertySnapshot Json     @map("property_snapshot")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  guest            GuestUser @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([guestId, propertyId])
+  @@index([guestId, createdAt])
+  @@map("guest_favorites")
+}
+
+
+model RoomFilterGroup {
+  id        String       @id @default(uuid()) @db.Uuid
+  title     String       @db.VarChar(120)
+  icon      String       @default("bi-sliders") @db.VarChar(60)
+  sortOrder Int          @default(0) @map("sort_order")
+  isActive  Boolean      @default(true) @map("is_active")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  filters   RoomFilter[]
+
+  @@index([isActive, sortOrder])
+  @@map("room_filter_groups")
+}
+
+model RoomFilter {
+  id        String         @id @default(uuid()) @db.Uuid
+  groupId   String         @db.Uuid @map("group_id")
+  label     String         @db.VarChar(160)
+  filterType String        @map("filter_type") @db.VarChar(30)
+  value     String         @db.VarChar(160)
+  sortOrder Int            @default(0) @map("sort_order")
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  group     RoomFilterGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, isActive, sortOrder])
+  @@index([filterType, value])
+  @@map("room_filters")
+}
+
+
+model ListingDisplayConfig {
+  id        Int      @id @default(1)
+  settings  Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("listing_display_config")
+}
+
+
+model CMSPage {
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique @db.VarChar(180)
+  draft          Json
+  published      Json?
+  isPublished    Boolean  @default(false) @map("is_published")
+  publishedAt    DateTime? @map("published_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([isPublished, updatedAt])
+  @@map("cms_pages")
+}

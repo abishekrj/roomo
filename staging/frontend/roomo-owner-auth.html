@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Owner account | ROOMO Sacred</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body{margin:0;background:#f5f8fc;color:#172b40;font-family:"DM Sans",sans-serif}
+    .owner-auth-wrap{min-height:75vh;display:grid;place-items:center;padding:48px 18px}
+    .owner-auth-card{width:min(100%,480px);background:#fff;border:1px solid #dfe7ef;border-radius:18px;padding:clamp(24px,5vw,42px);box-shadow:0 18px 50px #173c5c12}
+    .owner-auth-card h1{font:800 clamp(26px,4vw,34px)/1.2 Manrope,sans-serif;margin:0 0 10px}
+    .owner-auth-card p{color:#66788a}
+    .owner-auth-card label{display:block;font-weight:700;font-size:13px;margin:16px 0 7px}
+    .owner-auth-card input{width:100%;padding:12px 13px;border:1px solid #d5dfeb;border-radius:9px;font:inherit}
+    .owner-auth-card input:focus{outline:2px solid #1769aa55;border-color:#1769aa}
+    .owner-auth-btn{width:100%;margin-top:20px;border:0;border-radius:9px;padding:13px 16px;background:#1769aa;color:#fff;font-weight:800}
+    .owner-auth-btn:disabled{opacity:.6}
+    .owner-auth-message{margin-top:14px;padding:12px;border-radius:8px;background:#f0f5fb;white-space:pre-wrap}
+    .owner-auth-switch{margin-top:18px;text-align:center}
+    .owner-auth-switch button{border:0;background:none;color:#1769aa;font-weight:800;text-decoration:underline}
+    .owner-auth-hidden{display:none!important}
+  </style>
+    <script src="js/favicon.js"></script>
+</head>
+<body>
+  <div id="roomoHeader"></div>
+  <main class="owner-auth-wrap">
+    <section class="owner-auth-card">
+      <a href="index.html" style="font:800 18px Manrope,sans-serif;letter-spacing:.08em;color:#1769aa;text-decoration:none">ROOMO <span style="font-size:11px;letter-spacing:.12em">SACRED</span></a>
+      <div style="margin-top:26px;color:#1769aa;font-size:11px;font-weight:800;letter-spacing:.12em" id="ownerEyebrow">PROPERTY PARTNER</div>
+      <h1 id="ownerHeading">Create your owner account</h1>
+      <p id="ownerSubheading">Join ROOMO and manage your property enquiries in one place.</p>
+      <form id="ownerAuthForm">
+        <div id="ownerNameWrap"><label for="ownerFullName">Full name</label><input id="ownerFullName" autocomplete="name" minlength="2" maxlength="100" required placeholder="Your full name"></div>
+        <label for="ownerEmail">Email address</label><input id="ownerEmail" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+        <div id="ownerPhoneWrap"><label for="ownerPhone">Mobile number (optional)</label><input id="ownerPhone" type="tel" autocomplete="tel" inputmode="tel" pattern="\+[1-9][0-9]{7,14}" placeholder="+919876543210" title="If provided, use international format, e.g. +919876543210"></div>
+        <label for="ownerPassword">Password</label><input id="ownerPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required placeholder="At least 12 characters">
+        <button class="owner-auth-btn" id="ownerSubmit" type="submit">CREATE OWNER ACCOUNT</button>
+      </form>
+      <div id="ownerAuthMessage" class="owner-auth-message owner-auth-hidden" role="status" aria-live="polite"></div>
+      <div class="owner-auth-switch" id="ownerSwitchText">Already registered? <button type="button" id="ownerSwitch">Sign in</button></div>
+    </section>
+  </main>
+  <div id="roomoFooter"></div>
+  <script src="js/common.js"></script>
+  <script src="js/footer.js"></script>
+  <script src="js/header.js"></script>
+  <script>
+  (() => {
+    const API = "http://localhost:5001/api";
+    const $ = id => document.getElementById(id);
+    let mode = "signup";
+    const form = $("ownerAuthForm");
+    const message = $("ownerAuthMessage");
+    const submit = $("ownerSubmit");
+    function showMessage(text, isError = false) {
+      message.textContent = text;
+      message.classList.remove("owner-auth-hidden");
+      message.style.color = isError ? "#b42318" : "#17603b";
+    }
+    function setMode(next) {
+      mode = next;
+      $("ownerNameWrap").classList.toggle("owner-auth-hidden", mode !== "signup");
+      $("ownerPhoneWrap").classList.toggle("owner-auth-hidden", mode !== "signup");
+      $("ownerFullName").required = mode === "signup";
+      $("ownerPhone").required = false;
+      $("ownerPassword").minLength = mode === "signup" ? 12 : 1;
+      $("ownerPassword").autocomplete = mode === "signup" ? "new-password" : "current-password";
+      $("ownerEyebrow").textContent = mode === "signup" ? "PROPERTY PARTNER" : "WELCOME BACK";
+      $("ownerHeading").textContent = mode === "signup" ? "Create your owner account" : "Sign in to ROOMO";
+      $("ownerSubheading").textContent = mode === "signup" ? "Create an account to post and manage your property." : "Manage your property and reservation requests.";
+      submit.textContent = mode === "signup" ? "CREATE OWNER ACCOUNT" : "SIGN IN";
+      $("ownerSwitchText").innerHTML = mode === "signup" ? 'Already registered? <button type="button" id="ownerSwitch">Sign in</button>' : 'New to ROOMO? <button type="button" id="ownerSwitch">Create an account</button>';
+      $("ownerSwitch").addEventListener("click", () => {
+        message.classList.add("owner-auth-hidden");
+        setMode(mode === "signup" ? "login" : "signup");
+      });
+    }
+    async function post(url, body) {
+      const response = await fetch(API + url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(data.message || "Request failed.");
+        error.code = data.code;
+        throw error;
+      }
+      return data;
+    }
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      message.classList.add("owner-auth-hidden");
+      submit.disabled = true;
+      try {
+        const email = $("ownerEmail").value.trim().toLowerCase();
+        const password = $("ownerPassword").value;
+        if (mode === "signup") {
+          const phoneNumber = $("ownerPhone").value.trim();
+          const body = {
+            fullName: $("ownerFullName").value.trim(),
+            email,
+            password,
+            ...(phoneNumber ? { phoneNumber } : {})
+          };
+          const result = await post("/auth/register", body);
+          setMode("login");
+          showMessage(result.message || "Owner account created successfully. You can now sign in.");
+        } else {
+          const result = await post("/auth/login", { email, password });
+          localStorage.setItem("roomoToken", result.token);
+          localStorage.setItem("roomoOwner", JSON.stringify(result.owner));
+          window.location.href = "post-property.html";
+        }
+      } catch (error) {
+        showMessage(error.message || "Unable to continue.", true);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+    setMode("signup");
+  })();
+  </script>
+</body>
+</html>

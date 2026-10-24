@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email | ROOMO Sacred</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f3f7fb; color: #21364c; font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
+    main { width: min(100%, 480px); padding: 42px 32px; text-align: center; background: #fff; border: 1px solid #e2eaf2; border-radius: 18px; box-shadow: 0 18px 55px rgba(26, 57, 89, .08); }
+    .brand { color: #2878c8; font-size: 25px; font-weight: 800; letter-spacing: .08em; }
+    h1 { margin: 24px 0 12px; font-size: clamp(24px, 5vw, 30px); }
+    p { color: #627184; line-height: 1.7; }
+    #status { margin: 22px 0; }
+    a { display: inline-block; margin-top: 10px; padding: 12px 20px; border-radius: 8px; background: #2878c8; color: #fff; font-weight: 700; text-decoration: none; }
+    a[hidden] { display: none; }
+  </style>
+    <script src="js/favicon.js"></script>
+</head>
+<body>
+  <main>
+    <div class="brand">ROOMO <span style="font-size:12px;letter-spacing:.18em">SACRED</span></div>
+    <h1>Verify your email</h1>
+    <p id="status" role="status" aria-live="polite">Checking your verification link…</p>
+    <a id="loginLink" href="roomo-login.html" hidden>Continue to sign in</a>
+  </main>
+  <script>
+    (async function () {
+      const status = document.getElementById("status");
+      const loginLink = document.getElementById("loginLink");
+      const token = new URLSearchParams(window.location.search).get("token");
+      if (!token) {
+        status.textContent = "This verification link is missing its token. Please request a new verification email from the sign-in page.";
+        loginLink.hidden = false;
+        return;
+      }
+      try {
+        const response = await fetch("http://localhost:5001/api/guest-auth/verify-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "This verification link is invalid or expired.");
+        status.textContent = data.message || "Your email has been verified. You can now sign in.";
+        loginLink.hidden = false;
+      } catch (error) {
+        status.textContent = error.message || "Unable to verify your email. Please try again.";
+        loginLink.hidden = false;
+      }
+    })();
+  </script>
+</body>
+</html>

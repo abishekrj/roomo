@@ -1,0 +1,1 @@
+ALTER TABLE "reservations" ADD COLUMN "contact_phone" VARCHAR(32);

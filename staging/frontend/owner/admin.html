@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Owner Sign In | ROOMO Sacred</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:#f6f8fb;color:#263447;font:14px Poppins,sans-serif}.card{width:min(100%,440px);padding:28px;background:#fff;border:1px solid #e1e7ef;border-radius:8px}.brand{font-size:23px;font-weight:600;color:#174ea6}.brand small{display:block;font-size:11px;letter-spacing:1.5px;color:#68778b;font-weight:400}h1{font-size:24px;margin:26px 0 6px;font-weight:600}.muted{color:#68778b;line-height:1.6}.field{margin:18px 0}.field label{display:block;font-weight:500;margin-bottom:7px}.field input{width:100%;padding:12px;border:1px solid #d5deea;border-radius:8px;font:inherit}.field input:focus{outline:2px solid #b8d0fa;border-color:#174ea6}button{width:100%;padding:12px 14px;border:1px solid #174ea6;border-radius:8px;background:#174ea6;color:white;font:600 14px Poppins,sans-serif;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.notice{display:none;margin:14px 0;padding:12px;border-radius:8px;overflow-wrap:anywhere}.notice.show{display:block}.notice.error{background:#fff0f0;color:#9d2222}.notice.info{background:#eef5ff;color:#174ea6}.foot{margin-top:18px;font-size:12px}
+</style>
+<script src="../js/favicon.js"></script>
+</head>
+<body>
+<main class="card">
+<div class="brand">ROOMO<small>PROPERTY OWNER PORTAL</small></div>
+<h1>Owner sign in</h1><p class="muted">Sign in to view your property details and manage guest enquiries.</p>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+<form id="loginForm">
+<div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" required></div>
+<div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+<button id="loginButton" type="submit">Sign in</button>
+</form>
+<p class="muted foot">Use the credentials provided by ROOMO administration. If you need access, contact ROOMO support.</p>
+</main>
+<script>
+(()=>{"use strict";
+const API="http://localhost:5001/api",KEY="roomoOwnerToken",form=document.getElementById("loginForm"),button=document.getElementById("loginButton"),notice=document.getElementById("notice");
+function show(message,type="error"){notice.textContent=message;notice.className="notice show "+type;}
+async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{...(options.body?{"Content-Type":"application/json"}:{}),...(options.token?{Authorization:"Bearer "+options.token}:{})}});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||"Request failed ("+response.status+").");return data;}
+form.addEventListener("submit",async event=>{event.preventDefault();button.disabled=true;button.textContent="Signing in…";notice.className="notice";
+try{
+ const result=await request("/auth/login",{method:"POST",body:JSON.stringify({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value})});
+ const profile=await request("/auth/me",{token:result.token});
+ if(profile.owner?.role!=="OWNER")throw new Error("This sign-in is for property owners only. Please use the Super Admin login.");
+ sessionStorage.setItem(KEY,result.token);
+ location.replace("dashboard.html");
+}catch(error){sessionStorage.removeItem(KEY);show(error.message);}
+finally{button.disabled=false;button.textContent="Sign in";}
+});
+const existing=sessionStorage.getItem(KEY);
+if(existing){request("/auth/me",{token:existing}).then(result=>{if(result.owner?.role==="OWNER")location.replace("dashboard.html");else sessionStorage.removeItem(KEY);}).catch(()=>sessionStorage.removeItem(KEY));}
+})();
+</script>
+</body></html>
