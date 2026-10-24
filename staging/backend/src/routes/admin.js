@@ -35,6 +35,28 @@ const propertyImageUpload = multer({
     cb(null, true);
   }
 });
+const allowedVideoTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, propertyUploadDir),
+  filename: (req, file, cb) => {
+    const extension = ({ "video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov" })[file.mimetype];
+    cb(null, Date.now() + "-" + crypto.randomBytes(8).toString("hex") + extension);
+  }
+});
+const propertyVideoUpload = multer({
+  storage: videoStorage,
+  limits: { fileSize: 50 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => {
+    if (!allowedVideoTypes.has(file.mimetype)) return cb(new Error("Upload MP4, WebM, or MOV videos only."));
+    cb(null, true);
+  }
+});
+router.post("/property-videos/upload", propertyVideoUpload.single("video"), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "Choose a video to upload." });
+  const baseUrl = req.protocol + "://" + req.get("host");
+  res.status(201).json({ message: "Property video uploaded.", mediaUrl: baseUrl + "/uploads/properties/" + req.file.filename, originalName: req.file.originalname });
+});
+
 router.post("/property-images/upload", propertyImageUpload.array("images", 10), (req, res) => {
   if (!req.files?.length) return res.status(400).json({ message: "Choose at least one image to upload." });
   const baseUrl = req.protocol + "://" + req.get("host");
@@ -68,6 +90,9 @@ const propertySchema = z.object({
   amenities: z.array(z.string().trim().min(1).max(100)).max(100).default([]),
   nearbyLandmarks: z.array(z.enum(["annamalaiyar-temple", "sri-ramanasramam", "girivalam-path", "arunachala-hill", "skandashramam", "virupaksha-cave", "sathanur-dam", "central-bus-stand", "railway-station", "yogi-ram-surathkumar-ashram"])).max(10).default([]),
   perks: z.array(z.string().trim().min(2).max(100)).max(8).default([]),
+  media: z.array(z.object({ type: z.enum(["IMAGE", "VIDEO"]), imageUrl: z.string().url().max(2048).optional(), mediaUrl: z.string().url().max(2048).optional(), originalName: z.string().max(255).optional(), sortOrder: z.number().int().min(0).optional() })).max(30).default([]),
+  policies: z.record(z.string(), z.string().max(1000)).default({}),
+  showPolicies: z.boolean().default(true),
   imageUrls: z.array(z.string().url().max(2048)).max(10).default([]),
   isFeatured: z.boolean().default(false),
   featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0),
@@ -181,6 +206,9 @@ router.post("/properties", async (req, res, next) => {
         amenities: data.amenities,
         nearbyLandmarks: data.nearbyLandmarks,
         perks: data.perks,
+        media: data.media,
+        policies: data.policies,
+        showPolicies: data.showPolicies,
         isFeatured: data.isFeatured,
         featuredSortOrder: data.featuredSortOrder,
         status: data.status,
@@ -268,6 +296,9 @@ router.patch("/properties/:id", async (req, res, next) => {
           amenities: data.amenities,
           nearbyLandmarks: data.nearbyLandmarks,
           perks: data.perks,
+          media: data.media,
+          policies: data.policies,
+          showPolicies: data.showPolicies,
           isFeatured: data.isFeatured,
           featuredSortOrder: data.featuredSortOrder,
           status: data.status
