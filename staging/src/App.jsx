@@ -18,7 +18,7 @@ import SuperAdminPortal from "./components/SuperAdminPortal.jsx";
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/admin" || path.startsWith("/admin/") || path === "/staging/admin" || path.startsWith("/staging/admin/")) return <SuperAdminPortal />;
-  if (["/owner", "/owner/login", "/owner/dashboard", "/owner/properties", "/owner/enquiries", "/owner/reports", "/staging/owner", "/staging/owner/login", "/staging/owner/dashboard", "/staging/owner/properties", "/staging/owner/enquiries", "/staging/owner/reports"].includes(path)) return <OwnerPortal />;
+  if (path === "/owner" || path.startsWith("/owner/") || path === "/staging/owner" || path.startsWith("/staging/owner/")) return <OwnerPortal />;
   if (path === "/staging/login" || path === "/login") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="login" /></main><Footer /></div>;
   if (path === "/staging/signup" || path === "/signup") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="signup" /></main><Footer /></div>;
 
