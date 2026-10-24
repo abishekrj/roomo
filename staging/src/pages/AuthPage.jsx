@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
 const API_BASE = "http://localhost:5001";
@@ -16,8 +16,105 @@ export default function AuthPage({ mode = "login" }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("error");
+  const [googleReady, setGoogleReady] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   const notify = (text, type = "error") => { setMessage(text); setMessageType(type); };
+
+  useEffect(() => {
+    let cancelled = false;
+    let script = null;
+    const renderGoogleButton = clientId => {
+      if (cancelled || !clientId || !window.google?.accounts?.id) return;
+      const container = document.getElementById("roomo-google-signin");
+      if (!container) return;
+      container.innerHTML = "";
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async credentialResponse => {
+          if (!credentialResponse?.credential || cancelled) {
+            if (!cancelled) notify("Google did not return a valid sign-in credential.");
+            return;
+          }
+          setGoogleBusy(true);
+          setMessage("");
+          try {
+            const response = await fetch(`${API_BASE}/api/guest-auth/google`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ credential: credentialResponse.credential })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.message || "Google sign-in failed. Please try again.");
+            if (!data.token || !data.user) throw new Error("The server response is missing the guest session.");
+            const storage = remember ? localStorage : sessionStorage;
+            storage.setItem(TOKEN_KEY, data.token);
+            storage.setItem(USER_KEY, JSON.stringify(data.user));
+            (remember ? sessionStorage : localStorage).removeItem(TOKEN_KEY);
+            (remember ? sessionStorage : localStorage).removeItem(USER_KEY);
+            const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+            if (returnTo) {
+              try {
+                const target = new URL(returnTo, window.location.origin);
+                if (target.origin === window.location.origin) {
+                  window.location.replace(target.href);
+                  return;
+                }
+              } catch { /* Fall back to the staging homepage for invalid return URLs. */ }
+            }
+            window.location.replace("/staging");
+          } catch (error) {
+            notify(error.message || "Unable to sign in with Google. Please try again.");
+          } finally {
+            if (!cancelled) setGoogleBusy(false);
+          }
+        }
+      });
+      window.google.accounts.id.renderButton(container, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        shape: "rectangular",
+        text: isSignup ? "signup_with" : "signin_with",
+        logo_alignment: "left",
+        width: Math.min(360, Math.max(240, Math.floor(container.getBoundingClientRect().width || 320)))
+      });
+      setGoogleReady(true);
+    };
+
+    fetch(`${API_BASE}/api/guest-auth/config`, { cache: "no-store" })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Unable to load Google sign-in configuration.");
+        if (!data.googleClientId) throw new Error("Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID to the backend .env file.");
+        if (window.google?.accounts?.id) {
+          renderGoogleButton(data.googleClientId);
+          return;
+        }
+        script = document.querySelector('script[data-roomo-google-identity]');
+        if (!script) {
+          script = document.createElement("script");
+          script.src = "https://accounts.google.com/gsi/client";
+          script.async = true;
+          script.defer = true;
+          script.dataset.roomoGoogleIdentity = "true";
+          document.head.appendChild(script);
+        }
+        script.addEventListener("load", () => renderGoogleButton(data.googleClientId), { once: true });
+        script.addEventListener("error", () => {
+          if (!cancelled) notify("Google sign-in could not load. Check your internet connection and try again.");
+        }, { once: true });
+        if (window.google?.accounts?.id) renderGoogleButton(data.googleClientId);
+      })
+      .catch(error => {
+        if (!cancelled) {
+          const container = document.getElementById("roomo-google-signin");
+          if (container) container.dataset.error = error.message || "Google sign-in is unavailable.";
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [isSignup, remember]);
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
@@ -99,6 +196,13 @@ export default function AuthPage({ mode = "login" }) {
             {!isSignup && <div className="flex items-center justify-between gap-3"><label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="h-4 w-4 accent-[#2563a6]" />Remember me</label><button type="button" onClick={() => notify("Password reset is not available yet. Please contact the ROOMO team for assistance.")} className="text-sm font-medium text-[#2563a6] hover:underline">Forgot password?</button></div>}
             <button type="submit" disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60">{busy ? "PLEASE WAIT…" : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}</button>
           </form>
+          <div className="my-5 flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-slate-200"></span><span className="text-xs font-medium uppercase tracking-wider text-slate-400">or continue with</span><span className="h-px flex-1 bg-slate-200"></span>
+          </div>
+          <div className="flex min-h-10 w-full justify-center" aria-label={isSignup ? "Sign up with Google" : "Sign in with Google"}>
+            <div id="roomo-google-signin" className="flex w-full justify-center"></div>
+          </div>
+          {googleBusy && <p role="status" className="mt-3 text-center text-sm text-slate-500">Connecting your Google account…</p>}
           <p className="mt-6 text-center text-sm text-slate-600">{isSignup ? "Already have an account?" : "New to ROOMO Sacred?"} <a href={`/staging/${isSignup ? "login" : "signup"}${window.location.search}`} className="font-semibold text-[#2563a6] hover:underline">{isSignup ? "Sign in" : "Create an account"}</a></p>
           {!isSignup && <p className="mt-5 text-center text-sm text-slate-600">Property owner? <a href="/owner/login" className="font-semibold text-[#2563a6] hover:underline">Open Owner Dashboard</a></p>}
           <p className="mt-8 text-center text-xs leading-5 text-slate-500">By continuing, you agree to our <a href="/staging/terms" className="underline">Terms of Service</a> and <a href="/staging/privacy" className="underline">Privacy Policy</a>.</p>
