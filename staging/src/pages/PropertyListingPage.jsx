@@ -3,7 +3,7 @@ import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import SearchSection from "../components/SearchSection.jsx";
 
-const API_URL = "http://localhost:5001/api/properties";
+const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/properties";
 const LANDMARKS = [
   { value: "annamalaiyar-temple", label: "Annamalaiyar Temple" },
   { value: "sri-ramanasramam", label: "Sri Ramanasramam" },
@@ -164,8 +164,8 @@ export default function PropertyListingPage() {
   const [favouriteNotice, setFavouriteNotice] = useState("");
 
   const readGuestSession = () => {
-    const token = sessionStorage.getItem("roomoGuestToken") || localStorage.getItem("roomoGuestToken");
-    const raw = sessionStorage.getItem("roomoGuest") || localStorage.getItem("roomoGuest");
+    const raw = localStorage.getItem("roomoGuest");
+    const token = raw ? "cookie-session" : null;
     let user = null;
     try { user = raw ? JSON.parse(raw) : null; } catch { user = null; }
     return { token, user };
