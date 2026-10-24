@@ -13,7 +13,7 @@ function readSession() {
 }
 const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
-export default function Header() {
+export default function Header({ ownerPortal = false } = {}) {
   const [language, setLanguage] = useState(languages[0]);
   const [user, setUser] = useState(() => readSession().user);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,7 +54,7 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
-      <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6">
+      <div className={`flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "mx-auto max-w-7xl"}`}>
         <a className="shrink-0" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] object-contain sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
         <div className="hidden items-center gap-2 text-[13px] text-slate-600 md:flex"><i className="bi bi-geo-alt text-roomo-blue" aria-hidden="true" />Tiruvannamalai, Tamil Nadu</div>
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -62,7 +62,7 @@ export default function Header() {
             <button className="inline-flex items-center gap-1.5 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3" type="button" aria-expanded={languageOpen} onClick={() => {setLanguageOpen(!languageOpen);setMenuOpen(false);}}><i className="bi bi-translate text-roomo-blue" /><span>{language.short}</span><i className="bi bi-chevron-down text-[10px]" /></button>
             {languageOpen && <div className="absolute right-0 mt-2 min-w-44 rounded-roomo border border-slate-200 bg-white p-1 shadow-lg">{languages.map(item => <button key={item.code} className={`${linkClass} w-full text-left`} type="button" onClick={() => chooseLanguage(item)}>{item.label}</button>)}</div>}
           </div>
-          <div className="relative">
+          {!ownerPortal && <div className="relative">
             <button className="inline-flex items-center gap-2 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3 sm:text-sm" type="button" aria-expanded={menuOpen} onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><i className="bi bi-person-circle text-base" /><span className="max-w-28 truncate sm:max-w-none">{user?.fullName || "Login / Signup"}</span><i className="bi bi-chevron-down text-[10px]" /></button>
             {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
               {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><hr className="my-1 border-slate-100" /></>}
@@ -70,7 +70,7 @@ export default function Header() {
               <a className={linkClass} href={user ? "../roomo-frontend/roomo-my-bookings.html" : authHref("../roomo-frontend/roomo-login.html")}><i className="bi bi-heart mr-2" />Saved Ashrams &amp; Haveli</a>
               {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
             </nav>}
-          </div>
+          </div>}
         </div>
       </div>
     </header>
