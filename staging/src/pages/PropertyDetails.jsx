@@ -165,6 +165,7 @@ export default function PropertyDetails() {
   const description = textValue(property?.description || property?.overview || property?.about);
   const rating = property?.rating ?? property?.averageRating;
   const startingPrice = property?.nightlyPrice ?? property?.startingPrice ?? property?.price;
+  const policyData = property?.policies && typeof property.policies === "object" ? property.policies : {};
   const selectedRoom = roomTypes.find((room, index) => String(room.id || room.name || index) === selectedRoomId) || roomTypes[0] || null;
   const selectedRoomPrice = selectedRoom?.nightlyPrice ?? selectedRoom?.price ?? selectedRoom?.pricePerNight ?? startingPrice;
   const stayNights = checkIn && checkOut && checkOut > checkIn
@@ -392,10 +393,11 @@ export default function PropertyDetails() {
               {property.showPolicies !== false && <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Property policies</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Check-in & check-out</h3><p className="mt-2 text-sm leading-6 text-slate-600">Check-in: {property.checkInTime || "Please confirm with property"}</p><p className="text-sm leading-6 text-slate-600">Check-out: {property.checkOutTime || "Please confirm with property"}</p></article>
-                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Cancellation</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.cancellationPolicy || property.cancellation || "Cancellation terms vary by property and room. Please confirm the applicable policy with the property before making arrangements."}</p></article>
-                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Children & extra beds</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.childrenPolicy || "Please contact the property to confirm child occupancy and extra-bed arrangements."}</p></article>
-                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Pets & smoking</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{property.petsPolicy || property.smokingPolicy || "Please check the property's rules before arrival."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Check-in & check-out</h3><p className="mt-2 text-sm leading-6 text-slate-600">Check-in: {policyData.checkIn || property.checkInTime || "Please confirm with property"}</p><p className="text-sm leading-6 text-slate-600">Check-out: {policyData.checkOut || property.checkOutTime || "Please confirm with property"}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Cancellation</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{policyData.cancellation || property.cancellationPolicy || property.cancellation || "Cancellation terms vary by property and room. Please confirm the applicable policy with the property before making arrangements."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Children & extra beds</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{policyData.children || property.childrenPolicy || "Please contact the property to confirm child occupancy and extra-bed arrangements."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Pets & smoking</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{[policyData.pets || property.petsPolicy, policyData.smoking || property.smokingPolicy].filter(Boolean).join("\n\n") || "Please check the property's rules before arrival."}</p></article>
+                  <article className="rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Payment & booking terms</h3><div className="mt-2 space-y-2 text-sm leading-6 text-slate-600"><p>{property.allowPayAtProperty ? "Pay at the property is available." : "Payment arrangements should be confirmed with the property."}</p>{property.noCreditCardRequired && <p>No credit card is required to enquire.</p>}</div></article>
                 </div>
               </section>}
             </div>
