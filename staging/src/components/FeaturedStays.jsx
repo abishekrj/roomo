@@ -4,12 +4,24 @@ const API_URL = "http://localhost:5001/api/homepage";
 const API_ORIGIN = new URL(API_URL).origin;
 
 function resolveImageUrl(value) {
-  if (!value || typeof value !== "string") return "";
-  const path = value.trim();
+  const raw = typeof value === "string" ? value : (
+    value?.imageUrl || value?.imagePath || value?.fileUrl || value?.mediaUrl ||
+    value?.thumbnailUrl || value?.url || value?.path || value?.src ||
+    value?.filename || value?.fileName || ""
+  );
+  if (!raw || typeof raw !== "string") return "";
+  const path = raw.trim().replace(/\\\\/g, "/");
   if (!path) return "";
   if (/^(data:|blob:)/i.test(path)) return path;
   try {
     const url = new URL(path, API_ORIGIN);
+    // Old upload rows can contain a Vite-hosted localhost URL; uploads are
+    // actually exposed from the backend's /uploads static directory.
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port === "5173" && /^\\/uploads\\//.test(url.pathname)) {
+      url.protocol = "http:";
+      url.hostname = "localhost";
+      url.port = "5001";
+    }
     if (url.protocol === "http:" || url.protocol === "https:") return url.href;
   } catch { /* Ignore malformed image URLs and render the fallback. */ }
   return "";
@@ -36,9 +48,9 @@ export default function FeaturedStays() {
         // the cards use the real uploaded property images instead of sample-room fallbacks.
         setContent(data ? {
           ...(data.content || {}),
-          featuredProperties: Array.isArray(data.content?.featuredProperties)
+          featuredProperties: (Array.isArray(data.content?.featuredProperties) && data.content.featuredProperties.length)
             ? data.content.featuredProperties
-            : (Array.isArray(data.featuredProperties) ? data.featuredProperties : [])
+            : (Array.isArray(data.featuredProperties) ? data.featuredProperties : (data.content?.featuredProperties || []))
         } : null);
       })
       .catch(() => { if (!cancelled) setContent(null); })
@@ -73,7 +85,7 @@ export default function FeaturedStays() {
             img: imageCandidates[0] || "",
             imageCandidates,
             // Use the configured homepage image only if every uploaded image for this property fails to load.
-            fallbackImg: resolveImageUrl(fallbackRooms[propertyIndex]?.img || fallbackRooms[propertyIndex]?.imageUrl || fallbackRooms[propertyIndex]?.coverImage || fallbackRooms[propertyIndex]?.image),
+            fallbackImg: "",
             rating: property.rating,
             amenities: Array.isArray(property.amenities) ? property.amenities.slice(0, 3) : [],
             highlights: Array.isArray(property.highlights || property.propertyHighlights) ? (property.highlights || property.propertyHighlights).slice(0, 2) : [],
