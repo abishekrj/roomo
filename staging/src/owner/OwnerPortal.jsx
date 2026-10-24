@@ -23,6 +23,9 @@ function dateRange(item) {
 export default function OwnerPortal() {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [signupMode, setSignupMode] = useState(() => /\/(signup|register)$/.test(window.location.pathname.replace(/\/+$/, "")));
   const [password, setPassword] = useState("");
   const [owner, setOwner] = useState(null);
   const [enquiries, setEnquiries] = useState([]);
@@ -74,6 +77,23 @@ export default function OwnerPortal() {
     return () => { cancelled = true; };
   }, []); // Restore the owner session from the HttpOnly cookie.
 
+  async function signUp(event) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch(API + "/auth/register", {
+        method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName: fullName.trim(), email: email.trim().toLowerCase(), ...(phoneNumber.trim() ? { phoneNumber: phoneNumber.trim() } : {}), password })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "Unable to create your owner account.");
+      setSignupMode(false); setPassword(""); setMessage(data.message || "Owner account created successfully. You can now sign in.");
+      window.history.replaceState({}, "", routePrefix + "/login");
+    } catch (error) { setMessage(error.message || "Unable to create your owner account."); }
+    finally { setBusy(false); }
+  }
+
   async function signIn(event) {
     event.preventDefault();
     setBusy(true); setMessage("");
@@ -121,14 +141,17 @@ export default function OwnerPortal() {
     {!token || !owner ? <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-7 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">ROOMO Partner Portal</p>
-        <h1 className="mt-2 text-2xl font-semibold">Owner login</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Sign in to manage your property enquiries and view your dashboard.</p>
-        <form onSubmit={signIn} className="mt-6 space-y-4">
+        <h1 className="mt-2 text-2xl font-semibold">{signupMode ? "Register as a property owner" : "Owner login"}</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{signupMode ? "Create your free owner account, add your property, and submit it to ROOMO for review." : "Sign in to manage your property enquiries and view your dashboard."}</p>
+        <form onSubmit={signupMode ? signUp : signIn} className="mt-6 space-y-4">
+          {signupMode && <label className="block text-sm font-medium">Full name<input required minLength={2} autoComplete="name" value={fullName} onChange={event => setFullName(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>}
           <label className="block text-sm font-medium">Email address<input required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>
-          <label className="block text-sm font-medium">Password<input required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>
-          {message && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{message}</p>}
-          <button disabled={busy} className="w-full rounded-lg bg-blue-700 px-4 py-3 font-semibold text-white transition hover:bg-blue-800 disabled:opacity-60">{busy ? "Signing in…" : "Sign in"}</button>
+          {signupMode && <label className="block text-sm font-medium">Mobile number <span className="font-normal text-slate-400">(optional)</span><input type="tel" autoComplete="tel" placeholder="+919876543210" value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>}
+          <label className="block text-sm font-medium">Password<input required type="password" autoComplete={signupMode ? "new-password" : "current-password"} minLength={signupMode ? 12 : 1} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></label>
+          {message && <p role="status" className={`rounded-lg p-3 text-sm ${/successfully|created/i.test(message) ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>{message}</p>}
+          <button disabled={busy} className="w-full rounded-lg bg-[#feba02] px-4 py-3 font-semibold text-[#212529] transition hover:bg-[#e5a900] disabled:opacity-60">{busy ? (signupMode ? "Creating account…" : "Signing in…") : signupMode ? "Create owner account" : "Sign in"}</button>
         </form>
+        <p className="mt-5 text-center text-sm text-slate-600">{signupMode ? "Already have an owner account?" : "Want to list your property on ROOMO?"} <a href={routePrefix + (signupMode ? "/login" : "/signup")} onClick={event => { event.preventDefault(); setSignupMode(!signupMode); setMessage(""); setPassword(""); window.history.pushState({}, "", routePrefix + (signupMode ? "/login" : "/signup")); }} className="font-semibold text-blue-700 hover:underline">{signupMode ? "Sign in" : "Register as a property owner"}</a></p>
       </div>
     </main> : <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
