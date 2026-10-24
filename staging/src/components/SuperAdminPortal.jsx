@@ -32,7 +32,15 @@ export default function SuperAdminPortal() {
   const isHomePageEditor = currentPath.includes("/homepage/");
   const homePageSection = isHomePageEditor ? currentPath.split("/homepage/")[1] : "";
   const isHeroEditor = homePageSection === "hero-banner";
-  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : "dashboard";
+  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/owners") ? "owners" : currentPath.includes("/rooms/") ? "rooms" : currentPath.endsWith("/cms-pages") ? "cms-pages" : currentPath.endsWith("/destinations") ? "destinations" : currentPath.endsWith("/nearby-locations") ? "nearby-places" : currentPath.endsWith("/shopping-directory") ? "shops" : currentPath.endsWith("/testimonials") ? "testimonials" : currentPath.includes("/gallery/") ? "gallery" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
+  const adminPageTitles = {
+    enquiries: "Enquiries", owners: "Owners", "rooms/add": "Add Rooms", "rooms/listings": "Room Listings",
+    "rooms/types": "Room Types", "rooms/filters": "Room Filters", "rooms/featured": "Featured Rooms",
+    "rooms/listing-display": "Listing Display Settings", "cms-pages": "CMS Pages", destinations: "Destinations",
+    "nearby-locations": "Nearby Locations", "shopping-directory": "Shopping Directory", testimonials: "Testimonials",
+    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reports: "Reports"
+  };
+  const adminPageKey = currentPath.startsWith(routePrefix + "/") ? currentPath.slice(routePrefix.length + 1) : "";
   const pageTitles = Object.fromEntries(homeSections);
 
   useEffect(() => {
@@ -185,21 +193,21 @@ export default function SuperAdminPortal() {
   const inputClass = "mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm outline-none focus:border-roomo-blue focus:ring-2 focus:ring-blue-100";
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "▦", href: routePrefix + "/dashboard" },
-    { id: "enquiries", label: "Enquiries", icon: "▤", href: "/frontend/admin/enquiries.html" },
-    { id: "owners", label: "Owners", icon: "♙", href: "/frontend/admin/owner.html" },
+    { id: "enquiries", label: "Enquiries", icon: "▤", href: routePrefix + "/enquiries" },
+    { id: "owners", label: "Owners", icon: "♙", href: routePrefix + "/owners" },
     { id: "rooms", label: "Rooms", icon: "⌂", children: [
-      ["Add Rooms", "/frontend/admin/rooms-listings.html#add-room"], ["Room Listings", "/frontend/admin/rooms-listings.html#room-listings"],
-      ["Room Types", "/frontend/admin/room-types.html"], ["Room Filters", "/frontend/admin/room-filters.html"],
-      ["Featured Rooms", "/frontend/admin/featured-rooms.html"], ["Listing Display Settings", "/frontend/admin/listing-display.html"]
+      ["Add Rooms", routePrefix + "/rooms/add"], ["Room Listings", routePrefix + "/rooms/listings"],
+      ["Room Types", routePrefix + "/rooms/types"], ["Room Filters", routePrefix + "/rooms/filters"],
+      ["Featured Rooms", routePrefix + "/rooms/featured"], ["Listing Display Settings", routePrefix + "/rooms/listing-display"]
     ] },
     { id: "home-page", label: "Home Page", icon: "▧", children: homeSections.map(([id, label]) => [label, routePrefix + "/homepage/" + id]) },
-    { id: "cms-pages", label: "CMS Pages", icon: "▤", href: "/frontend/admin/cms-pages.html" },
-    { id: "destinations", label: "Destinations", icon: "⌖", href: "/frontend/admin/destinations.html" },
-    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: "/frontend/admin/nearby-places.html" },
-    { id: "shops", label: "Shopping Directory", icon: "▣", href: "/frontend/admin/shops.html" },
-    { id: "testimonials", label: "Testimonials", icon: "❝", href: "/frontend/admin/testimonials.html" },
-    { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", "/frontend/admin/galleries.html#add-gallery"], ["Gallery List", "/frontend/admin/galleries.html#gallery-list"]] },
-    { id: "reports", label: "Reports", icon: "▥", href: "/frontend/admin/reports.html" },
+    { id: "cms-pages", label: "CMS Pages", icon: "▤", href: routePrefix + "/cms-pages" },
+    { id: "destinations", label: "Destinations", icon: "⌖", href: routePrefix + "/destinations" },
+    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: routePrefix + "/nearby-locations" },
+    { id: "shops", label: "Shopping Directory", icon: "▣", href: routePrefix + "/shopping-directory" },
+    { id: "testimonials", label: "Testimonials", icon: "❝", href: routePrefix + "/testimonials" },
+    { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", routePrefix + "/gallery/add"], ["Gallery List", routePrefix + "/gallery/list"]] },
+    { id: "reports", label: "Reports", icon: "▥", href: routePrefix + "/reports" },
     { id: "properties", label: "Property Listings", icon: "⌂", href: routePrefix + "/properties" },
     { id: "users", label: "Registered Users", icon: "♙", href: routePrefix + "/users" }
   ];
@@ -221,7 +229,7 @@ export default function SuperAdminPortal() {
           <p className="mt-5 text-xs leading-5 text-slate-500">Administrator permissions are verified by the ROOMO backend.</p>
         </div>
       </section> : <section>
-        <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{isHomePageEditor ? (pageTitles[homePageSection] || "Home Page") : activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard"}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
+        <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{isHomePageEditor ? (pageTitles[homePageSection] || "Home Page") : adminPageTitles[adminPageKey] || (activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard")}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
         {notice && <p role="status" className="mb-5 rounded-roomo border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}
         <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="h-fit rounded-roomo bg-[#102747] p-4 text-white lg:sticky lg:top-24">
@@ -255,6 +263,7 @@ export default function SuperAdminPortal() {
               </form>}
             </section>}
             {isHomePageEditor && !isHeroEditor && <section className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Home Page editor</p><h2 className="mt-2 text-xl font-semibold">{pageTitles[homePageSection] || "Home Page"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">This section is listed in the Home Page accordion. The Hero Banner editor is implemented first; the remaining section editors will follow using existing ROOMO CMS settings.</p><a href={routePrefix + "/homepage/hero-banner"} className="mt-5 inline-flex rounded-lg bg-roomo-blue px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Open Hero Banner editor →</a></section>}
+            {adminPageTitles[adminPageKey] && !isHomePageEditor && <section className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Super Admin workspace</p><h2 className="mt-2 text-xl font-semibold">{adminPageTitles[adminPageKey]}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">This menu now opens inside the React Super Admin portal. The existing standalone HTML page is no longer used by this sidebar route.</p></section>}
             {activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}
             {activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}
             {activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}
