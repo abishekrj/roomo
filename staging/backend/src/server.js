@@ -57,13 +57,27 @@ const uploadStaticOptions = { dotfiles: "deny", index: false, maxAge: "1d" };
 app.use("/uploads", express.static(stagingUploadsRoot, uploadStaticOptions));
 if (sharedUploadsRoot !== stagingUploadsRoot) app.use("/uploads", express.static(sharedUploadsRoot, uploadStaticOptions));
 
-const authLimiter = rateLimit({
+// Keep owner/admin and guest sign-in limits independent. Count failed responses only,
+ // so a successful login or normal auth response does not consume the attempt budget.
+const ownerAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: 20,
+  skipSuccessfulRequests: true,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   handler: (_req, res) => res.status(429).json({
-    message: "Too many sign-in attempts. Please wait 15 minutes before trying again.",
+    message: "Too many unsuccessful owner sign-in attempts. Please wait a few minutes before trying again.",
+    code: "AUTH_RATE_LIMITED",
+  }),
+});
+const guestAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  skipSuccessfulRequests: true,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  handler: (_req, res) => res.status(429).json({
+    message: "Too many unsuccessful sign-in attempts. Please wait a few minutes before trying again.",
     code: "AUTH_RATE_LIMITED",
   }),
 });
@@ -91,8 +105,8 @@ const reservationWriteLimiter = rateLimit({
 app.post("/api/enquiries", enquiryWriteLimiter, (_req, _res, next) => next());
 app.post("/api/reservations", reservationWriteLimiter, (_req, _res, next) => next());
 
-app.use("/api/auth", authLimiter, authRoutes);
-app.use("/api/guest-auth", authLimiter, guestAuthRoutes);
+app.use("/api/auth", ownerAuthLimiter, authRoutes);
+app.use("/api/guest-auth", guestAuthLimiter, guestAuthRoutes);
 
 app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
   try {
