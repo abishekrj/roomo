@@ -73,9 +73,7 @@ export default function FeaturedStays() {
           const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
           // Keep every uploaded image URL so a stale/missing first upload does not
           // leave the whole card blank when another valid property image exists.
-          const imageCandidates = images
-            .map(image => resolveImageUrl(typeof image === "string" ? image : image?.imageUrl || image?.imagePath || image?.fileUrl || image?.mediaUrl || image?.url || image?.path || image?.src || image?.thumbnailUrl))
-            .filter(Boolean);
+          const imageCandidates = images.map(resolveImageUrl).filter(Boolean);
           return {
             id: property.id,
             name: property.title,
