@@ -12,9 +12,11 @@ import Testimonials from "./components/Testimonials.jsx";
 import PropertyListingPage from "./components/PropertyListingPage.jsx";
 import AuthPage from "./components/AuthPage.jsx";
 import PropertyDetails from "./components/PropertyDetails.jsx";
+import OwnerPortal from "./components/OwnerPortal.jsx";
 
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (["/owner", "/owner/login", "/owner/enquiries", "/staging/owner", "/staging/owner/login", "/staging/owner/enquiries"].includes(path)) return <OwnerPortal />;
   if (path === "/staging/login" || path === "/login") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="login" /></main><Footer /></div>;
   if (path === "/staging/signup" || path === "/signup") return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="flex-1"><AuthPage mode="signup" /></main><Footer /></div>;
 
