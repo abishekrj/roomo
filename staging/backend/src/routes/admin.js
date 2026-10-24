@@ -96,11 +96,11 @@ const propertySchema = z.object({
   imageUrls: z.array(z.string().url().max(2048)).max(30).default([]),
   isFeatured: z.boolean().default(false),
   featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0),
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  status: z.enum(["DRAFT", "PENDING_APPROVAL", "PUBLISHED", "REJECTED", "ARCHIVED"]).default("DRAFT"),
 });
 
 const statusSchema = z.object({
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
+  status: z.enum(["DRAFT", "PENDING_APPROVAL", "PUBLISHED", "REJECTED", "ARCHIVED"]),
 });
 
 
@@ -404,7 +404,7 @@ router.patch("/properties/:id/status", async (req, res, next) => {
 
     if (!bodyResult.success) {
       return res.status(400).json({
-        message: "Status must be DRAFT, PUBLISHED, or ARCHIVED.",
+        message: "Choose a valid property status.",
       });
     }
 
