@@ -1,4 +1,5 @@
 const homepageDefaults = {
+  searchSuggestionLimit: 5,
   nearbyLocations: {
     enabled: true,
     eyebrow: "Explore Tiruvannamalai",
