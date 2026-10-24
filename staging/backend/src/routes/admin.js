@@ -93,7 +93,7 @@ const propertySchema = z.object({
   media: z.array(z.object({ type: z.enum(["IMAGE", "VIDEO"]), imageUrl: z.string().url().max(2048).optional(), mediaUrl: z.string().url().max(2048).optional(), originalName: z.string().max(255).optional(), sortOrder: z.number().int().min(0).optional() })).max(30).default([]),
   policies: z.record(z.string(), z.string().max(1000)).default({}),
   showPolicies: z.boolean().default(true),
-  imageUrls: z.array(z.string().url().max(2048)).max(10).default([]),
+  imageUrls: z.array(z.string().url().max(2048)).max(30).default([]),
   isFeatured: z.boolean().default(false),
   featuredSortOrder: z.coerce.number().int().min(0).max(10000).default(0),
   status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
