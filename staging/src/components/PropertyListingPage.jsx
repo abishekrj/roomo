@@ -24,7 +24,15 @@ const normalize = value => String(value ?? "").trim().toLocaleLowerCase();
 const arrayValue = value => Array.isArray(value) ? value : value && typeof value === "object" ? Object.values(value).filter(v => typeof v === "string") : [];
 const formatPrice = value => Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 const propertyType = property => property.propertyType || "Stay";
-const propertyImages = property => Array.isArray(property.images) ? property.images : [];
+const API_ORIGIN = "http://localhost:5001";
+const propertyImages = property => {
+  const values = [...(Array.isArray(property.images) ? property.images : []), property.coverImage, property.imageUrl, property.featuredImage, property.thumbnailUrl];
+  return [...new Set(values.map(item => {
+    const value = typeof item === "string" ? item : item?.imageUrl || item?.imagePath || item?.url || item?.path || item?.src || item?.fileUrl || item?.thumbnailUrl;
+    if (typeof value !== "string" || !value.trim()) return "";
+    try { return new URL(value.trim(), API_ORIGIN).href; } catch { return ""; }
+  }).filter(Boolean))];
+};
 
 function Icon({ name, className = "h-4 w-4" }) {
   const paths = {
@@ -54,7 +62,7 @@ function CheckOption({ checked, onChange, label, count }) {
 }
 
 function PropertyCard({ property, view }) {
-  const image = propertyImages(property)[0]?.imageUrl || property.imageUrl || property.coverImage || "";
+  const imageCandidates = propertyImages(property);\n  const image = imageCandidates[0] || "";
   const amenities = arrayValue(property.amenities).slice(0, 4);
   const highlights = arrayValue(property.highlights || property.propertyHighlights || property.specialFeatures).slice(0, 2);
   const nearby = arrayValue(property.nearbyLandmarks);
@@ -65,7 +73,13 @@ function PropertyCard({ property, view }) {
     : "/staging/roomo-stay-details.html?id=" + encodeURIComponent(property.id);
   return <article className={view === "list" ? "group grid min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md sm:grid-cols-[240px_minmax(0,1fr)]" : "group flex min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md"}>
     <a href={href} className={"relative block overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-square w-full sm:aspect-square sm:min-h-0" : "aspect-[4/3]")}>
-      {image ? <img src={image} alt={property.title || "ROOMO stay"} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <div className="grid h-full min-h-48 place-items-center text-slate-400"><div className="text-center"><Icon name="bed" className="mx-auto mb-2 h-9 w-9"/><span className="text-xs">Property photos coming soon</span></div></div>}
+      {image ? <img src={image} data-image-candidate-index="0" alt={property.title || "ROOMO stay"} loading="lazy" decoding="async" onError={event => {
+        const img = event.currentTarget;
+        const next = Number(img.dataset.imageCandidateIndex || 0) + 1;
+        if (next < imageCandidates.length) { img.dataset.imageCandidateIndex = String(next); img.src = imageCandidates[next]; }
+        else { img.style.display = "none"; img.parentElement?.querySelector("[data-image-fallback]")?.classList.remove("hidden"); }
+      }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : null}
+      <div data-image-fallback className={"absolute inset-0 grid min-h-48 place-items-center text-slate-400 " + (image ? "hidden" : "")}><div className="text-center"><Icon name="bed" className="mx-auto mb-2 h-9 w-9"/><span className="text-xs">Property photos coming soon</span></div></div>
       {badgeLabel && <span className="absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-700 shadow-sm">✦ {badgeLabel}</span>}<span aria-hidden="true" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-2xl leading-none text-slate-500 shadow-sm">♡</span>
     </a>
     <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
