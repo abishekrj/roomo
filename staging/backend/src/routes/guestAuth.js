@@ -151,7 +151,7 @@ router.post("/register", async (req, res, next) => {
         phoneVerified: false,
         passwordHash: await bcrypt.hash(parsed.data.password, 12),
         authProvider: "EMAIL",
-        emailVerified: false,
+        emailVerified: allowUnverifiedLocalGuests && !verificationEmailConfigured,
       },
     });
 
