@@ -197,10 +197,11 @@ router.post("/admin/drivers", async (req, res, next) => {
     const parsed = driverSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Please check the driver details.", errors: parsed.error.flatten().fieldErrors });
     const data = parsed.data;
+    const { password, ...driverData } = data;
     const driver = await prisma.driver.create({
       data: {
-        ...data, email: data.email.toLowerCase(), phoneNumber: data.phoneNumber.trim(),
-        passwordHash: await bcrypt.hash(data.password, 12),
+        ...driverData, email: data.email.toLowerCase(), phoneNumber: data.phoneNumber.trim(),
+        passwordHash: await bcrypt.hash(password, 12),
         licenseNumber: data.licenseNumber || null, vehicleMake: data.vehicleMake || null,
         vehicleModel: data.vehicleModel || null, notes: data.notes || null
       },
