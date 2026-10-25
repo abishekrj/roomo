@@ -6,6 +6,7 @@ const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3
 const buttonClass = "rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50";
 const secondaryClass = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50";
 const cardClass = "rounded-lg border border-slate-200 bg-white p-5 shadow-sm";
+const EMPTY_SUGGESTIONS = [];
 
 async function api(path, token, options = {}) {
   const response = await fetch(API + path, {
@@ -152,7 +153,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 
   if (pageKey === "cms-pages") return <CmsManager token={token} pages={data?.pages||[]} load={load} notify={notify} runAction={runAction} busy={busy} />;
 
-  if (pageKey === "destinations") return <DestinationManager token={token} places={data?.places||[]} suggestions={data?.suggestions||[]} load={load} notify={notify} runAction={runAction} busy={busy} />;
+  if (pageKey === "destinations") return <DestinationManager token={token} places={data?.places||[]} suggestions={data?.suggestions||EMPTY_SUGGESTIONS} load={load} notify={notify} runAction={runAction} busy={busy} />;
 
   if (pageKey === "nearby-locations" || pageKey === "homepage/nearby-locations") return <CollectionConfig title="Nearby Locations" token={token} endpoint="/homepage/nearby-places/admin" keyName="places" data={data?.draft || {enabled:true,title:"Nearby Locations",description:"",places:[]}} load={load} notify={notify} busy={busy} />;
 
