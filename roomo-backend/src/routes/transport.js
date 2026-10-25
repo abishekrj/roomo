@@ -256,10 +256,23 @@ router.patch("/admin/bookings/:id/assign", async (req, res, next) => {
       prisma.driver.findUnique({ where: { id: driverId } })
     ]);
     if (!booking) return res.status(404).json({ message: "Transport booking not found." });
-    if (!driver || !driver.isActive || driver.vehicleType !== booking.vehicleType || driver.passengerCapacity < booking.passengerCount) return res.status(400).json({ message: "Choose an active driver with a suitable vehicle and capacity." });
-    const result = await prisma.transportBooking.updateMany({ where: { id: booking.id, status: { in: ["PENDING", "CONFIRMED"] } }, data: { status: "CONFIRMED", assignedDriverId: driver.id, assignedAt: new Date() } });
-    if (!result.count) return res.status(409).json({ message: "This booking can no longer be assigned." });
-    await prisma.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+    if (!driver || !driver.isActive || driver.vehicleType !== booking.vehicleType || driver.passengerCapacity < booking.passengerCount || (!driver.isAvailable && booking.assignedDriverId !== driver.id)) return res.status(400).json({ message: "Choose an active, available driver with a suitable vehicle and capacity." });
+    const result = await prisma.$transaction(async tx => {
+      const current = await tx.transportBooking.findUnique({ where: { id: booking.id } });
+      if (!current || !["PENDING", "CONFIRMED"].includes(current.status)) return false;
+      if (current.assignedDriverId && current.assignedDriverId !== driver.id) {
+        await tx.driver.update({ where: { id: current.assignedDriverId }, data: { isAvailable: true } });
+      }
+      const assigned = await tx.transportBooking.updateMany({
+        where: { id: booking.id, status: { in: ["PENDING", "CONFIRMED"] } },
+        data: { status: "CONFIRMED", assignedDriverId: driver.id, assignedAt: new Date() }
+      });
+      if (!assigned.count) return false;
+      await tx.driver.update({ where: { id: driver.id }, data: { isAvailable: false } });
+      await tx.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+      return true;
+    });
+    if (!result) return res.status(409).json({ message: "This booking can no longer be assigned." });
     await sendDriverPush(driver.id, { title: "ROOMO · Trip assigned", body: booking.pickupLocation + " → " + booking.dropoffLocation, url: "/staging/driver/dashboard", bookingCode: booking.bookingCode });
     res.json({ message: "Driver assigned successfully." });
   } catch (error) { next(error); }
