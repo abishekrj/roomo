@@ -171,3 +171,82 @@ export function MyBookingsPage() {
     </>}
   </div></PageShell>;
 }
+
+
+export function MyProfilePage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [user, setUser] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("info");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(API + "/guest-auth/me", { credentials: "include", cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) throw new Error("Please sign in to view and update your profile.");
+        if (!response.ok || !data.user) throw new Error(data.message || "Unable to load your profile.");
+        setUser(data.user);
+        setFullName(data.user.fullName || "");
+        setEmail(data.user.email || "");
+        setPhoneNumber(data.user.phoneNumber || "");
+      })
+      .catch(error => { if (error.name !== "AbortError") { setMessage(error.message || "Unable to load your profile."); setMessageType("error"); } })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, []);
+
+  async function saveProfile(event) {
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true); setMessage("");
+    try {
+      const response = await fetch(API + "/guest-auth/me", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ fullName: fullName.trim(), phoneNumber: phoneNumber.trim() })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) throw new Error("Your session has expired. Please sign in again.");
+      if (!response.ok || !data.user) throw new Error(data.message || "Unable to save your profile.");
+      setUser(data.user);
+      setFullName(data.user.fullName || "");
+      setEmail(data.user.email || "");
+      setPhoneNumber(data.user.phoneNumber || "");
+      setMessage("Your profile has been updated.");
+      setMessageType("success");
+    } catch (error) {
+      setMessage(error.message || "Unable to save your profile.");
+      setMessageType("error");
+    } finally { setSaving(false); }
+  }
+
+  const fieldClass = "mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100";
+  return <PageShell><div className="mx-auto w-full max-w-7xl">
+    <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Your ROOMO account</p>
+    <h1 className="mt-2 text-3xl font-semibold">My Profile</h1>
+    <p className="mt-3 text-sm leading-6 text-slate-600">Manage your personal details used for your ROOMO pilgrimage plans.</p>
+    {loading ? <Notice>Loading your profile…</Notice> : !user ? <><Notice type="error">{message || "Please sign in to continue."}</Notice><div className="mt-5"><ActionLink href={"/staging/login?returnTo="+encodeURIComponent("/staging/my-profile")}>Sign in to continue</ActionLink></div></> : <form onSubmit={saveProfile} className="mt-7 max-w-3xl rounded-lg border border-slate-200 bg-white p-5 sm:p-8">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <label className="block text-sm font-medium text-slate-700">Full name
+          <input autoComplete="name" required minLength={2} maxLength={100} value={fullName} onChange={event=>setFullName(event.target.value)} className={fieldClass} />
+        </label>
+        <label className="block text-sm font-medium text-slate-700">Email address
+          <input type="email" value={email} readOnly className={fieldClass+" cursor-not-allowed bg-slate-50 text-slate-500"} />
+          <span className="mt-1 block text-xs font-normal text-slate-500">Email address cannot be changed here.</span>
+        </label>
+        <label className="block text-sm font-medium text-slate-700 sm:col-span-2">Mobile number
+          <input type="tel" autoComplete="tel" inputMode="tel" placeholder="+919876543210" value={phoneNumber} onChange={event=>setPhoneNumber(event.target.value)} className={fieldClass} />
+          <span className="mt-1 block text-xs font-normal text-slate-500">Include country code, for example +919876543210.</span>
+        </label>
+      </div>
+      {message && <Notice type={messageType}>{message}</Notice>}
+      <div className="mt-6 flex flex-wrap gap-3"><button type="submit" disabled={saving} className="rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1d4f86] disabled:cursor-wait disabled:opacity-60">{saving ? "Saving…" : "Save profile"}</button><a href="/staging/my-bookings" className="inline-flex items-center rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">My Pilgrimage Bookings</a></div>
+    </form>}
+  </div></PageShell>;
+}
