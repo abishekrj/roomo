@@ -76,6 +76,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
       } else if (pageKey === "nearby-locations") result = await api("/homepage/nearby-places/admin", token);
       else if (pageKey === "shopping-directory") result = await api("/homepage/shops/admin", token);
       else if (pageKey === "testimonials") result = await api("/admin/testimonials", token);
+      else if (pageKey === "reviews") result = await api("/admin/reviews", token);
       else if (["gallery/add", "gallery/list"].includes(pageKey)) result = await api("/admin/gallery", token);
       else if (pageKey === "reports") {
         const [reservations, commissions] = await Promise.all([api("/admin/reservations", token), api("/admin/commissions", token)]);
@@ -97,7 +98,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 
   useEffect(() => { load(); }, [load]);
   const filtered = useMemo(() => {
-    const rows = data?.enquiries || data?.owners || data?.properties || data?.pages || data?.items || data?.reservations || data?.roomTypes || [];
+    const rows = data?.enquiries || data?.owners || data?.properties || data?.pages || data?.items || data?.reservations || data?.roomTypes || data?.reviews || [];
     return rows.filter(row => JSON.stringify(row).toLowerCase().includes(query.toLowerCase()));
   }, [data, query]);
 
@@ -127,6 +128,34 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
       </form>
     </Panel>
     <Panel title="Registered property owners" description="Review each owner's registered contact details, property count and account status. You can disable access without deleting their account."><SearchBar query={query} setQuery={setQuery} /><DataTable rows={(data?.owners||[]).filter(r=>JSON.stringify(r).toLowerCase().includes(query.toLowerCase()))} columns={[[ "Owner",r=>r.fullName],[ "Email",r=>r.email],[ "Mobile number",r=>r.phoneNumber || "—"],[ "Properties",r=>r._count?.properties ?? r.properties?.length ?? "—"],[ "Property edit access",r=>r.canEditProperties ? "Enabled" : "Disabled"],[ "Account status",r=>r.isActive === false ? "Disabled" : "Active"],[ "Registered on",r=>fmtDate(r.createdAt)]]} actions={r=><div className="flex flex-wrap gap-2"><button className={secondaryClass} onClick={()=>beginEdit(r)}>Permissions</button><button disabled={busy} className={r.isActive === false ? "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50" : "rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"} onClick={()=>{const nextActive=r.isActive===false;if(window.confirm((nextActive?"Enable":"Disable")+" the account for "+r.fullName+"? "+(nextActive?"They will be able to sign in again.":"They will no longer be able to sign in.")))runAction(()=>api("/admin/owners/"+r.id+"/status",token,patchBody({isActive:nextActive})),nextActive?"Owner account enabled.":"Owner account disabled.");}}>{r.isActive===false?"Enable account":"Disable account"}</button></div>} /></Panel>
+  </div>;
+
+  if (pageKey === "reviews") return <div className="space-y-5">
+    <Panel title={editingId ? "Edit guest review" : "Guest reviews"} description="Reviews submitted by guests are private until a Super Admin approves them. You can correct the review text and star rating before publication.">
+      {editingId && <form className="mb-6 space-y-4 rounded-xl border border-blue-100 bg-blue-50/40 p-4" onSubmit={event => { event.preventDefault(); runAction(async () => { await api("/admin/reviews/" + editingId, token, patchBody({ rating: Number(form.rating), comment: String(form.comment || "").trim(), status: form.status || "PENDING" })); resetForm(); }, form.status === "APPROVED" ? "Review saved and approved for publication." : "Review changes saved."); }}>
+        <p className="text-sm text-slate-600">Stay: <strong className="text-slate-900">{form.property?.title || "Property"}</strong> · Guest: <strong className="text-slate-900">{form.guest?.fullName || "Guest"}</strong></p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-medium text-slate-700">Star rating<select className={inputClass} value={form.rating ?? 5} onChange={event=>update("rating",Number(event.target.value))}>{[5,4,3,2,1].map(value=><option key={value} value={value}>{value} star{value===1?"":"s"}</option>)}</select></label>
+          <label className="block text-sm font-medium text-slate-700">Review status<select className={inputClass} value={form.status || "PENDING"} onChange={event=>update("status",event.target.value)}><option value="PENDING">Pending approval</option><option value="APPROVED">Approved · publish</option><option value="REJECTED">Rejected · hidden</option></select></label>
+          <div className="sm:col-span-2"><TextField label="Review text" value={form.comment || ""} onChange={value=>update("comment",value)} rows={5} required minLength={10} maxLength={2000}/></div>
+        </div>
+        <div className="flex flex-wrap gap-2"><button disabled={busy} className={buttonClass}>Save review</button><button type="button" className={secondaryClass} onClick={resetForm}>Cancel</button></div>
+      </form>}
+      <SearchBar query={query} setQuery={setQuery}/>
+      <DataTable rows={(data?.reviews||[]).filter(row=>JSON.stringify(row).toLowerCase().includes(query.toLowerCase()))} columns={[
+        ["Stay",row=>row.property?.title || "—"],
+        ["Guest",row=>row.guest?.fullName || "—"],
+        ["Rating",row=>"★".repeat(Math.max(0,Math.min(5,Number(row.rating)||0)))+" ("+row.rating+"/5)"],
+        ["Review",row=><span className="line-clamp-3 whitespace-pre-line">{row.comment}</span>],
+        ["Submitted",row=>fmtDate(row.createdAt)],
+        ["Status",row=>row.status==="APPROVED"?"Approved":row.status==="REJECTED"?"Rejected":"Pending approval"]
+      ]} actions={row=><div className="flex flex-wrap gap-2">
+        <button className={secondaryClass} onClick={()=>beginEdit(row)}>Edit</button>
+        {row.status!=="APPROVED"&&<button disabled={busy} className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50" onClick={()=>runAction(()=>api("/admin/reviews/"+row.id,token,patchBody({rating:Number(row.rating),comment:row.comment,status:"APPROVED"})),"Review approved and published.")}>Approve</button>}
+        {row.status!=="REJECTED"&&<button disabled={busy} className="rounded-lg border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-50" onClick={()=>runAction(()=>api("/admin/reviews/"+row.id,token,patchBody({rating:Number(row.rating),comment:row.comment,status:"REJECTED"})),"Review rejected and hidden.")}>Reject</button>}
+        <button disabled={busy} className="rounded-lg border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50" onClick={()=>{if(window.confirm("Permanently delete this review?"))runAction(()=>api("/admin/reviews/"+row.id,token,{method:"DELETE"}),"Review deleted.");}}>Delete</button>
+      </div>}/>
+    </Panel>
   </div>;
 
   if (pageKey === "rooms/listings" && propertyToEdit) return <PropertyCreate token={token} busy={busy} setBusy={setBusy} notify={notify} onCreated={async()=>{setPropertyToEdit(null);await load();}} editingProperty={propertyToEdit} onCancelEdit={()=>setPropertyToEdit(null)} />;

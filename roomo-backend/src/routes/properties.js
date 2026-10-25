@@ -172,6 +172,7 @@ router.get("/", async (req, res, next) => {
         where,
         include: {
           images: { orderBy: { sortOrder: "asc" } },
+          reviews: { where: { status: "APPROVED" }, select: { rating: true } },
         },
         orderBy,
         skip: (page - 1) * limit,
@@ -180,8 +181,13 @@ router.get("/", async (req, res, next) => {
       prisma.property.count({ where }),
     ]);
 
+    const propertiesWithRatings = properties.map(property => {
+      const reviews = property.reviews || [];
+      const rating = reviews.length ? Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10) / 10 : null;
+      return { ...property, rating, reviewCount: reviews.length };
+    });
     res.json({
-      properties,
+      properties: propertiesWithRatings,
       pagination: {
         page,
         limit,
@@ -229,6 +235,7 @@ router.get("/:id", async (req, res, next) => {
       },
       include: {
         images: { orderBy: { sortOrder: "asc" } },
+        reviews: { where: { status: "APPROVED" }, include: { guest: { select: { fullName: true } } }, orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -236,7 +243,9 @@ router.get("/:id", async (req, res, next) => {
       return res.status(404).json({ message: "Property not found." });
     }
 
-    res.json({ property });
+    const approvedReviews = property.reviews || [];
+    const rating = approvedReviews.length ? Math.round((approvedReviews.reduce((sum, review) => sum + review.rating, 0) / approvedReviews.length) * 10) / 10 : null;
+    res.json({ property: { ...property, rating, reviewCount: approvedReviews.length, reviews: approvedReviews.map(review => ({ id: review.id, rating: review.rating, comment: review.comment, guestName: review.guest?.fullName || "ROOMO guest", createdAt: review.createdAt })) } });
   } catch (error) {
     next(error);
   }

@@ -128,11 +128,16 @@ router.get("/", async (req, res, next) => {
     const content = row?.published || defaults;
     const featuredProperties = await prisma.property.findMany({
       where: { status: "PUBLISHED", isFeatured: true },
-      include: { images: { orderBy: { sortOrder: "asc" } } },
+      include: { images: { orderBy: { sortOrder: "asc" } }, reviews: { where: { status: "APPROVED" }, select: { rating: true } } },
       orderBy: [{ featuredSortOrder: "asc" }, { createdAt: "desc" }]
     });
+    const featuredPropertiesWithRatings = featuredProperties.map(property => {
+      const reviews = property.reviews || [];
+      const rating = reviews.length ? Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10) / 10 : null;
+      return { ...property, rating, reviewCount: reviews.length };
+    });
     res.set("Cache-Control", "no-store");
-    res.json({ content: { ...content, featuredProperties }, publishedAt: row?.publishedAt || null });
+    res.json({ content: { ...content, featuredProperties: featuredPropertiesWithRatings }, publishedAt: row?.publishedAt || null });
   } catch (error) { next(error); }
 });
 module.exports = router;
