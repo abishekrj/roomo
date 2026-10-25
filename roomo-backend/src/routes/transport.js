@@ -211,14 +211,15 @@ router.post("/driver/requests/:offerId/accept", driverAuth, async (req, res, nex
   } catch (error) { next(error); }
 });
 
-router.use("/admin", authenticateToken, requireAdmin);
-router.get("/admin/drivers", async (req, res, next) => {
+const adminRouter = express.Router();
+adminRouter.use(authenticateToken, requireAdmin);
+adminRouter.get("/drivers", async (req, res, next) => {
   try {
     const drivers = await prisma.driver.findMany({ select: driverFields, orderBy: { createdAt: "desc" } });
     res.json({ drivers });
   } catch (error) { next(error); }
 });
-router.post("/admin/drivers", async (req, res, next) => {
+adminRouter.post("/drivers", async (req, res, next) => {
   try {
     const parsed = driverSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Please check the driver details.", errors: parsed.error.flatten().fieldErrors });
@@ -239,13 +240,13 @@ router.post("/admin/drivers", async (req, res, next) => {
     next(error);
   }
 });
-router.patch("/admin/drivers/:id/status", async (req, res, next) => {
+adminRouter.patch("/drivers/:id/status", async (req, res, next) => {
   try {
     const driver = await prisma.driver.update({ where: { id: req.params.id }, data: { isActive: Boolean(req.body?.isActive), isAvailable: Boolean(req.body?.isAvailable) }, select: driverFields });
     res.json({ driver });
   } catch (error) { next(error); }
 });
-router.get("/admin/bookings", async (req, res, next) => {
+adminRouter.get("/bookings", async (req, res, next) => {
   try {
     const bookings = await prisma.transportBooking.findMany({
       include: { assignedDriver: { select: { id: true, fullName: true, phoneNumber: true, vehicleType: true, vehicleNumber: true } } },
@@ -254,7 +255,7 @@ router.get("/admin/bookings", async (req, res, next) => {
     res.json({ bookings });
   } catch (error) { next(error); }
 });
-router.patch("/admin/bookings/:id/assign", async (req, res, next) => {
+adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
   try {
     const driverId = String(req.body?.driverId || "");
     const [booking, driver] = await Promise.all([
@@ -283,7 +284,7 @@ router.patch("/admin/bookings/:id/assign", async (req, res, next) => {
     res.json({ message: "Driver assigned successfully." });
   } catch (error) { next(error); }
 });
-router.patch("/admin/bookings/:id/status", async (req, res, next) => {
+adminRouter.patch("/bookings/:id/status", async (req, res, next) => {
   try {
     const status = String(req.body?.status || "");
     if (!["CONFIRMED", "PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) return res.status(400).json({ message: "Invalid transport booking status." });
@@ -295,4 +296,6 @@ router.patch("/admin/bookings/:id/status", async (req, res, next) => {
     res.json({ booking });
   } catch (error) { next(error); }
 });
+router.use("/admin", adminRouter);
+
 module.exports = router;
