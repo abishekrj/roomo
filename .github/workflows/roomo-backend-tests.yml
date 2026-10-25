@@ -33,6 +33,10 @@ jobs:
           cache-dependency-path: staging/backend/package-lock.json
       - name: Install backend dependencies
         run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://roomo:roomo@localhost:5432/roomo_dev?schema=public
       - name: Run backend security regression tests
         run: npm test
 
