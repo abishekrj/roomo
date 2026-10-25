@@ -15,7 +15,7 @@ export default function HomePage() {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink">
     <Header />
     <main className="flex-1">
-      <HeroBanner /><SearchSection /><TransportPromoBanner /><FeaturedStays /><UpcomingFestival /><PilgrimGuide /><NearbyLocations /><Gallery /><ShoppingDirectory /><Testimonials />
+      <HeroBanner /><SearchSection /><FeaturedStays /><UpcomingFestival /><PilgrimGuide /><NearbyLocations /><TransportPromoBanner /><Gallery /><ShoppingDirectory /><Testimonials />
     </main>
     <Footer />
   </div>;
