@@ -37,6 +37,35 @@ function createGuestToken(user) {
   );
 }
 
+function setGuestSession(res, user) {
+  const token = createGuestToken(user);
+  const secure = process.env.NODE_ENV === "production";
+  res.cookie("roomo_guest_session", token, {
+    httpOnly: true,
+    secure,
+    sameSite: "lax",
+    path: "/api",
+    maxAge: 60 * 60 * 1000,
+  });
+  // Double-submit CSRF token for state-changing guest requests.
+  res.cookie("roomo_csrf", crypto.randomBytes(32).toString("hex"), {
+    httpOnly: false,
+    secure,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 1000,
+  });
+  return token;
+}
+
+function readGuestToken(req) {
+  const authorization = req.headers.authorization;
+  if (authorization?.startsWith("Bearer ")) return authorization.slice(7);
+  const cookieHeader = req.headers.cookie || "";
+  const cookie = cookieHeader.split(";").map(part => part.trim()).find(part => part.startsWith("roomo_guest_session="));
+  return cookie ? decodeURIComponent(cookie.slice("roomo_guest_session=".length)) : null;
+}
+
 function publicUser(user) {
   return {
     id: user.id,
@@ -232,7 +261,8 @@ router.post("/login", async (req, res, next) => {
         code: "EMAIL_NOT_VERIFIED",
       });
     }
-    return res.json({ message: "Sign-in successful.", user: publicUser(user), token: createGuestToken(user) });
+    const token = setGuestSession(res, user);
+    return res.json({ message: "Sign-in successful.", user: publicUser(user), token });
   } catch (error) { next(error); }
 });
 
@@ -280,7 +310,8 @@ router.post("/google", async (req, res, next) => {
         },
       });
     }
-    return res.json({ message: "Signed in with Google successfully.", user: publicUser(user), token: createGuestToken(user) });
+    const token = setGuestSession(res, user);
+    return res.json({ message: "Signed in with Google successfully.", user: publicUser(user), token });
   } catch (error) {
     if (error.code === "P2002") {
       return res.status(409).json({ message: "An account already exists with this email. Please sign in using that account." });
@@ -289,10 +320,16 @@ router.post("/google", async (req, res, next) => {
   }
 });
 
+router.post("/logout", (req, res) => {
+  const secure = process.env.NODE_ENV === "production";
+  res.clearCookie("roomo_guest_session", { httpOnly: true, secure, sameSite: "lax", path: "/api" });
+  res.clearCookie("roomo_csrf", { httpOnly: false, secure, sameSite: "lax", path: "/" });
+  return res.json({ message: "Signed out successfully." });
+});
+
 router.get("/me", async (req, res, next) => {
   try {
-    const authorization = req.headers.authorization;
-    const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+    const token = readGuestToken(req);
     if (!token) return res.status(401).json({ message: "Authentication required." });
     let decoded;
     try { decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest" }); }

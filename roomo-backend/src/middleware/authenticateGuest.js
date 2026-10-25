@@ -3,7 +3,13 @@ const prisma = require("../lib/prisma");
 
 async function authenticateGuest(req, res, next) {
   const authorization = req.headers.authorization;
-  const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  const cookieHeader = req.headers.cookie || "";
+  const sessionCookie = cookieHeader.split(";").map(part => part.trim()).find(part => part.startsWith("roomo_guest_session="));
+  const token = authorization?.startsWith("Bearer ")
+    ? authorization.slice(7)
+    : sessionCookie
+      ? decodeURIComponent(sessionCookie.slice("roomo_guest_session=".length))
+      : null;
   if (!token) return res.status(401).json({ message: "Sign in to continue with a reservation.", code: "GUEST_AUTH_REQUIRED" });
 
   let decoded;
