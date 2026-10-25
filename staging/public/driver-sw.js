@@ -17,7 +17,7 @@ self.addEventListener("notificationclick", event => {
   const target = new URL(event.notification.data?.url || "/staging/driver/dashboard", self.location.origin).href;
   event.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(windowClients => {
     for (const client of windowClients) {
-      if (client.url.startsWith(self.location.origin + "/staging/driver/") && "focus" in client) {
+      if (client.url.startsWith(self.location.origin + "/staging/driver") && "focus" in client) {
         client.navigate(target);
         return client.focus();
       }
