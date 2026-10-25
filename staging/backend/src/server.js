@@ -30,6 +30,7 @@ const ownerRoomTypesRoutes = require("./routes/ownerRoomTypes");
 const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
 const cmsPagesRoutes = require("./routes/cmsPages");
 const adminCmsPagesRoutes = require("./routes/adminCmsPages");
+const transportRoutes = require("./routes/transport");
 const authenticateToken = require("./middleware/auth");
 const { assertSecurityConfig } = require("./lib/securityConfig");
 const { ensureCsrfCookie, csrfProtection } = require("./lib/sessionCookies");
@@ -164,6 +165,7 @@ app.use("/api/admin/commissions", adminCommissionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/homepage", adminHomepageRoutes);
 app.use("/api/admin/testimonials", adminTestimonialsRoutes);
+app.use("/api/transport", transportRoutes);
 
 app.use((error, req, res, next) => {
   console.error("API error:", error.message);
