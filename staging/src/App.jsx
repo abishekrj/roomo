@@ -6,7 +6,7 @@ import PropertyDetails from "./pages/PropertyDetails.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import OwnerPortal from "./owner/OwnerPortal.jsx";
 import SuperAdminPortal from "./admin/SuperAdminPortal.jsx";
-import { CmsGuidePage, MyBookingsPage, MyProfilePage, PostPropertyPage, ShoppingPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
+import { CmsGuidePage, MyBookingsPage, MyProfilePage, PostPropertyPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
 import CommissionManagementPage from "./pages/CommissionManagementPage.jsx";
 import DriverPortal from "./pages/DriverPortal.jsx";
 import TransportBookingPage from "./pages/TransportBookingPage.jsx";
@@ -24,7 +24,6 @@ const legacyRoutes = {
   "/frontend/admin/cms-pages.html": "/staging/admin/cms-pages",
   "/frontend/admin/destinations.html": "/staging/admin/destinations",
   "/frontend/admin/nearby-places.html": "/staging/admin/nearby-locations",
-  "/frontend/admin/shops.html": "/staging/admin/shopping-directory",
   "/frontend/admin/testimonials.html": "/staging/admin/testimonials",
   "/frontend/admin/galleries.html": "/staging/admin/gallery/list",
   "/frontend/admin/reports.html": "/staging/admin/reports",
@@ -48,8 +47,6 @@ const legacyRoutes = {
   "/frontend/post-property.html": "/staging/post-property",
   "/frontend/roomo-verify-email.html": "/staging/verify-email",
   "/frontend/roomo-my-bookings.html": "/staging/my-bookings",
-  "/frontend/shopping.html": "/staging/shopping",
-  "/frontend/shop-details.html": "/staging/shop-details",
   "/frontend/roomo-admin-commissions.html": "/staging/admin/commissions",
   "/frontend/cms-page.html": "/staging/guides",
   "/frontend/budget-rooms-in-tiruvannamalai.html": "/staging/guides/budget-rooms-in-tiruvannamalai",
@@ -71,8 +68,6 @@ const legacyRoutes = {
   "/post-property.html": "/staging/post-property",
   "/roomo-verify-email.html": "/staging/verify-email",
   "/roomo-my-bookings.html": "/staging/my-bookings",
-  "/shopping.html": "/staging/shopping",
-  "/shop-details.html": "/staging/shop-details",
   "/roomo-admin-commissions.html": "/staging/admin/commissions",
   "/admin.html": "/staging/admin/login",
   "/owner-dashboard.html": "/staging/owner/login",
@@ -101,8 +96,6 @@ export default function App() {
   if (path === "/staging/verify-email" || path === "/verify-email") return <VerifyEmailPage />;
   if (path === "/staging/my-bookings" || path === "/my-bookings") return <MyBookingsPage />;
   if (path === "/staging/my-profile" || path === "/my-profile") return <MyProfilePage />;
-  if (path === "/staging/shopping" || path === "/shopping") return <ShoppingPage />;
-  if (path === "/staging/shop-details" || path === "/shop-details") return <ShoppingPage detail />;
   if (path === "/staging/guides" || path === "/guides") return <CmsGuidePage />;
   if (path.startsWith("/staging/guides/") || path.startsWith("/guides/")) return <CmsGuidePage slug={path.split("/").filter(Boolean).pop()} />;
   if (path === "/admin" || path.startsWith("/admin/") || path === "/staging/admin" || path.startsWith("/staging/admin/")) return <SuperAdminPortal />;
