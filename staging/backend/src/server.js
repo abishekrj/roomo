@@ -101,9 +101,17 @@ const reservationWriteLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: "Too many reservation requests. Please try again later." },
 });
+const destinationSuggestionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many place suggestions. Please try again later." },
+});
 
 app.post("/api/enquiries", enquiryWriteLimiter, (_req, _res, next) => next());
 app.post("/api/reservations", reservationWriteLimiter, (_req, _res, next) => next());
+app.post("/api/homepage/destination-suggestions", destinationSuggestionLimiter, (_req, _res, next) => next());
 
 app.use("/api/auth", ownerAuthLimiter, authRoutes);
 app.use("/api/guest-auth", guestAuthLimiter, guestAuthRoutes);
