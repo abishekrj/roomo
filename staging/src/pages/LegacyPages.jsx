@@ -145,7 +145,7 @@ export function MyBookingsPage() {
     return "http://localhost:5001" + (value.startsWith("/") ? value : "/" + value);
   };
 
-  return <PageShell><div className="mx-auto max-w-5xl">
+  return <PageShell><div className="mx-auto w-full max-w-7xl">
     <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Your ROOMO journey</p>
     <h1 className="mt-2 text-3xl font-semibold">My Pilgrimage Bookings</h1>
     <p className="mt-3 text-sm leading-6 text-slate-600">Review your reservations and keep your favourite sacred stays together in one place.</p>
