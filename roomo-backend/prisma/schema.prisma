@@ -276,7 +276,7 @@ model PropertyReview {
   id         String   @id @default(uuid()) @db.Uuid
   propertyId String   @db.Uuid @map("property_id")
   guestId    String   @db.Uuid @map("guest_id")
-  rating     Int
+  rating     Float
   comment    String   @db.VarChar(2000)
   status     String   @default("PENDING") @db.VarChar(20)
   createdAt  DateTime @default(now()) @map("created_at")
