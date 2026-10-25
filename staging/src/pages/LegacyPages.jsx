@@ -81,6 +81,8 @@ export function MyBookingsPage() {
   const [sessionState, setSessionState] = useState("checking");
   const [message, setMessage] = useState("");
   const [favourites, setFavourites] = useState([]);
+  const [transportBookings, setTransportBookings] = useState([]);
+  const [transportMessage, setTransportMessage] = useState("");
   const [removingId, setRemovingId] = useState("");
 
   useEffect(() => {
@@ -110,6 +112,17 @@ export function MyBookingsPage() {
         if (!response.ok) throw new Error(data.message || "We couldn't load your saved stays right now.");
         setFavourites(Array.isArray(data.favorites) ? data.favorites : []);
         setMessage("");
+        try {
+          const travelResponse = await fetch(API + "/transport/my-bookings", {
+            credentials: "include", cache: "no-store", signal: controller.signal,
+          });
+          const travelData = await travelResponse.json().catch(() => ({}));
+          if (!travelResponse.ok) throw new Error(travelData.message || "Unable to load your driver bookings.");
+          setTransportBookings(Array.isArray(travelData.bookings) ? travelData.bookings : []);
+          setTransportMessage("");
+        } catch (travelError) {
+          if (travelError.name !== "AbortError") setTransportMessage(travelError.message || "Unable to load your driver bookings.");
+        }
       } catch (error) {
         if (error.name !== "AbortError") setMessage(error.message || "Unable to load your saved stays.");
       }
@@ -147,12 +160,23 @@ export function MyBookingsPage() {
 
   return <PageShell><div className="mx-auto w-full max-w-7xl">
     <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Your ROOMO journey</p>
-    <h1 className="mt-2 text-3xl font-semibold">My Pilgrimage Bookings</h1>
-    <p className="mt-3 text-sm leading-6 text-slate-600">Review your reservations and keep your favourite sacred stays together in one place.</p>
+    <h1 className="mt-2 text-3xl font-semibold">My Travel</h1>
+    <p className="mt-3 text-sm leading-6 text-slate-600">Manage your driver requests, review trip details and keep your favourite sacred stays together in one place.</p>
     {sessionState === "checking" && <Notice>Checking your secure session…</Notice>}
     {sessionState === "signed-out" && <><Notice>Sign in to view your reservations and saved favourite stays.</Notice><div className="mt-5"><ActionLink href={"/staging/login?returnTo="+encodeURIComponent("/staging/my-bookings")}>Sign in to continue</ActionLink></div></>}
     {message && <Notice type="error">{message}</Notice>}
     {sessionState === "signed-in" && <>
+      <section className="mt-8">
+        <div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">My driver bookings</h2><p className="mt-2 text-sm text-slate-600">Trip requests you have submitted and their latest status.</p></div><a href="/staging/transport-booking" className="text-sm font-semibold text-[#2563a6] hover:underline">Request a driver ↗</a></div>
+        {transportMessage && <Notice type="error">{transportMessage}</Notice>}
+        {!transportBookings.length && !transportMessage && <div className="mt-4 rounded-lg border border-dashed border-slate-300 p-6"><p className="text-sm font-medium text-slate-800">No driver bookings yet</p><p className="mt-1 text-sm text-slate-500">When you request a car or van, your trip details and status will appear here.</p><div className="mt-4"><ActionLink href="/staging/transport-booking">Request a driver</ActionLink></div></div>}
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">{transportBookings.map(booking => <article key={booking.id} className="rounded-lg border border-slate-200 bg-white p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-[#2563a6]">{booking.bookingCode}</p><h3 className="mt-2 font-semibold text-slate-900">{booking.pickupLocation} <span className="text-slate-400">→</span> {booking.dropoffLocation}</h3></div><span className={"rounded-full px-3 py-1 text-xs font-semibold " + (booking.status === "CONFIRMED" || booking.status === "COMPLETED" ? "bg-emerald-50 text-emerald-800" : booking.status === "CANCELLED" ? "bg-red-50 text-red-700" : booking.status === "IN_PROGRESS" ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-800")}>{String(booking.status || "PENDING").replaceAll("_", " ")}</span></div>
+          <div className="mt-4 grid gap-3 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2"><div><p className="text-xs text-slate-500">Pickup date & time</p><p className="mt-1 font-medium text-slate-800">{booking.travelAt ? new Date(booking.travelAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}</p></div><div><p className="text-xs text-slate-500">Vehicle</p><p className="mt-1 font-medium text-slate-800">{String(booking.vehicleType || "").replaceAll("_", " ")} · {booking.passengerCount} passenger(s)</p></div><div><p className="text-xs text-slate-500">Contact number</p><p className="mt-1 font-medium text-slate-800">{booking.guestPhone || "—"}</p></div><div><p className="text-xs text-slate-500">Requested on</p><p className="mt-1 font-medium text-slate-800">{booking.createdAt ? new Date(booking.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—"}</p></div></div>
+          {booking.notes && <p className="mt-3 text-sm text-slate-600"><span className="font-medium">Trip notes:</span> {booking.notes}</p>}
+          {booking.assignedDriver && <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 p-3"><p className="text-sm font-semibold text-emerald-900">Driver assigned: {booking.assignedDriver.fullName}</p><p className="mt-1 text-sm text-emerald-800">{booking.assignedDriver.vehicleType?.replaceAll("_", " ")}{booking.assignedDriver.vehicleNumber ? " · " + booking.assignedDriver.vehicleNumber : ""}</p>{booking.assignedDriver.phoneNumber && <a className="mt-2 inline-block text-sm font-semibold text-emerald-900 underline" href={"tel:" + booking.assignedDriver.phoneNumber}>Call driver: {booking.assignedDriver.phoneNumber}</a>}</div>}
+        </article>)}</div>
+      </section>
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">My favourite stays</h2><p className="mt-2 text-sm text-slate-600">Stays you save from the homepage or property pages appear here.</p></div><a href="/staging/properties" className="text-sm font-semibold text-[#2563a6] hover:underline">Explore stays ↗</a></div>
         {!favourites.length && !message && <div className="mt-4 rounded-lg border border-dashed border-slate-300 p-6"><p className="text-sm font-medium text-slate-800">No favourite stays saved yet</p><p className="mt-1 text-sm text-slate-500">Use the heart icon on a stay to keep it here for your pilgrimage planning.</p></div>}
