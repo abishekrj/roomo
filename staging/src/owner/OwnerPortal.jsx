@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
 import OwnerPropertyManager from "./OwnerPropertyManager.jsx";
 
 const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
@@ -137,7 +138,7 @@ export default function OwnerPortal() {
   ];
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink">
-    <Header ownerPortal />
+    <Header ownerPortal={!signupMode} />
     {!token || !owner ? <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-7 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">ROOMO Partner Portal</p>
@@ -183,6 +184,6 @@ export default function OwnerPortal() {
         </section>
       </div>
     </main>}
-    <footer className="mt-auto border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500 sm:px-6">© {new Date().getFullYear()} ROOMO. All rights reserved.</footer>
+    {!token || !owner ? <Footer /> : <footer className="mt-auto border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500 sm:px-6">© {new Date().getFullYear()} ROOMO. All rights reserved.</footer>}
   </div>;
 }
