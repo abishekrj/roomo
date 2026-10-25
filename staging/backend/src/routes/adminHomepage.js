@@ -59,6 +59,11 @@ const homepageSchema = z.object({
   heroTitleAccent: z.string().trim().min(1).max(120),
   heroDescription: z.string().trim().min(10).max(1000),
   heroImageUrl: z.string().trim().url().max(2000).refine(value => value.startsWith("https://") || value.startsWith("http://localhost:5001/uploads/"), "Use HTTPS for image URLs except local ROOMO uploads.").optional(),
+  heroSecondBadge: z.string().trim().min(1).max(160).optional(),
+  heroSecondTitleLine: z.string().trim().min(1).max(120).optional(),
+  heroSecondTitleAccent: z.string().trim().min(1).max(120).optional(),
+  heroSecondDescription: z.string().trim().min(10).max(1000).optional(),
+  heroSecondImageUrl: z.string().trim().url().max(2000).refine(value => value.startsWith("https://") || value.startsWith("http://localhost:5001/uploads/"), "Use HTTPS for image URLs except local ROOMO uploads.").optional(),
   pournamiItems: z.array(z.object({ eyebrow: z.string().trim().min(1).max(50), title: z.string().trim().min(1).max(70), description: z.string().trim().min(1).max(110) })).length(5).default([{"eyebrow":"FULL MOON GIRIVALAM","title":"Walk Around Arunachala","description":"A sacred 14-km hill circuit."},{"eyebrow":"ANNAMALAIYAR TEMPLE","title":"Plan Your Darshan","description":"Visit the grand Arunachaleswarar Temple."},{"eyebrow":"SRI RAMANASRAMAM","title":"Find Quietude","description":"Pause in the ashram’s serene setting."},{"eyebrow":"ARUNACHALA HILL","title":"Sacred Hill Views","description":"Take in the presence of holy Arunachala."},{"eyebrow":"KARTHIGAI DEEPAM","title":"Plan Your Festival Stay","description":"Reserve early for the Deepam season."}]),
   festivalTitle: z.string().trim().min(1).max(160),
   festivalDescription: z.string().trim().min(10).max(1000),
@@ -278,6 +283,12 @@ router.put("/destination-suggestions/:id", async (req, res, next) => {
     await saveDestinationSuggestions(config, config.pending, config.places);
     res.json({ message: "Destination approved and added to the homepage dropdown.", suggestions: config.pending.filter(item => item.status === "PENDING"), places: config.places });
   } catch (error) { next(error); }
+});
+
+router.post("/hero-image/second", heroUpload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
+  const baseUrl = process.env.PUBLIC_API_URL || "http://localhost:5001";
+  res.status(201).json({ heroSecondImageUrl: baseUrl + "/uploads/hero/" + req.file.filename });
 });
 
 router.post("/hero-image", heroUpload.single("image"), (req, res) => {

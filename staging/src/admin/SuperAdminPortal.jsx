@@ -85,7 +85,7 @@ export default function SuperAdminPortal() {
       })
       .then(data => {
         if (cancelled) return;
-        setHeroDraft({ ...(data.draft || {}) });
+        setHeroDraft({ heroSecondBadge: "ROOMO Cab Booking", heroSecondTitleLine: "Your Journey Beyond", heroSecondTitleAccent: "Tiruvannamalai", heroSecondDescription: "Book a cab for outdoor destinations or arrange a comfortable return journey to your hometown. Plan your onward travel with ROOMO.", heroSecondImageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80", ...(data.draft || {}) });
         setNotice(data.hasPublished ? "Draft loaded. Live content stays unchanged until you publish." : "Draft loaded. Publish when you are ready for visitors to see it.");
       })
       .catch(e => { if (!cancelled) setNotice(e.message || "Unable to load hero banner draft."); })
@@ -165,6 +165,7 @@ export default function SuperAdminPortal() {
   }
 
   async function uploadHeroImage(event) {
+    const targetField = event.currentTarget.dataset.field || "heroImageUrl";
     const file = event.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
@@ -182,7 +183,8 @@ export default function SuperAdminPortal() {
     setHeroUploadBusy(true);
     setNotice("");
     try {
-      const response = await fetch(API + "/admin/homepage/hero-image", {
+      const uploadPath = targetField === "heroSecondImageUrl" ? "/admin/homepage/hero-image/second" : "/admin/homepage/hero-image";
+      const response = await fetch(API + uploadPath, {
         method: "POST",
         credentials: "include",
         headers: { Authorization: "Bearer " + token, ...csrfHeaders() },
@@ -190,7 +192,7 @@ export default function SuperAdminPortal() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Image upload failed.");
-      setHeroDraft(current => ({ ...current, heroImageUrl: data.heroImageUrl || current.heroImageUrl }));
+      setHeroDraft(current => ({ ...current, [targetField]: data[targetField] || current[targetField] }));
       setNotice("Image uploaded. Save Draft, then publish to make it live.");
     } catch (e) {
       setNotice(e.message || "Image upload failed.");
@@ -265,8 +267,21 @@ export default function SuperAdminPortal() {
                   <label className="block text-sm font-medium md:col-span-2">Introductory paragraph<textarea name="heroDescription" value={heroDraft.heroDescription || ""} onChange={updateHeroField} maxLength={1000} required rows={4} className={inputClass} /></label>
                   <label className="block text-sm font-medium md:col-span-2">Hero image URL<input name="heroImageUrl" type="url" value={heroDraft.heroImageUrl || ""} onChange={updateHeroField} maxLength={2000} required className={inputClass} placeholder="https://example.com/hero-image.jpg" /><span className="mt-1 block text-xs font-normal text-slate-500">Use a public HTTPS image URL, or upload an image below (maximum 8 MB).</span></label>
                   <div className="md:col-span-2">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><span>{heroUploadBusy ? "Uploading image…" : "Upload hero image"}</span><input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={uploadHeroImage} disabled={heroUploadBusy} className="sr-only" /></label>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><span>{heroUploadBusy ? "Uploading image…" : "Upload hero image"}</span><input type="file" data-field="heroImageUrl" accept="image/jpeg,image/png,image/webp,image/avif" onChange={uploadHeroImage} disabled={heroUploadBusy} className="sr-only" /></label>
                     {heroDraft.heroImageUrl && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2"><img src={heroDraft.heroImageUrl} alt="Hero banner preview" className="max-h-64 w-full rounded-md object-contain" onError={e => { e.currentTarget.style.display = "none"; }} /><p className="mt-2 break-all text-xs text-slate-500">{heroDraft.heroImageUrl}</p></div>}
+                  </div>
+                  <div className="md:col-span-2 mt-2 border-t border-slate-200 pt-6">
+                    <p className="text-base font-semibold text-slate-900">Slider 2 — Cab booking</p>
+                    <p className="mt-1 text-sm font-normal text-slate-500">Promote cab trips to outdoor destinations and return journeys to guests’ hometowns.</p>
+                  </div>
+                  <label className="block text-sm font-medium md:col-span-2">Slider 2 badge<input name="heroSecondBadge" value={heroDraft.heroSecondBadge || ""} onChange={updateHeroField} maxLength={160} required className={inputClass} /></label>
+                  <label className="block text-sm font-medium">Slider 2 heading — first line<input name="heroSecondTitleLine" value={heroDraft.heroSecondTitleLine || ""} onChange={updateHeroField} maxLength={120} required className={inputClass} /></label>
+                  <label className="block text-sm font-medium">Slider 2 highlighted heading<input name="heroSecondTitleAccent" value={heroDraft.heroSecondTitleAccent || ""} onChange={updateHeroField} maxLength={120} required className={inputClass} /></label>
+                  <label className="block text-sm font-medium md:col-span-2">Slider 2 description<textarea name="heroSecondDescription" value={heroDraft.heroSecondDescription || ""} onChange={updateHeroField} maxLength={1000} required rows={4} className={inputClass} /></label>
+                  <label className="block text-sm font-medium md:col-span-2">Slider 2 image URL<input name="heroSecondImageUrl" type="url" value={heroDraft.heroSecondImageUrl || ""} onChange={updateHeroField} maxLength={2000} required className={inputClass} placeholder="https://example.com/cab-image.jpg" /><span className="mt-1 block text-xs font-normal text-slate-500">Use a public HTTPS image URL or upload an image below (maximum 8 MB).</span></label>
+                  <div className="md:col-span-2">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><span>{heroUploadBusy ? "Uploading image…" : "Upload slider 2 image"}</span><input type="file" data-field="heroSecondImageUrl" accept="image/jpeg,image/png,image/webp,image/avif" onChange={uploadHeroImage} disabled={heroUploadBusy} className="sr-only" /></label>
+                    {heroDraft.heroSecondImageUrl && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2"><img src={heroDraft.heroSecondImageUrl} alt="Cab booking slider preview" className="max-h-64 w-full rounded-md object-contain" onError={e => { e.currentTarget.style.display = "none"; }} /><p className="mt-2 break-all text-xs text-slate-500">{heroDraft.heroSecondImageUrl}</p></div>}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5"><button type="submit" disabled={heroBusy || heroLoading} className="rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2563a6] disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Saving…" : "Save Draft"}</button><button type="button" onClick={publishHeroDraft} disabled={heroBusy || heroLoading} className="rounded-lg bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Please wait…" : "Publish Homepage"}</button><button type="button" onClick={() => window.open("/staging/", "_blank", "noopener,noreferrer")} className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Preview homepage ↗</button></div>
