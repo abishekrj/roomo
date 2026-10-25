@@ -35,13 +35,13 @@ export default function SuperAdminPortal() {
   const isHomePageEditor = currentPath.includes("/homepage/");
   const homePageSection = isHomePageEditor ? currentPath.split("/homepage/")[1] : "";
   const isHeroEditor = homePageSection === "hero-banner";
-  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/owners") ? "owners" : currentPath.includes("/rooms/") ? "rooms" : currentPath.endsWith("/cms-pages") ? "cms-pages" : currentPath.endsWith("/destinations") ? "destinations" : currentPath.endsWith("/nearby-locations") ? "nearby-places" : currentPath.endsWith("/shopping-directory") ? "shops" : currentPath.endsWith("/testimonials") ? "testimonials" : currentPath.includes("/gallery/") ? "gallery" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
+  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/owners") ? "owners" : currentPath.includes("/rooms/") ? "rooms" : currentPath.endsWith("/cms-pages") ? "cms-pages" : currentPath.endsWith("/destinations") ? "destinations" : currentPath.endsWith("/nearby-locations") ? "nearby-places" : currentPath.endsWith("/shopping-directory") ? "shops" : currentPath.endsWith("/testimonials") ? "testimonials" : currentPath.endsWith("/reviews") ? "reviews" : currentPath.includes("/gallery/") ? "gallery" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
   const adminPageTitles = {
     enquiries: "Enquiries", owners: "Owners", "rooms/add": "Add Rooms", "rooms/listings": "Room Listings",
     "rooms/types": "Room Types", "rooms/filters": "Room Filters", "rooms/featured": "Featured Rooms",
     "rooms/listing-display": "Listing Display Settings", "cms-pages": "CMS Pages", destinations: "Destinations",
     "nearby-locations": "Nearby Locations", "shopping-directory": "Shopping Directory", testimonials: "Testimonials",
-    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reports: "Reports"
+    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports"
   };
   const adminPageKey = currentPath.startsWith(routePrefix + "/") ? currentPath.slice(routePrefix.length + 1) : "";
   const pageTitles = Object.fromEntries(homeSections);
@@ -215,6 +215,7 @@ export default function SuperAdminPortal() {
     { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: routePrefix + "/nearby-locations" },
     { id: "shops", label: "Shopping Directory", icon: "▣", href: routePrefix + "/shopping-directory" },
     { id: "testimonials", label: "Testimonials", icon: "❝", href: routePrefix + "/testimonials" },
+    { id: "reviews", label: "Guest Reviews", icon: "★", href: routePrefix + "/reviews" },
     { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", routePrefix + "/gallery/add"], ["Gallery List", routePrefix + "/gallery/list"]] },
     { id: "reports", label: "Reports", icon: "▥", href: routePrefix + "/reports" },
     { id: "properties", label: "Property Listings", icon: "⌂", href: routePrefix + "/properties" },
