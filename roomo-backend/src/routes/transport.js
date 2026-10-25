@@ -171,16 +171,36 @@ router.post("/driver/requests/:offerId/accept", driverAuth, async (req, res, nex
       where: { assignedDriverId: offer.driverId, status: { in: ["CONFIRMED", "IN_PROGRESS"] }, travelAt: { lt: tripEnd, gte: new Date(tripStart.getTime() - 3 * 60 * 60 * 1000) } }
     });
     if (conflict) return res.status(409).json({ message: "You already have a trip scheduled around this time." });
-    const result = await prisma.transportBooking.updateMany({
-      where: { id: booking.id, status: "PENDING", assignedDriverId: null, dispatchExpiresAt: { gt: new Date() } },
-      data: { status: "CONFIRMED", assignedDriverId: offer.driverId, assignedAt: new Date() }
+    const assignment = await prisma.$transaction(async tx => {
+      const lockedDriver = await tx.driver.updateMany({
+        where: { id: offer.driverId, isActive: true, isAvailable: true },
+        data: { isAvailable: false }
+      });
+      if (lockedDriver.count !== 1) return { ok: false, message: "Another trip has just been assigned to you. Refresh your requests." };
+      const overlappingTrip = await tx.transportBooking.findFirst({
+        where: {
+          assignedDriverId: offer.driverId,
+          status: { in: ["CONFIRMED", "IN_PROGRESS"] },
+          travelAt: { lt: tripEnd, gte: new Date(tripStart.getTime() - 3 * 60 * 60 * 1000) }
+        }
+      });
+      if (overlappingTrip) {
+        await tx.driver.update({ where: { id: offer.driverId }, data: { isAvailable: true } });
+        return { ok: false, message: "You already have a trip scheduled around this time." };
+      }
+      const claimed = await tx.transportBooking.updateMany({
+        where: { id: booking.id, status: "PENDING", assignedDriverId: null, dispatchExpiresAt: { gt: new Date() } },
+        data: { status: "CONFIRMED", assignedDriverId: offer.driverId, assignedAt: new Date() }
+      });
+      if (claimed.count !== 1) {
+        await tx.driver.update({ where: { id: offer.driverId }, data: { isAvailable: true } });
+        return { ok: false, message: "Another driver has already accepted this trip." };
+      }
+      await tx.driverOffer.update({ where: { id: offer.id }, data: { status: "ACCEPTED", respondedAt: new Date() } });
+      await tx.driverOffer.updateMany({ where: { bookingId: booking.id, id: { not: offer.id }, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+      return { ok: true };
     });
-    if (result.count !== 1) return res.status(409).json({ message: "Another driver has already accepted this trip." });
-    await prisma.$transaction([
-      prisma.driverOffer.update({ where: { id: offer.id }, data: { status: "ACCEPTED", respondedAt: new Date() } }),
-      prisma.driverOffer.updateMany({ where: { bookingId: booking.id, id: { not: offer.id }, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } }),
-      prisma.driver.update({ where: { id: offer.driverId }, data: { isAvailable: false } })
-    ]);
+    if (!assignment.ok) return res.status(409).json({ message: assignment.message });
     res.json({ message: "Trip confirmed. You are assigned as the driver.", booking: { ...booking, status: "CONFIRMED", assignedDriverId: offer.driverId } });
   } catch (error) { next(error); }
 });
