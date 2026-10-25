@@ -89,7 +89,7 @@ export default function Footer() {
 
   return (
     <footer className="mt-auto bg-[#17232d] pb-6 pt-11 text-white sm:pt-12">
-      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-9 border-b border-white/15 pb-9 md:grid-cols-2 lg:grid-cols-12">
           <div className="md:col-span-1 lg:col-span-5">
             <img className="mb-3 h-auto w-44 object-contain" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />

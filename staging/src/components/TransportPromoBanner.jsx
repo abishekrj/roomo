@@ -4,8 +4,8 @@ export default function TransportPromoBanner() {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
   return (
-    <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#2563A6] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 overflow-hidden rounded-lg bg-[#2563A6] text-white shadow-sm md:grid-cols-[1.15fr_.85fr] md:gap-12">
+    <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#2563A6] py-8 sm:py-10">
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 overflow-hidden rounded-lg bg-[#2563A6] px-4 text-white shadow-sm sm:px-6 md:grid-cols-[1.15fr_.85fr] md:gap-12">
         <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[28px] border-white/5" aria-hidden="true" />
         <div className="relative z-10 min-w-0">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.16em] text-blue-100">

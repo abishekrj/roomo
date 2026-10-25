@@ -23,7 +23,7 @@ export default function HeroBanner() {
 
   return (
     <section aria-labelledby="home-hero-title" className="hidden overflow-hidden border-b border-slate-200 bg-[#f7f5f0] md:block">
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 py-9 sm:px-7 sm:py-12 md:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:px-8 lg:py-14">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-4 py-9 sm:px-6 sm:py-12 md:grid-cols-[1.08fr_.92fr] lg:gap-12 lg:py-14">
         <div className="relative z-10">
           <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-[#2563a6]/25 bg-white/80 px-3.5 py-2 text-xs font-semibold leading-5 text-[#2563a6] shadow-sm sm:text-sm">
             <svg className="h-4 w-4 shrink-0 text-[#2563a6]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12l-7.1 2.4L12 21.5l-2.4-7.1L2.5 12l7.1-2.4L12 2.5Z" /></svg>

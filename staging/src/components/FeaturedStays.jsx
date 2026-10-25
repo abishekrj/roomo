@@ -244,8 +244,8 @@ export default function FeaturedStays() {
   };
 
   return (
-    <section aria-labelledby="featured-stays-title" className="w-full bg-white px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
-      <div className="mx-auto w-full max-w-7xl">
+    <section aria-labelledby="featured-stays-title" className="w-full bg-white py-10 sm:py-14 lg:py-16">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
           <div className="max-w-3xl">
             <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9a7132]">
