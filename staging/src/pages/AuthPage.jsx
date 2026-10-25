@@ -3,6 +3,19 @@ import roomoLogo from "../../../roomo-frontend/assets/roomo-logo.png";
 
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
+function safePostLoginUrl(returnTo) {
+  if (!returnTo) return "/staging";
+  try {
+    const target = new URL(returnTo, window.location.origin);
+    const path = target.pathname.replace(/\\/+$/, "") || "/";
+    const isAuthPage = ["/staging/login", "/staging/signup", "/login", "/signup"].includes(path);
+    if (target.origin !== window.location.origin || isAuthPage) return "/staging";
+    return target.pathname + target.search + target.hash;
+  } catch {
+    return "/staging";
+  }
+}
+
 export default function AuthPage({ mode = "login" }) {
   const isSignup = mode === "signup";
   const [fullName, setFullName] = useState("");
@@ -31,16 +44,8 @@ export default function AuthPage({ mode = "login" }) {
         if (cancelled) return;
         if (data?.user) {
           const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-          if (returnTo) {
-            try {
-              const target = new URL(returnTo, window.location.origin);
-              if (target.origin === window.location.origin && target.pathname !== "/staging/login" && target.pathname !== "/staging/signup") {
-                window.location.replace(target.href);
-                return;
-              }
-            } catch { /* Use the homepage for an invalid return URL. */ }
-          }
-          window.location.replace("/staging");
+          window.location.replace(safePostLoginUrl(returnTo));
+          return;
           return;
         }
         setSessionChecked(true);
@@ -77,16 +82,7 @@ export default function AuthPage({ mode = "login" }) {
             if (!response.ok) throw new Error(data.message || "Google sign-in failed. Please try again.");
             if (!data.user) throw new Error("The server response is missing the guest profile.");
             const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-            if (returnTo) {
-              try {
-                const target = new URL(returnTo, window.location.origin);
-                if (target.origin === window.location.origin) {
-                  window.location.replace(target.href);
-                  return;
-                }
-              } catch { /* Fall back to the staging homepage for invalid return URLs. */ }
-            }
-            window.location.replace("/staging");
+            window.location.replace(safePostLoginUrl(returnTo));
           } catch (error) {
             notify(error.message || "Unable to sign in with Google. Please try again.");
           } finally {
@@ -176,16 +172,7 @@ export default function AuthPage({ mode = "login" }) {
       }
       if (!data.user) throw new Error("The server response is missing the guest profile.");
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
-      if (returnTo) {
-        try {
-          const target = new URL(returnTo, window.location.origin);
-          if (target.origin === window.location.origin) {
-            window.location.replace(target.href);
-            return;
-          }
-        } catch { /* Fall back to the staging homepage for invalid return URLs. */ }
-      }
-      window.location.replace("/staging");
+      window.location.replace(safePostLoginUrl(returnTo));
     } catch (error) {
       notify(error.message || "Unable to authenticate. Please try again.");
     } finally {
