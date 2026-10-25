@@ -374,7 +374,7 @@ export default function PropertyDetails() {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-[#212529]">
     <Header />
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-5 sm:px-6 lg:px-8 lg:pb-12">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-5 sm:px-6 lg:pb-12">
         <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500"><a href="/staging/" className="hover:text-[#2563a6]">Home</a><span className="mx-2">/</span><a href="/staging/properties" className="hover:text-[#2563a6]">Stays</a><span className="mx-2">/</span><span className="text-slate-700">{title}</span></nav>
         {loading ? <div className="space-y-5" aria-label="Loading property details"><div className="h-8 w-2/3 animate-pulse rounded-lg bg-slate-100"/><div className="h-72 animate-pulse rounded-lg bg-slate-100"/><div className="h-32 animate-pulse rounded-lg bg-slate-100"/></div>
         : error ? <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-6"><h1 className="text-lg font-semibold">Property details unavailable</h1><p className="mt-2 text-sm text-slate-600">{error}</p><a href="/staging/properties" className="mt-4 inline-flex rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Browse stays</a></div>
@@ -591,7 +591,7 @@ export default function PropertyDetails() {
       </div>
     </main>
     {!loading && !error && property && <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-4px_18px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <div className="min-w-0">
           <p className="truncate text-xs text-slate-500">{estimatedTotal != null ? stayNights + (stayNights===1?" night":" nights") + " · " + rooms + (rooms===1?" room":" rooms") : "Starting from"}</p>
           <p className="truncate text-lg font-semibold text-slate-900">{money(estimatedTotal != null ? estimatedTotal : startingPrice)}{estimatedTotal == null && startingPrice != null && <span className="text-xs font-normal text-slate-500"> / night</span>}</p>

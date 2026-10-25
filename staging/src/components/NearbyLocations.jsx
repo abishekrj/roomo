@@ -52,8 +52,8 @@ export default function NearbyLocations() {
   if (!section || section.enabled === false || places.length === 0) return null;
 
   return (
-    <section aria-labelledby="nearby-locations-title" className="w-full bg-white px-4 py-12 sm:px-6 sm:py-16 md:py-10 lg:py-12">
-      <div className="mx-auto w-full max-w-7xl">
+    <section aria-labelledby="nearby-locations-title" className="w-full bg-white py-12 sm:py-16 md:py-10 lg:py-12">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
             {section.eyebrow && <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#2563A6] sm:text-sm">{section.eyebrow}</p>}
