@@ -21,6 +21,26 @@ const AMENITY_LABELS = {
   "arunachala view": "Arunachala / temple view", "temple view": "Arunachala / temple view"
 };
 const normalize = value => String(value ?? "").trim().toLocaleLowerCase();
+const amenityCategory = name => {
+  const value = normalize(name);
+  const categories = [
+    ["Parking", ["parking", "street parking", "accessible parking", "valet parking", "electric vehicle charging"]],
+    ["Internet", ["wifi", "wi-fi", "internet", "broadband"]],
+    ["Kitchen", ["kitchen", "kitchenette", "refrigerator", "fridge", "microwave", "oven", "stovetop", "kettle", "toaster", "dining table", "cooking", "tea/coffee"]],
+    ["Bedroom", ["bed linen", "linen", "wardrobe", "closet", "alarm clock", "extra long beds"]],
+    ["Bathroom", ["bathroom", "toilet", "shower", "bathtub", "bath or shower", "towels", "hairdryer", "toilet paper", "free toiletries", "bathrobe", "slippers", "hot water"]],
+    ["Media & technology", ["tv", "television", "flat-screen", "cable channels", "satellite channels", "streaming service", "telephone", "radio"]],
+    ["Room amenities", ["air conditioning", "heating", "fan", "soundproof", "iron", "desk", "sofa", "seating area", "tile/marble", "private entrance", "clothes rack", "socket near the bed"]],
+    ["Food & drink", ["restaurant", "bar", "breakfast", "room service", "minibar", "coffee", "food", "dining"]],
+    ["Services", ["front desk", "housekeeping", "laundry", "dry cleaning", "luggage storage", "concierge", "airport shuttle", "shuttle service", "wake-up service"]],
+    ["Safety & security", ["safe", "smoke alarm", "fire extinguisher", "security", "cctv", "carbon monoxide", "key card", "24-hour security"]],
+    ["Accessibility", ["lift", "elevator", "wheelchair", "accessible", "upper floors"]],
+    ["Outdoor & view", ["balcony", "terrace", "garden", "patio", "view", "outdoor furniture", "sun terrace", "arunachala"]],
+    ["General", ["family rooms", "non-smoking", "designated smoking", "pet-friendly", "pets allowed", "hot water"]]
+  ];
+  return categories.find(([, keywords]) => keywords.some(keyword => value === keyword || value.includes(keyword)))?.[0] || "Other facilities";
+};
+const AMENITY_CATEGORY_ORDER = ["Parking", "Internet", "Kitchen", "Bedroom", "Bathroom", "Media & technology", "Room amenities", "Food & drink", "Services", "Safety & security", "Accessibility", "Outdoor & view", "General", "Other facilities"];
 const arrayValue = value => Array.isArray(value) ? value : value && typeof value === "object" ? Object.values(value).filter(v => typeof v === "string") : [];
 const formatPrice = value => Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 const propertyType = property => property.propertyType || "Stay";
@@ -282,7 +302,7 @@ export default function PropertyListingPage() {
       <div className="flex items-center justify-between gap-3"><span className="text-sm text-slate-600">Guests</span><div className="flex items-center gap-3"><button type="button" onClick={() => setGuestCount(n => Math.max(1, n - 1))} disabled={guestCount <= 1} className="h-8 w-8 rounded-lg border border-slate-300 text-lg disabled:opacity-40">−</button><span className="w-4 text-center text-sm tabular-nums">{guestCount}</span><button type="button" onClick={() => setGuestCount(n => Math.min(100, n + 1))} className="h-8 w-8 rounded-lg border border-slate-300 text-lg">+</button></div></div>
     </FilterSection>
     {types.length > 0 && <FilterSection title="Stay type">{types.map(type => <CheckOption key={type} checked={selectedTypes.includes(type)} onChange={() => toggleValue(setSelectedTypes, selectedTypes, type)} label={type} count={properties.filter(p => normalize(propertyType(p)) === normalize(type)).length}/>)}</FilterSection>}
-    {amenities.length > 0 && <FilterSection title="Amenities">{amenities.map(amenity => <CheckOption key={amenity} checked={selectedAmenities.includes(amenity)} onChange={() => toggleValue(setSelectedAmenities, selectedAmenities, amenity)} label={amenity} count={properties.filter(property => arrayValue(property.amenities).some(item => normalize(AMENITY_LABELS[normalize(item)] || item) === normalize(amenity))).length}/>)}</FilterSection>}
+    {amenities.length > 0 && <FilterSection title="Amenities">{AMENITY_CATEGORY_ORDER.map(category => { const categoryAmenities = amenities.filter(amenity => amenityCategory(amenity) === category); if (!categoryAmenities.length) return null; return <div key={category} className="space-y-3"><h4 className="pt-1 text-xs font-semibold text-slate-700">{category}</h4>{categoryAmenities.map(amenity => <CheckOption key={amenity} checked={selectedAmenities.includes(amenity)} onChange={() => toggleValue(setSelectedAmenities, selectedAmenities, amenity)} label={amenity} count={properties.filter(property => arrayValue(property.amenities).some(item => normalize(AMENITY_LABELS[normalize(item)] || item) === normalize(amenity))).length}/>)}</div>; })}</FilterSection>}
     <FilterSection title="Near landmarks">{LANDMARKS.map(landmark => <CheckOption key={landmark.value} checked={selectedLandmarks.includes(landmark.value)} onChange={() => toggleValue(setSelectedLandmarks, selectedLandmarks, landmark.value)} label={landmark.label}/>)}</FilterSection>
     <button type="button" onClick={() => setMobileFiltersOpen(false)} className="mt-4 w-full rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white hover:bg-[#1e4f85] lg:hidden">Show {visibleProperties.length} stays</button>
   </div>;
