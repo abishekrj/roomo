@@ -18,7 +18,7 @@ export default function TransportPromoBanner() {
             <span className="text-xs text-blue-100/80">Driver confirmation follows your request.</span>
           </div>
         </div>
-        <div className="relative flex min-h-48 items-center justify-center overflow-hidden bg-gradient-to-br from-[#1d4774] to-[#102747] px-6 py-8 md:min-h-full">
+        <div className="relative flex min-h-48 items-center justify-center overflow-hidden bg-[#1d4774] px-6 py-8 md:min-h-full">
           <div className="absolute inset-x-0 bottom-8 h-px bg-white/10" />
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-white/[0.03]" />
           <svg viewBox="0 0 440 220" role="img" aria-label="Illustration of a comfortable passenger van on the road" className="relative z-10 w-full max-w-md drop-shadow-2xl">
