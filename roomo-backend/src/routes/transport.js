@@ -289,6 +289,9 @@ router.patch("/admin/bookings/:id/status", async (req, res, next) => {
     if (!["CONFIRMED", "PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) return res.status(400).json({ message: "Invalid transport booking status." });
     const booking = await prisma.transportBooking.update({ where: { id: req.params.id }, data: { status } });
     if (booking.assignedDriverId && ["COMPLETED", "CANCELLED"].includes(status)) await prisma.driver.update({ where: { id: booking.assignedDriverId }, data: { isAvailable: true } });
+    if (["COMPLETED", "CANCELLED"].includes(status)) {
+      await prisma.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+    }
     res.json({ booking });
   } catch (error) { next(error); }
 });
