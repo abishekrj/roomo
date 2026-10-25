@@ -314,7 +314,7 @@ export default function PropertyListingPage() {
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <label className="block text-xs text-slate-500">Minimum (₹)<input type="number" min="0" max={safeMaxPrice} value={minPrice} onChange={e => setMinPrice(String(Math.min(Math.max(0, Number(e.target.value || 0)), safeMaxPrice)))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
-        <label className="block text-xs text-slate-500">Maximum (₹)<input type="number" min={safeMinPrice} max={priceCeiling} value={maxPrice} onChange={e => setMaxPrice(String(Math.max(safeMinPrice, Math.min(priceCeiling, Number(e.target.value || 0))))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
+        <label className="block text-xs text-slate-500">Maximum (₹)<input type="number" min={safeMinPrice} max={priceCeiling} value={maxPrice} onChange={e => setMaxPrice(String(Math.max(safeMinPrice, Math.min(priceCeiling, Number(e.target.value || 0)))))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
       </div>
     </FilterSection>
     <FilterSection title="Guests">
