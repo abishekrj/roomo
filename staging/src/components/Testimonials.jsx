@@ -58,7 +58,7 @@ export default function Testimonials() {
   const items = (Array.isArray(content.items) ? content.items : defaults.items).filter(item => item && !item.hidden);
 
   return (
-    <section id="testimonials" aria-labelledby="testimonials-title" className="w-full bg-[#f8fafc] px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+    <section id="testimonials" aria-labelledby="testimonials-title" className="w-full bg-[#f8fafc] px-4 py-12 sm:px-6 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl">
         <div className="mb-7 flex flex-col justify-between gap-5 md:mb-9 md:flex-row md:items-end">
           <div className="max-w-3xl">
