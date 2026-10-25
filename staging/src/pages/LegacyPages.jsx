@@ -6,7 +6,7 @@ const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 
 function PageShell({ children }) {
-  return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">{children}</main><Footer /></div>;
+  return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink"><Header /><main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">{children}</main><Footer /></div>;
 }
 function Notice({ children, type = "info" }) {
   return children ? <p role="status" className={"mt-4 rounded-lg border p-3 text-sm " + (type === "error" ? "border-red-200 bg-red-50 text-red-800" : type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-slate-50 text-slate-700")}>{children}</p> : null;

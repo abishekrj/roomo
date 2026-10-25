@@ -182,7 +182,7 @@ export default function AuthPage({ mode = "login" }) {
 
   if (!sessionChecked) return <main className="flex min-h-[60vh] items-center justify-center bg-white font-sans text-slate-600"><p role="status">Checking your session…</p></main>;
 
-  return <main className="mx-auto w-full max-w-7xl flex-1 bg-white font-sans text-[#212529]">
+  return <main className="mx-auto w-full max-w-7xl flex-1 bg-white px-4 font-sans text-[#212529] sm:px-6">
     <div className="grid min-h-[680px] lg:grid-cols-2">
       <section className="relative hidden min-h-[680px] overflow-hidden bg-[#f0f5f8] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <div className="relative z-10 max-w-xl py-12">
@@ -193,7 +193,7 @@ export default function AuthPage({ mode = "login" }) {
         <p className="relative z-10 max-w-md border-l-2 border-[#d6b46a] pl-4 text-sm leading-6 text-slate-600">A peaceful place to rest is part of a meaningful pilgrimage.<span className="mt-2 block text-xs font-semibold tracking-[.12em] text-[#183b56]">ROOMO SACRED · TIRUVANNAMALAI</span></p>
         <div aria-hidden="true" className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full border-[48px] border-white/70" />
       </section>
-      <section className="flex min-h-[680px] items-center justify-center px-5 py-10 sm:px-8">
+      <section className="flex min-h-[680px] items-center justify-center py-10">
         <div className="w-full max-w-md">
           <div className="mb-7">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[.14em] text-[#9a7132]">{isSignup ? "BEGIN YOUR JOURNEY" : "WELCOME BACK"}</p>
