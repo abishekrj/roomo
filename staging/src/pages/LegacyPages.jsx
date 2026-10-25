@@ -141,7 +141,7 @@ export function MyBookingsPage() {
   const imageFor = item => {
     const value = item?.img || "";
     if (!value) return "";
-    if (/^https?:\\/\\//i.test(value) || /^data:|^blob:/i.test(value)) return value;
+    if (/^https?:\/\//i.test(value) || /^data:|^blob:/i.test(value)) return value;
     return "http://localhost:5001" + (value.startsWith("/") ? value : "/" + value);
   };
 
