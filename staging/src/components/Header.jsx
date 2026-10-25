@@ -43,6 +43,16 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   }, [hidden]);
 
   useEffect(() => {
+    // Remove legacy client-side guest profiles/tokens and locally cached favourites.
+    // Authentication and favourites now come from the HttpOnly session and API.
+    for (const storage of [localStorage, sessionStorage]) {
+      for (let index = storage.length - 1; index >= 0; index -= 1) {
+        const key = storage.key(index);
+        if (key === "roomoGuest" || key === "roomoGuestToken" || key?.startsWith("roomoFavourites:")) {
+          storage.removeItem(key);
+        }
+      }
+    }
     let cancelled = false;
     fetch(API_BASE + "/guest-auth/me", { credentials: "include", cache: "no-store" })
       .then(async response => { if (!response.ok) throw new Error("No active guest session"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) setUser(data.user); })
