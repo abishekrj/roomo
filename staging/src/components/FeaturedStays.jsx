@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { StarRatingDisplay } from "./StarRating.jsx";
 
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 const API_URL = `${API_BASE}/homepage`;
@@ -30,11 +31,6 @@ function resolveImageUrl(value) {
     if (url.protocol === "http:" || url.protocol === "https:") return url.href;
   } catch { /* Ignore malformed image URLs and render the fallback. */ }
   return "";
-}
-
-function StarRating({ value, count }) {
-  if (value == null || value === "") return null;
-  return <span className="inline-flex flex-wrap items-center gap-1 text-sm font-medium text-slate-700"><span className="text-amber-500" aria-hidden="true">★</span>{Number(value).toFixed(1)}{Number(count) > 0 && <span className="text-xs font-normal text-slate-500">({count})</span>}</span>;
 }
 
 export default function FeaturedStays() {
@@ -298,7 +294,7 @@ export default function FeaturedStays() {
                   {stay.verified&&<span className="pointer-events-none absolute left-3 top-3 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-emerald-800 shadow-sm">✓ ROOMO verified</span>}
                   <button type="button" onClick={()=>toggleFavourite(stay)} aria-label={favourites.includes(String(stay.id))?`Remove ${stay.name||"stay"} from favourites`:`Add ${stay.name||"stay"} to favourites`} aria-pressed={favourites.includes(String(stay.id))} title={favourites.includes(String(stay.id))?"Remove from favourites":"Add to favourites"} disabled={!guestReady || favouriteBusy} className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-slate-600 shadow-md hover:text-rose-500 disabled:cursor-wait disabled:opacity-60"><svg viewBox="0 0 24 24" className={`h-5 w-5 ${favourites.includes(String(stay.id))?"fill-rose-500 text-rose-500":"fill-transparent text-slate-700"}`} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>
                 </div>
-                <div className="flex min-h-[205px] flex-1 flex-col p-4"><div className="flex items-start justify-between gap-2"><div className="min-w-0">{stay.type&&<p className="mb-1 text-xs font-medium text-[#2563a6]">{stay.type}</p>}<a href={stay.url||stay.href||"/staging/properties"} className="line-clamp-2 text-base font-semibold leading-6 text-[#212529] hover:text-[#2563a6]">{stay.name||""}</a></div><StarRating value={stay.rating} count={stay.reviewCount}/></div>
+                <div className="flex min-h-[205px] flex-1 flex-col p-4"><div className="flex items-start justify-between gap-2"><div className="min-w-0">{stay.type&&<p className="mb-1 text-xs font-medium text-[#2563a6]">{stay.type}</p>}<a href={stay.url||stay.href||"/staging/properties"} className="line-clamp-2 text-base font-semibold leading-6 text-[#212529] hover:text-[#2563a6]">{stay.name||""}</a></div><StarRatingDisplay value={stay.rating} count={stay.reviewCount} size={12} className="shrink-0 justify-end" /></div>
                   {stay.location&&<p className="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">⌖ {stay.location}</p>}
                   {Array.isArray(stay.amenities)&&stay.amenities.length>0&&<div className="mt-3 flex flex-wrap gap-1.5">{stay.amenities.slice(0,3).map((amenity,i)=><span key={`${amenity}-${i}`} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-600">{String(amenity).toLowerCase().includes("wifi")?"Free Wi-Fi":amenity}</span>)}</div>}
                   <div className="mt-auto flex items-end justify-between gap-3 pt-4"><a href={stay.url||stay.href||"/staging/properties"} className="inline-flex min-h-9 items-center rounded-lg border border-[#2563a6] px-3 py-2 text-xs font-semibold text-[#2563a6] hover:bg-blue-50">View stay →</a>{stay.price!=null&&Number(stay.price)>0&&<span className="whitespace-nowrap text-right text-sm text-slate-600"><strong className="text-base font-semibold text-[#212529]">₹{Number(stay.price).toLocaleString("en-IN")}</strong><span className="block text-xs text-slate-500">{content?.featuredPriceSuffix||"per night"}</span></span>}</div>
