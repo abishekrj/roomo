@@ -57,7 +57,7 @@ export default function DriverPortal() {
       if (!vapidKey) throw new Error("Push notifications are not configured yet. Add VITE_ROOMO_VAPID_PUBLIC_KEY to the staging environment.");
       const permission = await Notification.requestPermission();
       if (permission !== "granted") throw new Error("Notifications are blocked. Allow notifications for ROOMO in your browser settings.");
-      const registration = await navigator.serviceWorker.register("/staging/driver-sw.js", { scope: "/staging/driver/" });
+      const registration = await navigator.serviceWorker.register("/staging/driver-sw.js", { scope: "/staging/" });
       const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(vapidKey) });
       const data = await api("/driver/push-subscriptions", { method: "POST", body: JSON.stringify({ subscription: subscription.toJSON() }) });
       setPushEnabled(true); setNotice(data.message || "Push notifications are enabled.");
