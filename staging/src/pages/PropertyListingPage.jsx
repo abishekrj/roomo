@@ -287,15 +287,34 @@ export default function PropertyListingPage() {
     });
   }, [properties, destination, minPrice, maxPrice, guestCount, selectedTypes, selectedAmenities, selectedLandmarks, sort]);
 
+  const priceCeiling = useMemo(() => {
+    const highestPrice = properties.reduce((highest, property) => Math.max(highest, Number(property.nightlyPrice || property.startingPrice || property.price || 0)), 0);
+    return Math.max(10000, Math.ceil(highestPrice / 1000) * 1000);
+  }, [properties]);
+  const safeMinPrice = Math.min(Math.max(0, Number(minPrice || 0)), priceCeiling);
+  const safeMaxPrice = Math.min(Math.max(0, Number(maxPrice || priceCeiling)), priceCeiling);
   const activeFilterCount = selectedTypes.length + selectedAmenities.length + selectedLandmarks.length + (minPrice !== "500" ? 1 : 0) + (maxPrice !== "10000" ? 1 : 0) + (guestCount !== initialGuests ? 1 : 0);
   const toggleValue = (setter, values, value) => setter(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value]);
   const clearFilters = () => { setMinPrice("500"); setMaxPrice("10000"); setGuestCount(initialGuests); setSelectedTypes([]); setSelectedAmenities([]); setSelectedLandmarks([]); };
   const filterPanel = <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
     <div className="mb-5 flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-base font-semibold text-slate-900"><Icon name="sliders" className="h-4 w-4"/> Filters</h2><button type="button" onClick={clearFilters} className="text-xs font-semibold text-[#2563a6] hover:underline">Clear all</button></div>
     <FilterSection title="Price per night">
-      <div className="grid grid-cols-2 gap-2">
-        <label className="block text-xs text-slate-500">Minimum (₹)<input type="number" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
-        <label className="block text-xs text-slate-500">Maximum (₹)<input type="number" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
+      <div className="mb-4 flex items-center justify-between gap-2 text-sm">
+        <span className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-[#2563a6]">₹{formatPrice(safeMinPrice)}</span>
+        <span className="text-xs text-slate-400">to</span>
+        <span className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-[#2563a6]">₹{formatPrice(safeMaxPrice)}</span>
+      </div>
+      <div className="space-y-4">
+        <label className="block text-xs font-medium text-slate-600">Minimum price
+          <input aria-label="Minimum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMinPrice} onChange={e => setMinPrice(String(Math.min(Number(e.target.value), safeMaxPrice)))} className="mt-2 block h-2 w-full cursor-pointer accent-[#2563a6]"/>
+        </label>
+        <label className="block text-xs font-medium text-slate-600">Maximum price
+          <input aria-label="Maximum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMaxPrice} onChange={e => setMaxPrice(String(Math.max(Number(e.target.value), safeMinPrice)))} className="mt-2 block h-2 w-full cursor-pointer accent-[#2563a6]"/>
+        </label>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <label className="block text-xs text-slate-500">Minimum (₹)<input type="number" min="0" max={safeMaxPrice} value={minPrice} onChange={e => setMinPrice(String(Math.min(Math.max(0, Number(e.target.value || 0)), safeMaxPrice)))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
+        <label className="block text-xs text-slate-500">Maximum (₹)<input type="number" min={safeMinPrice} max={priceCeiling} value={maxPrice} onChange={e => setMaxPrice(String(Math.max(safeMinPrice, Math.min(priceCeiling, Number(e.target.value || 0))))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
       </div>
     </FilterSection>
     <FilterSection title="Guests">
