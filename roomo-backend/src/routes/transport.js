@@ -79,10 +79,16 @@ async function dispatchBooking(booking) {
     return configured.length === 0 || configured.some(area => (booking.pickupLocation + " " + booking.dropoffLocation).toLowerCase().includes(String(area).toLowerCase()));
   });
   if (!eligible.length) return;
-  await prisma.$transaction([
-    prisma.transportBooking.update({ where: { id: booking.id }, data: { dispatchExpiresAt: expiresAt } }),
-    prisma.driverOffer.createMany({ data: eligible.map(driver => ({ bookingId: booking.id, driverId: driver.id, expiresAt })), skipDuplicates: true })
-  ]);
+  const dispatched = await prisma.$transaction(async tx => {
+    const stillPending = await tx.transportBooking.updateMany({
+      where: { id: booking.id, status: "PENDING", assignedDriverId: null },
+      data: { dispatchExpiresAt: expiresAt }
+    });
+    if (stillPending.count !== 1) return false;
+    await tx.driverOffer.createMany({ data: eligible.map(driver => ({ bookingId: booking.id, driverId: driver.id, expiresAt })), skipDuplicates: true });
+    return true;
+  });
+  if (!dispatched) return;
   await Promise.all(eligible.map(driver => sendDriverPush(driver.id, {
     title: "ROOMO · New trip request",
     body: booking.pickupLocation + " → " + booking.dropoffLocation,
