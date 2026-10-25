@@ -114,14 +114,23 @@ app.use("/api/admin/homepage", adminHomepageRoutes);
 app.use("/api/admin/testimonials", adminTestimonialsRoutes);
 
 app.use((error, req, res, next) => {
-  console.error("API error:", error.message);
+  console.error("API error:", {
+    method: req.method,
+    path: req.originalUrl,
+    message: error.message,
+    code: error.code,
+    meta: error.meta,
+    stack: error.stack,
+  });
 
   if (res.headersSent) {
     return next(error);
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
   res.status(500).json({
-    message: "An unexpected server error occurred.",
+    message: isProduction ? "An unexpected server error occurred." : (error.message || "An unexpected server error occurred."),
+    ...(isProduction ? {} : { code: error.code || undefined }),
   });
 });
 
