@@ -106,7 +106,7 @@ function CheckOption({ checked, onChange, label, count }) {
   </label>;
 }
 
-function PropertyCard({ property, view, isFavourite, onToggleFavourite, onWriteReview }) {
+function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
   const imageCandidates = propertyImages(property);
   const image = imageCandidates[0] || "";
   const amenities = arrayValue(property.amenities).slice(0, 4);
@@ -146,7 +146,6 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite, onWriteR
         </div>
         {property.rating != null && <div className="shrink-0 rounded-lg bg-[#2563a6] px-2 py-1 text-sm font-semibold text-white">{Number(property.rating).toFixed(1)} ★</div>}
       </div>
-      <div className="mt-3"><button type="button" onClick={() => onWriteReview(property)} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#2563a6] bg-blue-50 px-3 py-2 text-sm font-semibold text-[#2563a6] hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]"><span aria-hidden="true">★</span> Write a review</button></div>
       <p className="mt-2 flex items-start gap-1.5 text-sm leading-6 text-slate-500"><Icon name="pin" className="mt-1 h-4 w-4 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}{property.distanceToLandmark ? ` · approx. ${property.distanceToLandmark}` : property.nearestLandmark ? ` · near ${property.nearestLandmark}` : ""}</span></p>
        {sacredDistances.length > 0 && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600" aria-label="Distances to sacred places">{sacredDistances.map((item,index)=><span key={item.name+index}>⌖ {item.name}: <strong className="font-semibold text-slate-700">{item.distance}</strong></span>)}</div>}
       <div className="mt-4 flex flex-wrap gap-2">
@@ -157,7 +156,7 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite, onWriteR
       {policyHighlights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{policyHighlights.map((item,index)=><span key={item+index} className="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-800">{item}</span>)}</div>}
        <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4 mt-4">
          <div><span className="text-xs text-slate-500">Price per night</span>{Number(property.nightlyPrice)>0?<p className="mt-0.5 text-xl font-semibold text-[#212529]">₹{formatPrice(property.nightlyPrice)}<span className="text-xs font-normal text-slate-500"> / night</span></p>:<p className="mt-0.5 text-sm font-medium text-slate-700">Contact for price</p>}{property.reviewCount!=null&&Number(property.reviewCount)>0&&<p className="mt-1 text-xs text-slate-500">{property.reviewCount} {Number(property.reviewCount)===1?"review":"reviews"}</p>}</div>
-         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => onWriteReview(property)} className="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-[#2563a6] bg-white px-3.5 py-2 text-sm font-semibold text-[#2563a6] transition hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]"><span aria-hidden="true">★</span> Write a review</button><a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View rooms &amp; enquire <Icon name="arrow" className="h-4 w-4"/></a></div>
+         <div className="flex flex-wrap gap-2"><a href={href} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563a6]">View rooms &amp; enquire <Icon name="arrow" className="h-4 w-4"/></a></div>
        </div>
         
     </div>
@@ -183,13 +182,6 @@ export default function PropertyListingPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [favourites, setFavourites] = useState([]);
   const [favouriteNotice, setFavouriteNotice] = useState("");
-  const [selectedReviewProperty, setSelectedReviewProperty] = useState(null);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
-  const [reviewNotice, setReviewNotice] = useState("");
-  const [reviewBusy, setReviewBusy] = useState(false);
-  const [reviewGuest, setReviewGuest] = useState(null);
-  const [reviewGuestReady, setReviewGuestReady] = useState(false);
 
   const readGuestSession = () => {
     const raw = localStorage.getItem("roomoGuest");
@@ -246,47 +238,6 @@ export default function PropertyListingPage() {
     setFavourites(updated);
     setFavouriteNotice(adding ? "This room has been successfully added to your favourite." : "This room has been removed from your favourites.");
   };
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch((import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/guest-auth/me", { credentials: "include", cache: "no-store" })
-      .then(async response => { if (!response.ok) throw new Error("Not signed in"); return response.json(); })
-      .then(data => { if (!cancelled) setReviewGuest(data.user || null); })
-      .catch(() => { if (!cancelled) setReviewGuest(null); })
-      .finally(() => { if (!cancelled) setReviewGuestReady(true); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const openReviewForm = property => {
-    if (!reviewGuestReady) return;
-    if (!reviewGuest) {
-      const returnTo = window.location.pathname + window.location.search + "#reviews";
-      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnTo));
-      return;
-    }
-    setSelectedReviewProperty(property);
-    setReviewRating(5);
-    setReviewComment("");
-    setReviewNotice("");
-  };
-
-  async function submitReview(event) {
-    event.preventDefault();
-    if (!selectedReviewProperty || reviewBusy) return;
-    setReviewBusy(true); setReviewNotice("");
-    try {
-      const response = await fetch((import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/reviews", {
-        method: "POST", credentials: "include", headers: { "Content-Type": "application/json", ...(() => { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; })() },
-        body: JSON.stringify({ propertyId: selectedReviewProperty.id, rating: reviewRating, comment: reviewComment })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.status === 401) { window.location.assign("/staging/login?returnTo=" + encodeURIComponent(window.location.pathname + window.location.search + "#reviews")); return; }
-      if (!response.ok) throw new Error(data.message || "Unable to submit your review.");
-      setReviewNotice(data.message || "Review submitted for approval.");
-      setReviewComment("");
-    } catch (error) { setReviewNotice(error.message || "Unable to submit your review."); }
-    finally { setReviewBusy(false); }
-  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -402,14 +353,13 @@ export default function PropertyListingPage() {
             </div>
 
             {favouriteNotice && <div role="status" aria-live="polite" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"><span>{favouriteNotice}</span><button type="button" aria-label="Dismiss notification" onClick={() => setFavouriteNotice("")} className="rounded-lg px-2 py-1 font-semibold hover:bg-emerald-100">✕</button></div>}
-            {error ? <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error} <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Try again</button></div> : loading ? <div className="space-y-4">{[0,1,2].map(i => <div key={i} className="h-56 animate-pulse rounded-lg border border-slate-200 bg-white"/>)}</div> : visibleProperties.length ? <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2"}>{visibleProperties.map(property => <PropertyCard key={property.id} property={property} view={view} isFavourite={favourites.includes(String(property.id))} onToggleFavourite={toggleFavourite} onWriteReview={openReviewForm}/>)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><p className="text-lg font-semibold text-slate-800">No stays match these filters</p><p className="mt-2 text-sm text-slate-500">Try widening your price range or removing a filter.</p><button type="button" onClick={clearFilters} className="mt-4 rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Clear filters</button></div>}
+            {error ? <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error} <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Try again</button></div> : loading ? <div className="space-y-4">{[0,1,2].map(i => <div key={i} className="h-56 animate-pulse rounded-lg border border-slate-200 bg-white"/>)}</div> : visibleProperties.length ? <div className={view === "list" ? "space-y-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2"}>{visibleProperties.map(property => <PropertyCard key={property.id} property={property} view={view} isFavourite={favourites.includes(String(property.id))} onToggleFavourite={toggleFavourite}/>)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><p className="text-lg font-semibold text-slate-800">No stays match these filters</p><p className="mt-2 text-sm text-slate-500">Try widening your price range or removing a filter.</p><button type="button" onClick={clearFilters} className="mt-4 rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Clear filters</button></div>}
           </section>
         </div>
       </div>
 
       {mobileFiltersOpen && <div className="fixed inset-0 z-[70] flex items-end bg-slate-900/50 lg:hidden" role="dialog" aria-modal="true" aria-label="Property filters" onClick={event => { if (event.target === event.currentTarget) setMobileFiltersOpen(false); }}><div className="max-h-[88vh] w-full overflow-y-auto rounded-t-2xl bg-[#f8fafc] p-4"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Filters & amenities</h2><button type="button" onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters" className="rounded-lg border border-slate-200 bg-white p-2"><Icon name="close"/></button></div>{filterPanel}</div></div>}
     </main>
-    {selectedReviewProperty && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="review-dialog-title" onClick={event => { if (event.target === event.currentTarget && !reviewBusy) setSelectedReviewProperty(null); }}><section className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl sm:p-6"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-[#9a7132]">Share your experience</p><h2 id="review-dialog-title" className="mt-1 text-xl font-semibold text-slate-900">Review {selectedReviewProperty.title || "this stay"}</h2><p className="mt-1 text-sm text-slate-500">Your review will be visible after Super Admin approval.</p></div><button type="button" disabled={reviewBusy} onClick={() => setSelectedReviewProperty(null)} aria-label="Close review form" className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600">✕</button></div><form onSubmit={submitReview} className="mt-5 space-y-4"><fieldset><legend className="text-sm font-semibold text-slate-800">Your star rating</legend><div className="mt-2 flex gap-2" role="radiogroup" aria-label="Star rating">{[1,2,3,4,5].map(star=><button key={star} type="button" role="radio" aria-checked={reviewRating===star} aria-label={star+" star"+(star===1?"":"s")} onClick={() => setReviewRating(star)} className={"text-3xl transition focus:outline-none focus:ring-2 focus:ring-blue-200 rounded " + (star<=reviewRating?"text-amber-400":"text-slate-300")}>★</button>)}</div><p className="mt-1 text-xs text-slate-500">{reviewRating} out of 5 stars</p></fieldset><label className="block text-sm font-semibold text-slate-800">Your review<textarea required minLength={10} maxLength={2000} rows={5} value={reviewComment} onChange={event=>setReviewComment(event.target.value)} placeholder="Tell other pilgrims about your stay…" className="mt-2 block w-full resize-y rounded-lg border border-slate-300 px-3 py-3 text-sm font-normal outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label><p className="text-right text-xs text-slate-400">{reviewComment.length}/2000 characters</p>{reviewNotice && <p role="status" className="rounded-lg bg-blue-50 p-3 text-sm leading-5 text-blue-900">{reviewNotice}</p>}<div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={reviewBusy} onClick={() => setSelectedReviewProperty(null)} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700">Close</button><button type="submit" disabled={reviewBusy || reviewComment.trim().length<10} className="rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{reviewBusy?"Submitting…":"Submit review"}</button></div></form></section></div>}
     <Footer/>
   </div>;
 }
