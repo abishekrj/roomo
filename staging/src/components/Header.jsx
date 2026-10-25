@@ -120,7 +120,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
               {!authChecked ? <p className="px-3 py-2 text-sm text-slate-500" role="status">Checking your account…</p> : <>
                 {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/staging/owner/signup">Property Owner</a><hr className="my-1 border-slate-100" /></>}
                 <a className={linkClass} href="/staging/my-bookings">My Pilgrimage Bookings</a>
-                <a className={linkClass} href={user ? "/staging/my-bookings" : authHref("/staging/login")}>Saved Ashrams &amp; Haveli</a>
+                <a className={linkClass} href={user ? "/staging/my-profile" : authHref("/staging/login")}>My Profile</a>
                 {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
               </>}
             </nav>}

@@ -340,4 +340,50 @@ router.get("/me", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+
+const updateProfileSchema = z.object({
+  fullName: z.string().trim().min(2).max(100),
+  phoneNumber: z.string().trim().regex(/^\\+[1-9]\\d{7,14}$/).optional().or(z.literal("")),
+});
+
+router.put("/me", async (req, res, next) => {
+  try {
+    const parsed = updateProfileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Please enter a name with at least 2 characters and a valid mobile number with country code.",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const token = readGuestToken(req);
+    if (!token) return res.status(401).json({ message: "Authentication required." });
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest" });
+    } catch {
+      return res.status(401).json({ message: "Invalid or expired guest session. Please sign in again." });
+    }
+
+    const existingUser = await prisma.guestUser.findUnique({ where: { id: decoded.sub } });
+    if (!existingUser || !existingUser.emailVerified) {
+      return res.status(401).json({ message: "Guest account not found or email is not verified." });
+    }
+
+    const user = await prisma.guestUser.update({
+      where: { id: existingUser.id },
+      data: {
+        fullName: parsed.data.fullName,
+        phoneNumber: parsed.data.phoneNumber || null,
+      },
+    });
+    return res.json({ message: "Profile updated successfully.", user: publicUser(user) });
+  } catch (error) {
+    if (error.code === "P2002") {
+      return res.status(409).json({ message: "This mobile number is already associated with another account." });
+    }
+    next(error);
+  }
+});
+
 module.exports = router;

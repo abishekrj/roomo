@@ -6,7 +6,7 @@ import PropertyDetails from "./pages/PropertyDetails.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import OwnerPortal from "./owner/OwnerPortal.jsx";
 import SuperAdminPortal from "./admin/SuperAdminPortal.jsx";
-import { CmsGuidePage, MyBookingsPage, PostPropertyPage, ShoppingPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
+import { CmsGuidePage, MyBookingsPage, MyProfilePage, PostPropertyPage, ShoppingPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
 import CommissionManagementPage from "./pages/CommissionManagementPage.jsx";
 
 const legacyRoutes = {
@@ -96,6 +96,7 @@ export default function App() {
   if (path === "/staging/post-property" || path === "/post-property") return <PostPropertyPage />;
   if (path === "/staging/verify-email" || path === "/verify-email") return <VerifyEmailPage />;
   if (path === "/staging/my-bookings" || path === "/my-bookings") return <MyBookingsPage />;
+  if (path === "/staging/my-profile" || path === "/my-profile") return <MyProfilePage />;
   if (path === "/staging/shopping" || path === "/shopping") return <ShoppingPage />;
   if (path === "/staging/shop-details" || path === "/shop-details") return <ShoppingPage detail />;
   if (path === "/staging/guides" || path === "/guides") return <CmsGuidePage />;
