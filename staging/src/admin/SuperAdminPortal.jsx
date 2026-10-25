@@ -48,7 +48,7 @@ export default function SuperAdminPortal() {
   const pageTitles = Object.fromEntries(homeSections);
 
   useEffect(() => {
-    if (loginPage) { setAuthReady(true); return; }
+    if (loginPage) { if (token) window.location.replace("/staging/admin/dashboard"); else setAuthReady(true); return; }
     let cancelled = false;
     fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
