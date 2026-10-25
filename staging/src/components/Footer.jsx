@@ -30,6 +30,17 @@ const defaults = {
   ]
 };
 
+function socialHoverClass(item) {
+  const value = String(item?.icon || item?.label || "").toLowerCase().replace(/^bi-/, "");
+  if (value.includes("facebook")) return "hover:bg-[#1877F2]";
+  if (value.includes("instagram")) return "hover:bg-[#E4405F]";
+  if (value.includes("whatsapp")) return "hover:bg-[#25D366]";
+  if (value.includes("youtube")) return "hover:bg-[#FF0000]";
+  if (value === "x" || value.includes("twitter")) return "hover:bg-black";
+  if (value.includes("linkedin")) return "hover:bg-[#0A66C2]";
+  return "hover:bg-[#2563a6]";
+}
+
 function SocialIcon({ name }) {
   const common = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
   const key = String(name || "").toLowerCase().replace(/^bi-/, "").replace(/[^a-z0-9]/g, "");
@@ -84,7 +95,7 @@ export default function Footer() {
             <img className="mb-3 h-auto w-44 object-contain" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
             <p className="mb-4 mt-3 max-w-lg text-sm leading-7 text-slate-300">{content?.footerDescription || defaults.description}</p>
             <div className="flex gap-4 text-xl">
-              {links.social.filter(item => item && item.label).map((item, i) => <SafeLink item={item} key={item.label || i}><span className={"inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 text-slate-200 transition-colors duration-200 hover:border-transparent hover:text-white " + ((/facebook/i.test(item.icon||"") || /facebook/i.test(item.label||"")) ? "hover:bg-[#1877F2]" : (/instagram/i.test(item.icon||"") || /instagram/i.test(item.label||"")) ? "hover:bg-[#E4405F]" : (/whatsapp/i.test(item.icon||"") || /whatsapp/i.test(item.label||"")) ? "hover:bg-[#25D366]" : (/youtube/i.test(item.icon||"") || /youtube/i.test(item.label||"")) ? "hover:bg-[#FF0000]" : ((/^(x|twitter)$/i.test(item.icon||"") || /^(x|twitter)$/i.test(item.label||"")) ? "hover:bg-black" : (/linkedin/i.test(item.icon||"") || /linkedin/i.test(item.label||"")) ? "hover:bg-[#0A66C2]" : "hover:bg-[#2563a6]")}><SocialIcon name={item.icon || item.label} /></span><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
+              {links.social.filter(item => item && item.label).map((item, i) => <SafeLink item={item} key={item.label || i}><span className={"inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 text-slate-200 transition-colors duration-200 hover:border-transparent hover:text-white " + socialHoverClass(item)}><SocialIcon name={item.icon || item.label} /></span><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
             </div>
           </div>
           <div className="lg:col-span-3">
