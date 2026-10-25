@@ -84,7 +84,7 @@ export default function Footer() {
             <img className="mb-3 h-auto w-44 object-contain" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
             <p className="mb-4 mt-3 max-w-lg text-sm leading-7 text-slate-300">{content?.footerDescription || defaults.description}</p>
             <div className="flex gap-4 text-xl">
-              {links.social.map((item, i) => <SafeLink item={item} key={item.label || i}><i className={"bi " + (/^[a-z0-9-]+$/i.test(item.icon || "") ? item.icon : "bi-link-45deg")} aria-hidden="true"></i><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
+              {links.social.filter(item => item && item.label).map((item, i) => <SafeLink item={item} key={item.label || i}><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 text-slate-200 transition hover:border-white/50 hover:bg-white/10 hover:text-white"><SocialIcon name={item.icon || item.label} /></span><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
             </div>
           </div>
           <div className="lg:col-span-3">
