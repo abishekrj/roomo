@@ -74,7 +74,6 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
         const [places, suggestions] = await Promise.all([api("/admin/homepage/destinations", token), api("/admin/homepage/destination-suggestions", token)]);
         result = { ...places, suggestions: suggestions.suggestions || [] };
       } else if (pageKey === "nearby-locations") result = await api("/homepage/nearby-places/admin", token);
-      else if (pageKey === "shopping-directory") result = await api("/homepage/shops/admin", token);
       else if (pageKey === "testimonials") result = await api("/admin/testimonials", token);
       else if (pageKey === "reviews") result = await api("/admin/reviews", token);
       else if (["gallery/add", "gallery/list"].includes(pageKey)) result = await api("/admin/gallery", token);
@@ -85,7 +84,6 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
       else if (pageKey === "rooms/listing-display") result = await api("/listing-display-settings/admin", token);
       else if (pageKey === "homepage/pilgrim-guide") result = await api("/admin/homepage/pilgrim-guide", token);
       else if (pageKey === "homepage/nearby-locations") result = await api("/homepage/nearby-places/admin", token);
-      else if (pageKey === "homepage/shopping-directory") result = await api("/homepage/shops/admin", token);
       else if (pageKey === "homepage/testimonials") result = await api("/admin/testimonials", token);
       else if (pageKey === "homepage/galleries") result = await api("/admin/gallery", token);
       else if (pageKey === "homepage/footer" || pageKey === "homepage/header" || pageKey === "homepage/search-section" || pageKey === "homepage/upcoming-festival") result = await api("/admin/homepage", token);
@@ -190,8 +188,6 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 
   if (pageKey === "nearby-locations" || pageKey === "homepage/nearby-locations") return <CollectionConfig title="Nearby Locations" token={token} endpoint="/homepage/nearby-places/admin" keyName="places" data={data?.draft || {enabled:true,title:"Nearby Locations",description:"",places:[]}} load={load} notify={notify} busy={busy} />;
 
-  if (pageKey === "shopping-directory" || pageKey === "homepage/shopping-directory") return <CollectionConfig title="Shopping Directory" token={token} endpoint="/homepage/shops/admin" keyName="shops" data={data?.draft || {enabled:true,title:"Shopping Directory",description:"",shops:[]}} load={load} notify={notify} busy={busy} />;
-
   if (pageKey === "testimonials" || pageKey === "homepage/testimonials") return <TestimonialsManager token={token} data={data?.draft || {eyebrow:"",title:"",description:"",ratingSummary:"",items:[]}} load={load} notify={notify} busy={busy} />;
 
   if (["gallery/add","gallery/list","homepage/galleries"].includes(pageKey)) return <GalleryManager token={token} items={data?.items||[]} load={load} notify={notify} busy={busy} startAdd={pageKey==="gallery/add"} />;
@@ -205,7 +201,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 }
 
 function titleFor(key) {
-  return ({ enquiries:"Enquiries",owners:"Owners","rooms/add":"Add Rooms","rooms/listings":"Room Listings","rooms/types":"Room Types","rooms/filters":"Room Filters","rooms/featured":"Featured Rooms","rooms/listing-display":"Listing Display Settings","cms-pages":"CMS Pages",destinations:"Destinations","nearby-locations":"Nearby Locations","shopping-directory":"Shopping Directory",testimonials:"Testimonials","gallery/add":"Add Gallery","gallery/list":"Gallery List",reports:"Reports","homepage/header":"Header","homepage/search-section":"Search Section","homepage/featured-stays":"Featured Stays","homepage/upcoming-festival":"Upcoming Festival","homepage/pilgrim-guide":"Pilgrim Guide","homepage/nearby-locations":"Nearby Locations","homepage/galleries":"Galleries","homepage/shopping-directory":"Shopping Directory","homepage/testimonials":"Testimonials","homepage/footer":"Footer" })[key] || "Admin Workspace";
+  return ({ enquiries:"Enquiries",owners:"Owners","rooms/add":"Add Rooms","rooms/listings":"Room Listings","rooms/types":"Room Types","rooms/filters":"Room Filters","rooms/featured":"Featured Rooms","rooms/listing-display":"Listing Display Settings","cms-pages":"CMS Pages",destinations:"Destinations","nearby-locations":"Nearby Locations",testimonials:"Testimonials","gallery/add":"Add Gallery","gallery/list":"Gallery List",reports:"Reports","homepage/header":"Header","homepage/search-section":"Search Section","homepage/featured-stays":"Featured Stays","homepage/upcoming-festival":"Upcoming Festival","homepage/pilgrim-guide":"Pilgrim Guide","homepage/nearby-locations":"Nearby Locations","homepage/galleries":"Galleries","homepage/testimonials":"Testimonials","homepage/footer":"Footer" })[key] || "Admin Workspace";
 }
 function fmtDate(value) { if (!value) return "—"; const date=new Date(value); return Number.isNaN(date.getTime())?"—":date.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}); }
 function SearchBar({query,setQuery}) { return <input aria-label="Search records" placeholder="Search records…" className={inputClass+" mb-4 max-w-lg"} value={query} onChange={e=>setQuery(e.target.value)} />; }
