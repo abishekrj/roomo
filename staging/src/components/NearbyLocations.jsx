@@ -60,9 +60,7 @@ export default function NearbyLocations() {
             {section.title && <h2 id="nearby-locations-title" className="text-2xl font-semibold leading-tight tracking-tight text-[#212529] sm:text-3xl lg:text-4xl">{section.title}</h2>}
             {section.description && <p className="mt-4 max-w-2xl text-sm leading-6 text-[#5F6670] sm:text-base sm:leading-7">{section.description}</p>}
           </div>
-        </div>
-
-        <div className="roomo-shopping-controls">
+          <div className="roomo-shopping-controls">
             <div className="flex items-center gap-2">
               <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(-1)} aria-label="Previous nearby locations" disabled={places.length < 2}>‹</button>
               <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(1)} aria-label="Next nearby locations" disabled={places.length < 2}>›</button>
