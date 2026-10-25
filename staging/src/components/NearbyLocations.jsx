@@ -63,7 +63,7 @@ export default function NearbyLocations() {
           <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
             <div className="flex items-center gap-2">
               <button type="button" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-2xl leading-none text-slate-700 transition hover:border-[#2563A6] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => scroll(-1)} aria-label="Previous nearby locations" disabled={places.length < 2}>‹</button>
-              <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(1)} aria-label="Next nearby locations" disabled={places.length < 2}>›</button>
+              <button type="button" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-2xl leading-none text-slate-700 transition hover:border-[#2563A6] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => scroll(1)} aria-label="Next nearby locations" disabled={places.length < 2}>›</button>
             </div>
           </div>
         </div>
