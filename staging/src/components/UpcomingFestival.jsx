@@ -48,8 +48,8 @@ export default function UpcomingFestival() {
   }).format(new Date(festivalDate));
 
   return (
-    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#2563A6] px-4 py-10 sm:px-6 sm:py-14 lg:py-16">
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 md:grid-cols-[1fr_.9fr] md:gap-12">
+    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#2563A6] py-10 sm:py-14 lg:py-16">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-8 px-4 md:grid-cols-[1fr_.9fr] md:gap-12 sm:px-6">
         <div className="max-w-2xl">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/85 sm:text-sm">
             {content?.festivalEyebrow || "Upcoming Festival"}
