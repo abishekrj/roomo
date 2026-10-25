@@ -12,7 +12,7 @@ const iconPaths = {
 function Icon({ name, className = "h-5 w-5" }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{iconPaths[name]}</svg>;
 }
-function formatDate(value) { if (!value) return ""; const date = new Date(value + "T12:00:00"); return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(date); }
+function formatDate(value) { if (!value) return ""; const date = new Date(value + "T12:00:00"); return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short", year: "numeric" }).format(date); }
 function Counter({ label, description, value, min = 0, onChange }) {
   return <div className="flex items-center justify-between gap-5 py-3"><div><div className="text-sm font-medium text-slate-800">{label}</div>{description && <div className="mt-0.5 text-xs text-slate-500">{description}</div>}</div><div className="flex items-center gap-3"><button type="button" aria-label={`Decrease ${label}`} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-300 text-lg text-slate-700 disabled:cursor-not-allowed disabled:opacity-35">−</button><span className="w-4 text-center text-sm tabular-nums">{value}</span><button type="button" aria-label={`Increase ${label}`} onClick={() => onChange(value + 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-300 text-lg text-slate-700">+</button></div></div>;
 }
