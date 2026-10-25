@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import SearchSection from "../components/SearchSection.jsx";
+import { StarRatingDisplay } from "../components/StarRating.jsx";
 
 const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/properties";
 const LANDMARKS = [
@@ -144,7 +145,7 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
           <p className="mb-1 text-xs font-medium text-[#2563a6]">{propertyType(property)}</p>
           <a href={href} className="line-clamp-2 text-lg font-semibold leading-6 text-[#212529] hover:text-[#2563a6]">{property.title || "Sacred stay"}</a>
         </div>
-        {property.rating != null && <div className="shrink-0 rounded-lg bg-[#2563a6] px-2 py-1 text-sm font-semibold text-white">{Number(property.rating).toFixed(1)} ★</div>}
+        <StarRatingDisplay value={property.rating} count={property.reviewCount} size={12} className="shrink-0 justify-end" />
       </div>
       <p className="mt-2 flex items-start gap-1.5 text-sm leading-6 text-slate-500"><Icon name="pin" className="mt-1 h-4 w-4 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}{property.distanceToLandmark ? ` · approx. ${property.distanceToLandmark}` : property.nearestLandmark ? ` · near ${property.nearestLandmark}` : ""}</span></p>
        {sacredDistances.length > 0 && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600" aria-label="Distances to sacred places">{sacredDistances.map((item,index)=><span key={item.name+index}>⌖ {item.name}: <strong className="font-semibold text-slate-700">{item.distance}</strong></span>)}</div>}
