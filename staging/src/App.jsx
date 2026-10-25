@@ -94,7 +94,7 @@ export default function App() {
     return null;
   }
   const path = rawPath;
-  if (path === "/staging/driver" || path === "/staging/driver/" || path === "/driver") return <DriverPortal />;
+  if (path === "/staging/driver" || path === "/staging/driver/" || path === "/staging/driver/dashboard" || path === "/driver" || path === "/driver/dashboard") return <DriverPortal />;
   if (path === "/staging/transport-booking" || path === "/transport-booking") return <TransportBookingPage />;
   if (path === "/staging/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
   if (path === "/staging/post-property" || path === "/post-property") return <PostPropertyPage />;
