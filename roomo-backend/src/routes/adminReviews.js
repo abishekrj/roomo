@@ -7,7 +7,7 @@ const requireAdmin = require("../middleware/requireAdmin");
 const router = express.Router();
 router.use(authenticateToken, requireAdmin);
 const updateSchema = z.object({
-  rating: z.coerce.number().int().min(1).max(5),
+  rating: z.coerce.number().min(0.5).max(5).refine(value => Number.isInteger(value * 2), "Rating must use half-star increments."),
   comment: z.string().trim().min(10).max(2000),
   status: z.enum(["PENDING", "APPROVED", "REJECTED"]),
 });
