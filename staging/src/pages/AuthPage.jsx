@@ -7,7 +7,7 @@ function safePostLoginUrl(returnTo) {
   if (!returnTo) return "/staging";
   try {
     const target = new URL(returnTo, window.location.origin);
-    const path = target.pathname.replace(/\\/+$/, "") || "/";
+    const path = target.pathname.replace(/\/+$/, "") || "/";
     const isAuthPage = ["/staging/login", "/staging/signup", "/login", "/signup"].includes(path);
     if (target.origin !== window.location.origin || isAuthPage) return "/staging";
     return target.pathname + target.search + target.hash;
