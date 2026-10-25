@@ -299,18 +299,11 @@ export default function PropertyListingPage() {
   const filterPanel = <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
     <div className="mb-5 flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 text-base font-semibold text-slate-900"><Icon name="sliders" className="h-4 w-4"/> Filters</h2><button type="button" onClick={clearFilters} className="text-xs font-semibold text-[#2563a6] hover:underline">Clear all</button></div>
     <FilterSection title="Price per night">
-      <div className="mb-4 flex items-center justify-between gap-2 text-sm">
-        <span className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-[#2563a6]">₹{formatPrice(safeMinPrice)}</span>
-        <span className="text-xs text-slate-400">to</span>
-        <span className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-[#2563a6]">₹{formatPrice(safeMaxPrice)}</span>
-      </div>
-      <div className="space-y-4">
-        <label className="block text-xs font-medium text-slate-600">Minimum price
-          <input aria-label="Minimum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMinPrice} onChange={e => setMinPrice(String(Math.min(Number(e.target.value), safeMaxPrice)))} className="mt-2 block h-2 w-full cursor-pointer accent-[#2563a6]"/>
-        </label>
-        <label className="block text-xs font-medium text-slate-600">Maximum price
-          <input aria-label="Maximum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMaxPrice} onChange={e => setMaxPrice(String(Math.max(Number(e.target.value), safeMinPrice)))} className="mt-2 block h-2 w-full cursor-pointer accent-[#2563a6]"/>
-        </label>
+      <div className="relative mx-1 mb-5 mt-3 h-6">
+        <div className="absolute left-0 right-0 top-2 h-1.5 rounded-full bg-slate-200"/>
+        <div className="absolute top-2 h-1.5 rounded-full bg-[#2563a6]" style={{ left: `${(safeMinPrice / priceCeiling) * 100}%`, right: `${100 - (safeMaxPrice / priceCeiling) * 100}%` }}/>
+        <input aria-label="Minimum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMinPrice} onChange={e => setMinPrice(String(Math.min(Number(e.target.value), safeMaxPrice)))} className="pointer-events-none absolute inset-0 h-6 w-full cursor-pointer appearance-none bg-transparent accent-[#2563a6] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#2563a6] [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#2563a6]"/>
+        <input aria-label="Maximum price per night" type="range" min="0" max={priceCeiling} step="100" value={safeMaxPrice} onChange={e => setMaxPrice(String(Math.max(Number(e.target.value), safeMinPrice)))} className="pointer-events-none absolute inset-0 h-6 w-full cursor-pointer appearance-none bg-transparent accent-[#2563a6] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#2563a6] [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#2563a6]"/>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <label className="block text-xs text-slate-500">Minimum (₹)<input type="number" min="0" max={safeMaxPrice} value={minPrice} onChange={e => setMinPrice(String(Math.min(Math.max(0, Number(e.target.value || 0)), safeMaxPrice)))} className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100"/></label>
