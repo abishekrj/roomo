@@ -12,7 +12,7 @@ async function api(path, token, options = {}) {
   const response = await fetch(API + path, {
     ...options,
     credentials: "include",
-    headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...csrfHeaders(), ...(options.headers || {}) },
+    headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: "Bearer " + token } : {}), ...csrfHeaders(), ...(options.headers || {}) },
     cache: "no-store"
   });
   const data = await response.json().catch(() => ({}));

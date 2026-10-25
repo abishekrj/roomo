@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header.jsx";
 import SuperAdminWorkspace from "./SuperAdminWorkspace.jsx";
+import DriverAdminWorkspace from "./DriverAdminWorkspace.jsx";
 
 const API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
@@ -27,7 +28,7 @@ export default function SuperAdminPortal() {
   const [heroLoading, setHeroLoading] = useState(false);
   const [heroUploadBusy, setHeroUploadBusy] = useState(false);
 
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => sessionStorage.getItem("roomo_admin_token") || "");
   const [authReady, setAuthReady] = useState(false);
   const currentPath = path.replace(/\/+$/, "") || "/";
   const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
@@ -35,24 +36,24 @@ export default function SuperAdminPortal() {
   const isHomePageEditor = currentPath.includes("/homepage/");
   const homePageSection = isHomePageEditor ? currentPath.split("/homepage/")[1] : "";
   const isHeroEditor = homePageSection === "hero-banner";
-  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/owners") ? "owners" : currentPath.includes("/rooms/") ? "rooms" : currentPath.endsWith("/cms-pages") ? "cms-pages" : currentPath.endsWith("/destinations") ? "destinations" : currentPath.endsWith("/nearby-locations") ? "nearby-places" : currentPath.endsWith("/shopping-directory") ? "shops" : currentPath.endsWith("/testimonials") ? "testimonials" : currentPath.endsWith("/reviews") ? "reviews" : currentPath.includes("/gallery/") ? "gallery" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
+  const activePage = isHomePageEditor ? homePageSection : currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/users") ? "users" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/owners") ? "owners" : currentPath.includes("/rooms/") ? "rooms" : currentPath.endsWith("/cms-pages") ? "cms-pages" : currentPath.endsWith("/destinations") ? "destinations" : currentPath.endsWith("/nearby-locations") ? "nearby-places" : currentPath.endsWith("/shopping-directory") ? "shops" : currentPath.endsWith("/testimonials") ? "testimonials" : currentPath.endsWith("/reviews") ? "reviews" : currentPath.includes("/gallery/") ? "gallery" : currentPath.endsWith("/reports") ? "reports" : currentPath.includes("/drivers/") ? "drivers" : "dashboard";
   const adminPageTitles = {
     enquiries: "Enquiries", owners: "Owners", "rooms/add": "Add Rooms", "rooms/listings": "Room Listings",
     "rooms/types": "Room Types", "rooms/filters": "Room Filters", "rooms/featured": "Featured Rooms",
     "rooms/listing-display": "Listing Display Settings", "cms-pages": "CMS Pages", destinations: "Destinations",
     "nearby-locations": "Nearby Locations", "shopping-directory": "Shopping Directory", testimonials: "Testimonials",
-    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports"
+    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports", "drivers/add": "Add Driver", "drivers/bookings": "Booking List"
   };
   const adminPageKey = currentPath.startsWith(routePrefix + "/") ? currentPath.slice(routePrefix.length + 1) : "";
   const pageTitles = Object.fromEntries(homeSections);
 
   useEffect(() => {
-    if (loginPage) { setAuthReady(true); return; }
+    if (loginPage) { if (token) window.location.replace("/staging/admin/dashboard"); else setAuthReady(true); return; }
     let cancelled = false;
-    fetch(API + "/auth/me", { credentials: "include", cache: "no-store" })
+    fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
-      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken("cookie-session"); else if (!cancelled) window.location.replace("/staging/admin/login"); })
-      .catch(() => { if (!cancelled) window.location.replace("/staging/admin/login"); })
+      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken(token); else if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/staging/admin/login"); } })
+      .catch(() => { if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/staging/admin/login"); } })
       .finally(() => { if (!cancelled) setAuthReady(true); });
     return () => { cancelled = true; };
   }, [loginPage]);
@@ -60,7 +61,7 @@ export default function SuperAdminPortal() {
   useEffect(() => {
     if (loginPage || !token || isHomePageEditor) return;
     let cancelled = false;
-    const headers = {};
+    const headers = { Authorization: "Bearer " + token };
     Promise.all([
       fetch(API + "/admin/properties", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
       fetch(API + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; })
@@ -77,7 +78,7 @@ export default function SuperAdminPortal() {
     if (loginPage || !token || !isHeroEditor) return;
     let cancelled = false;
     setHeroLoading(true);
-    fetch(API + "/admin/homepage", { credentials: "include", cache: "no-store" })
+    fetch(API + "/admin/homepage", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Could not load the saved homepage draft.");
@@ -107,7 +108,8 @@ export default function SuperAdminPortal() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
       if (data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
-      setToken("cookie-session");
+      sessionStorage.setItem("roomo_admin_token", data.token);
+      setToken(data.token);
       window.location.href = "/staging/admin/dashboard";
     } catch (e) {
       setError(e.message || "Unable to sign in.");
@@ -116,7 +118,7 @@ export default function SuperAdminPortal() {
     }
   }
 
-  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { setToken(""); window.location.href = "/staging/admin/login"; } }
+  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.href = "/staging/admin/login"; } }
 
   function updateHeroField(event) {
     setHeroDraft(current => ({ ...current, [event.target.name]: event.target.value }));
@@ -130,7 +132,7 @@ export default function SuperAdminPortal() {
       const response = await fetch(API + "/admin/homepage", {
         method: "PUT",
         credentials: "include",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token, ...csrfHeaders() },
         body: JSON.stringify(heroDraft)
       });
       const data = await response.json().catch(() => ({}));
@@ -184,7 +186,7 @@ export default function SuperAdminPortal() {
       const response = await fetch(API + "/admin/homepage/hero-image", {
         method: "POST",
         credentials: "include",
-        headers: csrfHeaders(),
+        headers: { Authorization: "Bearer " + token, ...csrfHeaders() },
         body: formData
       });
       const data = await response.json().catch(() => ({}));
@@ -210,6 +212,7 @@ export default function SuperAdminPortal() {
       ["Featured Rooms", routePrefix + "/rooms/featured"], ["Listing Display Settings", routePrefix + "/rooms/listing-display"]
     ] },
     { id: "home-page", label: "Home Page", icon: "▧", children: homeSections.map(([id, label]) => [label, routePrefix + "/homepage/" + id]) },
+    { id: "drivers", label: "Driver", icon: "🚐", children: [["Add Driver", routePrefix + "/drivers/add"], ["Booking List", routePrefix + "/drivers/bookings"]] },
     { id: "cms-pages", label: "CMS Pages", icon: "▤", href: routePrefix + "/cms-pages" },
     { id: "destinations", label: "Destinations", icon: "⌖", href: routePrefix + "/destinations" },
     { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: routePrefix + "/nearby-locations" },
@@ -244,7 +247,7 @@ export default function SuperAdminPortal() {
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
             <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
             <nav className="space-y-1" aria-label="Super Admin navigation">
-              {navItems.map(item => item.children ? <details key={item.id} className="group rounded-lg" open={(item.id === "home-page" && isHomePageEditor) || (item.id === "rooms" && activePage === "rooms") || (item.id === "gallery" && activePage === "gallery") ? true : undefined}>
+              {navItems.map(item => item.children ? <details key={item.id} className="group rounded-lg" open={(item.id === "home-page" && isHomePageEditor) || (item.id === "rooms" && activePage === "rooms") || (item.id === "gallery" && activePage === "gallery") || (item.id === "drivers" && activePage === "drivers") ? true : undefined}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span><span className="flex-1">{item.label}</span><span className="text-xs transition group-open:rotate-180" aria-hidden="true">⌄</span></summary>
                 <div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{item.children.map(([label, href]) => <a key={label} href={href} className={(currentPath === href || (isHomePageEditor && href.endsWith("/" + homePageSection))) ? "block rounded-md bg-[#2563a6] px-3 py-2 text-xs font-semibold leading-5 text-white" : "block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white"}>{label}</a>)}</div>
               </details> : <a key={item.id} href={item.href} aria-current={activePage === item.id ? "page" : undefined} className={activePage === item.id ? "flex items-center gap-3 rounded-lg bg-[#2563a6] px-3 py-3 text-sm font-medium text-white shadow-sm" : "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
@@ -273,7 +276,8 @@ export default function SuperAdminPortal() {
               </form>}
             </section>}
             {isHomePageEditor && !isHeroEditor && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
-            {adminPageTitles[adminPageKey] && !isHomePageEditor && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
+            {adminPageTitles[adminPageKey] && !isHomePageEditor && !adminPageKey.startsWith("drivers/") && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
+            {adminPageKey.startsWith("drivers/") && <DriverAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
             {activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}
             {activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}
             {activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}

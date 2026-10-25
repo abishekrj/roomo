@@ -8,6 +8,8 @@ import OwnerPortal from "./owner/OwnerPortal.jsx";
 import SuperAdminPortal from "./admin/SuperAdminPortal.jsx";
 import { CmsGuidePage, MyBookingsPage, MyProfilePage, PostPropertyPage, ShoppingPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
 import CommissionManagementPage from "./pages/CommissionManagementPage.jsx";
+import DriverPortal from "./pages/DriverPortal.jsx";
+import TransportBookingPage from "./pages/TransportBookingPage.jsx";
 
 const legacyRoutes = {
   "/frontend/admin/admin.html": "/staging/admin/login",
@@ -92,6 +94,8 @@ export default function App() {
     return null;
   }
   const path = rawPath;
+  if (path === "/staging/driver" || path === "/staging/driver/" || path === "/staging/driver/dashboard" || path === "/driver" || path === "/driver/dashboard") return <DriverPortal />;
+  if (path === "/staging/transport-booking" || path === "/transport-booking") return <TransportBookingPage />;
   if (path === "/staging/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
   if (path === "/staging/post-property" || path === "/post-property") return <PostPropertyPage />;
   if (path === "/staging/verify-email" || path === "/verify-email") return <VerifyEmailPage />;
