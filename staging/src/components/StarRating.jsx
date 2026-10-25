@@ -14,10 +14,10 @@ function StarGlyph({ fill = 0, size = 16, id }) {
 }
 
 export function StarRatingDisplay({ value, count, size = 13, className = "" }) {
+  const uid = useId().replace(/:/g, "");
   const rating = Number(value);
   if (value == null || value === "" || !Number.isFinite(rating) || rating <= 0) return null;
   const safeRating = Math.max(0, Math.min(5, rating));
-  const uid = useId().replace(/:/g, "");
   return <span className={`inline-flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-medium text-slate-700 ${className}`} aria-label={`${safeRating.toFixed(1)} out of 5 stars${Number(count) > 0 ? `, ${count} reviews` : ""}`}>
     <span className="inline-flex items-center gap-0.5" aria-hidden="true">{[0,1,2,3,4].map(index => <StarGlyph key={index} id={`${uid}-display-${index}`} fill={Math.max(0, Math.min(1, safeRating - index))} size={size} />)}</span>
     <span className="font-semibold tabular-nums">{safeRating.toFixed(1)}</span>
