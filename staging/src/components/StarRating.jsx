@@ -3,7 +3,8 @@ import { useId } from "react";
 const STAR_PATH = "M12 2.5l2.93 5.94 6.56.95-4.75 4.63 1.12 6.53L12 17.47l-5.86 3.08 1.12-6.53L2.5 9.39l6.57-.95L12 2.5z";
 
 function StarGlyph({ fill = 0, size = 16, id }) {
-  const clipId = id || useId().replace(/:/g, "");
+  const generatedId = useId().replace(/:/g, "");
+  const clipId = id || generatedId;
   const ratio = Math.max(0, Math.min(1, Number(fill) || 0));
   return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" className="block shrink-0" focusable="false">
     <defs><clipPath id={clipId}><rect x="0" y="0" width={24 * ratio} height="24" /></clipPath></defs>
