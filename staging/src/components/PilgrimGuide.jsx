@@ -25,7 +25,7 @@ export default function PilgrimGuide() {
   }
 
   return (
-    <section aria-labelledby="pilgrim-guide-title" className="w-full bg-[#F7F8FA] px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+    <section aria-labelledby="pilgrim-guide-title" className="w-full bg-[#F7F8FA] px-4 py-12 sm:px-6 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl">
         <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-10">
           {guide.eyebrow && (

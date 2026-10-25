@@ -35,7 +35,7 @@ export default function NearbyLocations() {
   }
 
   return (
-    <section aria-labelledby="nearby-locations-title" className="w-full bg-white px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+    <section aria-labelledby="nearby-locations-title" className="w-full bg-white px-4 py-12 sm:px-6 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl">
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
