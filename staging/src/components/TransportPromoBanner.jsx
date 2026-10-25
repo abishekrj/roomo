@@ -14,7 +14,7 @@ export default function TransportPromoBanner() {
           <h2 id="roomo-transport-promo-title" className="mt-4 max-w-xl text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">Your sacred journey, from door to destination.</h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base sm:leading-7">Book a car or van for temple visits, Girivalam, station pickups and day trips around Tiruvannamalai. Local travel, made simpler.</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <a href="/staging/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#2563A6]">Book a car or van <span aria-hidden="true">→</span></a>
+            <a href="/staging/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[4px] border border-white bg-transparent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#2563a6] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#2563A6]">Book a car or van <span aria-hidden="true">→</span></a>
             <span className="text-xs text-blue-100/80">Driver confirmation follows your request.</span>
           </div>
         </div>
