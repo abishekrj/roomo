@@ -50,6 +50,7 @@ model GuestUser {
   updatedAt    DateTime @updatedAt @map("updated_at")
   reservations Reservation[]
   favorites    GuestFavorite[]
+  transportBookings TransportBooking[]
 
   @@map("guest_users")
 }
@@ -385,6 +386,7 @@ model TransportBooking {
   guestName       String       @map("guest_name") @db.VarChar(120)
   guestPhone      String       @map("guest_phone") @db.VarChar(32)
   guestEmail      String?      @map("guest_email") @db.VarChar(254)
+  guestUserId     String?      @map("guest_user_id") @db.Uuid
   pickupLocation  String       @map("pickup_location") @db.VarChar(500)
   dropoffLocation String       @map("dropoff_location") @db.VarChar(500)
   travelAt        DateTime     @map("travel_at")
@@ -398,10 +400,12 @@ model TransportBooking {
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
   assignedDriver  Driver?      @relation("AssignedDriver", fields: [assignedDriverId], references: [id], onDelete: SetNull)
+  guestUser       GuestUser?   @relation(fields: [guestUserId], references: [id], onDelete: SetNull)
   offers          DriverOffer[]
 
   @@index([status, travelAt])
   @@index([assignedDriverId, travelAt, status])
+  @@index([guestUserId, createdAt])
   @@map("transport_bookings")
 }
 
