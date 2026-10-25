@@ -28,7 +28,7 @@ export default function SuperAdminPortal() {
   const [heroLoading, setHeroLoading] = useState(false);
   const [heroUploadBusy, setHeroUploadBusy] = useState(false);
 
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => sessionStorage.getItem("roomo_admin_token") || "");
   const [authReady, setAuthReady] = useState(false);
   const currentPath = path.replace(/\/+$/, "") || "/";
   const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
@@ -50,9 +50,9 @@ export default function SuperAdminPortal() {
   useEffect(() => {
     if (loginPage) { setAuthReady(true); return; }
     let cancelled = false;
-    fetch(API + "/auth/me", { credentials: "include", cache: "no-store" })
+    fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
-      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken("cookie-session"); else if (!cancelled) window.location.replace("/staging/admin/login"); })
+      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken(token); else if (!cancelled) window.location.replace("/staging/admin/login"); })
       .catch(() => { if (!cancelled) window.location.replace("/staging/admin/login"); })
       .finally(() => { if (!cancelled) setAuthReady(true); });
     return () => { cancelled = true; };
@@ -61,7 +61,7 @@ export default function SuperAdminPortal() {
   useEffect(() => {
     if (loginPage || !token || isHomePageEditor) return;
     let cancelled = false;
-    const headers = {};
+    const headers = { Authorization: "Bearer " + token };
     Promise.all([
       fetch(API + "/admin/properties", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
       fetch(API + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; })
@@ -78,7 +78,7 @@ export default function SuperAdminPortal() {
     if (loginPage || !token || !isHeroEditor) return;
     let cancelled = false;
     setHeroLoading(true);
-    fetch(API + "/admin/homepage", { credentials: "include", cache: "no-store" })
+    fetch(API + "/admin/homepage", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Could not load the saved homepage draft.");
@@ -108,7 +108,8 @@ export default function SuperAdminPortal() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
       if (data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
-      setToken("cookie-session");
+      sessionStorage.setItem("roomo_admin_token", data.token);
+      setToken(data.token);
       window.location.href = "/staging/admin/dashboard";
     } catch (e) {
       setError(e.message || "Unable to sign in.");
@@ -117,7 +118,7 @@ export default function SuperAdminPortal() {
     }
   }
 
-  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { setToken(""); window.location.href = "/staging/admin/login"; } }
+  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.href = "/staging/admin/login"; } }
 
   function updateHeroField(event) {
     setHeroDraft(current => ({ ...current, [event.target.name]: event.target.value }));
@@ -131,7 +132,7 @@ export default function SuperAdminPortal() {
       const response = await fetch(API + "/admin/homepage", {
         method: "PUT",
         credentials: "include",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token, ...csrfHeaders() },
         body: JSON.stringify(heroDraft)
       });
       const data = await response.json().catch(() => ({}));
@@ -185,7 +186,7 @@ export default function SuperAdminPortal() {
       const response = await fetch(API + "/admin/homepage/hero-image", {
         method: "POST",
         credentials: "include",
-        headers: csrfHeaders(),
+        headers: { Authorization: "Bearer " + token, ...csrfHeaders() },
         body: formData
       });
       const data = await response.json().catch(() => ({}));
@@ -276,7 +277,7 @@ export default function SuperAdminPortal() {
             </section>}
             {isHomePageEditor && !isHeroEditor && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
             {adminPageTitles[adminPageKey] && !isHomePageEditor && !adminPageKey.startsWith("drivers/") && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
-            {adminPageKey.startsWith("drivers/") && <DriverAdminWorkspace pageKey={adminPageKey} onNotice={setNotice} />}
+            {adminPageKey.startsWith("drivers/") && <DriverAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
             {activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}
             {activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}
             {activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}
