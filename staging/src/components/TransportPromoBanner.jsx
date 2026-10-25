@@ -5,9 +5,9 @@ export default function TransportPromoBanner() {
   if (dismissed) return null;
   return (
     <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#2563A6] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div className="relative mx-auto grid w-full max-w-7xl overflow-hidden rounded-lg bg-[#2563A6] text-white shadow-sm md:grid-cols-[1.15fr_.85fr]">
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 overflow-hidden rounded-lg bg-[#2563A6] text-white shadow-sm md:grid-cols-[1.15fr_.85fr] md:gap-12">
         <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[28px] border-white/5" aria-hidden="true" />
-        <div className="relative z-10 px-6 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+        <div className="relative z-10 min-w-0">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.16em] text-blue-100">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> New · ROOMO Travel
           </span>
@@ -18,7 +18,7 @@ export default function TransportPromoBanner() {
             <span className="text-xs text-blue-100/80">Driver confirmation follows your request.</span>
           </div>
         </div>
-        <div className="relative flex min-h-48 items-center justify-center overflow-hidden bg-[#1d4774] px-6 py-8 md:min-h-full">
+        <div className="relative flex min-h-48 min-w-0 items-center justify-center overflow-hidden bg-[#1d4774] md:min-h-full">
           <div className="absolute inset-x-0 bottom-8 h-px bg-white/10" />
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-white/[0.03]" />
           <svg viewBox="0 0 440 220" role="img" aria-label="Illustration of a comfortable passenger van on the road" className="relative z-10 w-full max-w-md drop-shadow-2xl">
