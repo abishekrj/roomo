@@ -135,7 +135,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
       {editingId && <form className="mb-6 space-y-4 rounded-xl border border-blue-100 bg-blue-50/40 p-4" onSubmit={event => { event.preventDefault(); runAction(async () => { await api("/admin/reviews/" + editingId, token, patchBody({ rating: Number(form.rating), comment: String(form.comment || "").trim(), status: form.status || "PENDING" })); resetForm(); }, form.status === "APPROVED" ? "Review saved and approved for publication." : "Review changes saved."); }}>
         <p className="text-sm text-slate-600">Stay: <strong className="text-slate-900">{form.property?.title || "Property"}</strong> · Guest: <strong className="text-slate-900">{form.guest?.fullName || "Guest"}</strong></p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">Star rating<select className={inputClass} value={form.rating ?? 5} onChange={event=>update("rating",Number(event.target.value))}>{[5,4,3,2,1].map(value=><option key={value} value={value}>{value} star{value===1?"":"s"}</option>)}</select></label>
+          <label className="block text-sm font-medium text-slate-700">Star rating<select className={inputClass} value={form.rating ?? 5} onChange={event=>update("rating",Number(event.target.value))}>{Array.from({length:10},(_,index)=>(index+1)/2).reverse().map(value=><option key={value} value={value}>{value.toFixed(1)} star{value===1?"":"s"}</option>)}</select></label>
           <label className="block text-sm font-medium text-slate-700">Review status<select className={inputClass} value={form.status || "PENDING"} onChange={event=>update("status",event.target.value)}><option value="PENDING">Pending approval</option><option value="APPROVED">Approved · publish</option><option value="REJECTED">Rejected · hidden</option></select></label>
           <div className="sm:col-span-2"><TextField label="Review text" value={form.comment || ""} onChange={value=>update("comment",value)} rows={5} required minLength={10} maxLength={2000}/></div>
         </div>
@@ -145,7 +145,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
       <DataTable rows={(data?.reviews||[]).filter(row=>JSON.stringify(row).toLowerCase().includes(query.toLowerCase()))} columns={[
         ["Stay",row=>row.property?.title || "—"],
         ["Guest",row=>row.guest?.fullName || "—"],
-        ["Rating",row=>"★".repeat(Math.max(0,Math.min(5,Number(row.rating)||0)))+" ("+row.rating+"/5)"],
+        ["Rating",row=>"★".repeat(Math.floor(Math.max(0,Math.min(5,Number(row.rating)||0))))+(Number(row.rating)%1===0.5?"½":"")+" ("+Number(row.rating).toFixed(1)+"/5)"],
         ["Review",row=><span className="line-clamp-3 whitespace-pre-line">{row.comment}</span>],
         ["Submitted",row=>fmtDate(row.createdAt)],
         ["Status",row=>row.status==="APPROVED"?"Approved":row.status==="REJECTED"?"Rejected":"Pending approval"]
