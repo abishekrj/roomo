@@ -49,7 +49,7 @@ export default function FeaturedStays() {
     if (!Array.isArray(stored)) stored = [];
     const query = new URLSearchParams(window.location.search);
     const pendingId = query.get("favorite");
-    if (token && pendingId && !stored.map(String).includes(String(pendingId))) {
+    if (user && pendingId && !stored.map(String).includes(String(pendingId))) {
       stored.push(String(pendingId));
       localStorage.setItem(key, JSON.stringify(stored));
       setFavouriteNotice("Stay added to your favourites.");
@@ -59,7 +59,7 @@ export default function FeaturedStays() {
     }
     setFavourites(stored.map(String));
   }, []);
-  const toggleFavourite = stay => { if(!stay?.id)return; const {token,user}=readGuestSession(); if(!token||!user){const returnUrl=new URL(window.location.href);returnUrl.searchParams.set("favorite",String(stay.id));window.location.assign("/staging/login?returnTo="+encodeURIComponent(returnUrl.pathname+returnUrl.search+returnUrl.hash));return;} const id=String(stay.id),current=favourites.includes(id),updated=current?favourites.filter(item=>item!==id):[...favourites,id];localStorage.setItem(favouriteKey(user),JSON.stringify(updated));setFavourites(updated);setFavouriteNotice(current?"Stay removed from your favourites.":"Stay added to your favourites."); };
+  const toggleFavourite = stay => { if(!stay?.id)return; const {token,user}=readGuestSession(); if(!user){const returnUrl=new URL(window.location.href);returnUrl.searchParams.set("favorite",String(stay.id));window.location.assign("/staging/login?returnTo="+encodeURIComponent(returnUrl.pathname+returnUrl.search+returnUrl.hash));return;} const id=String(stay.id),current=favourites.includes(id),updated=current?favourites.filter(item=>item!==id):[...favourites,id];localStorage.setItem(favouriteKey(user),JSON.stringify(updated));setFavourites(updated);setFavouriteNotice(current?"Stay removed from your favourites.":"Stay added to your favourites."); };
 
   useEffect(() => {
     let cancelled = false;
