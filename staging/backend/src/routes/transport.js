@@ -6,6 +6,7 @@ const { z } = require("zod");
 const prisma = require("../lib/prisma");
 const authenticateToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/requireAdmin");
+const { GUEST_COOKIE, parseCookies } = require("../lib/sessionCookies");
 
 const router = express.Router();
 let webpush = null;
@@ -13,6 +14,25 @@ try { webpush = require("web-push"); } catch { /* Install web-push in roomo-back
 if (webpush && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:support@roomo.in", process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 }
+
+async function guestAuth(req, res, next) {
+  const cookies = parseCookies(req);
+  const authorization = req.headers.authorization;
+  const token = cookies[GUEST_COOKIE] || (authorization?.startsWith("Bearer ") ? authorization.slice(7) : null);
+  if (!token) return res.status(401).json({ message: "Please sign in to request a driver." });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: "roomo-api", audience: "roomo-guest", algorithms: ["HS256"] });
+    if (decoded.role !== "GUEST") return res.status(403).json({ message: "Guest account access is required." });
+    const user = await prisma.guestUser.findUnique({ where: { id: decoded.sub } });
+    if (!user || !user.emailVerified) return res.status(401).json({ message: "Please verify your ROOMO account email and sign in again." });
+    req.guestUser = user;
+    next();
+  } catch (error) {
+    if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError" || error.name === "NotBeforeError") return res.status(401).json({ message: "Your session has expired. Please sign in again." });
+    next(error);
+  }
+}
+
 function driverAuth(req, res, next) {
   const token = req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.slice(7) : "";
   if (!token) return res.status(401).json({ message: "Driver sign-in required." });
@@ -97,17 +117,33 @@ async function dispatchBooking(booking) {
   })));
 }
 
-router.post("/bookings", async (req, res, next) => {
+router.post("/bookings", guestAuth, async (req, res, next) => {
   try {
-    const parsed = bookingSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Please check the trip details.", errors: parsed.error.flatten().fieldErrors });
+    const parsed = bookingSchema.safeParse({
+      ...req.body,
+      guestName: req.guestUser.fullName,
+      guestEmail: req.guestUser.email,
+      guestPhone: req.body?.guestPhone || req.guestUser.phoneNumber || ""
+    });
+    if (!parsed.success) return res.status(400).json({ message: "Please check the trip details. Add a valid mobile number to your profile or booking request.", errors: parsed.error.flatten().fieldErrors });
     const data = parsed.data;
     if (new Date(data.travelAt) <= new Date()) return res.status(400).json({ message: "Choose a future pickup date and time." });
     const booking = await prisma.transportBooking.create({
-      data: { ...data, guestEmail: data.guestEmail || null, notes: data.notes || null, bookingCode: "TR" + crypto.randomBytes(4).toString("hex").toUpperCase() }
+      data: { ...data, guestUserId: req.guestUser.id, guestEmail: req.guestUser.email, notes: data.notes || null, bookingCode: "TR" + crypto.randomBytes(4).toString("hex").toUpperCase() }
     });
     dispatchBooking(booking).catch(error => console.error("Transport dispatch failed:", error.message));
     res.status(201).json({ message: "Your transport request has been received. ROOMO is notifying eligible drivers.", booking: { id: booking.id, bookingCode: booking.bookingCode, status: booking.status } });
+  } catch (error) { next(error); }
+});
+
+router.get("/my-bookings", guestAuth, async (req, res, next) => {
+  try {
+    const bookings = await prisma.transportBooking.findMany({
+      where: { guestUserId: req.guestUser.id },
+      include: { assignedDriver: { select: { fullName: true, phoneNumber: true, vehicleType: true, vehicleNumber: true } } },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json({ bookings });
   } catch (error) { next(error); }
 });
 
