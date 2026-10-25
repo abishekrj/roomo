@@ -7,7 +7,7 @@ const secondaryButton = "inline-flex items-center justify-center rounded-lg bord
 const emptyDriver = { fullName: "", email: "", phoneNumber: "", password: "", licenseNumber: "", vehicleType: "CAR", vehicleMake: "", vehicleModel: "", vehicleNumber: "", passengerCapacity: "4", serviceAreas: "Tiruvannamalai", notes: "", isActive: true, isAvailable: true };
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 async function request(path, options = {}) {
-  const response = await fetch(API + path, { ...options, credentials: "include", headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...csrfHeaders(), ...(options.headers || {}) }, cache: "no-store" });
+  const response = await fetch(API + path, { ...options, credentials: "include", headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), Authorization: "Bearer " + (sessionStorage.getItem("roomo_admin_token") || ""), ...csrfHeaders(), ...(options.headers || {}) }, cache: "no-store" });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.message || "The request could not be completed.");
   return data;
