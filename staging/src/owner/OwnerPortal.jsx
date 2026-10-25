@@ -160,7 +160,7 @@ export default function OwnerPortal() {
           <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">OWNER PANEL</p></div>
           <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
           <nav className="grid grid-cols-2 gap-2 lg:grid-cols-1" aria-label="Owner dashboard navigation">
-            {menu.map((item) => <a key={item.id} href={`${routePrefix}/${item.id}`} onClick={() => setQuery("")} aria-current={active === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition ${active === item.id ? "bg-blue-600 text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
+            {menu.map((item) => <a key={item.id} href={`${routePrefix}/${item.id}`} onClick={() => setQuery("")} aria-current={active === item.id ? "page" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition ${active === item.id ? "bg-[#2563a6] text-white shadow-sm" : "text-slate-200 hover:bg-white/10 hover:text-white"}`}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
           </nav>
           <div className="mt-6 border-t border-white/10 pt-4"><p className="truncate px-3 text-xs text-slate-300">{owner.email}</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
         </aside>
