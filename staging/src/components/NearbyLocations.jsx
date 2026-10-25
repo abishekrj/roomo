@@ -54,38 +54,38 @@ export default function NearbyLocations() {
   return (
     <section aria-labelledby="nearby-locations-title" className="w-full bg-white px-4 py-12 sm:px-6 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl">
-        <div className="roomo-shopping-heading">
+        <div className="mb-6 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-3xl">
             {section.eyebrow && <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#2563A6] sm:text-sm">{section.eyebrow}</p>}
             {section.title && <h2 id="nearby-locations-title" className="text-2xl font-semibold leading-tight tracking-tight text-[#212529] sm:text-3xl lg:text-4xl">{section.title}</h2>}
             {section.description && <p className="mt-4 max-w-2xl text-sm leading-6 text-[#5F6670] sm:text-base sm:leading-7">{section.description}</p>}
           </div>
-          <div className="roomo-shopping-controls">
+          <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
             <div className="flex items-center gap-2">
-              <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(-1)} aria-label="Previous nearby locations" disabled={places.length < 2}>‹</button>
+              <button type="button" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-2xl leading-none text-slate-700 transition hover:border-[#2563A6] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => scroll(-1)} aria-label="Previous nearby locations" disabled={places.length < 2}>‹</button>
               <button type="button" className="roomo-shopping-arrow" onClick={() => scroll(1)} aria-label="Next nearby locations" disabled={places.length < 2}>›</button>
             </div>
           </div>
         </div>
 
-        <div ref={trackRef} className="roomo-shopping-track" aria-label="Nearby locations">
+        <div ref={trackRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-5" aria-label="Nearby locations">
           {places.map((place, index) => (
             <button
               key={place.id || place.name || index}
               type="button"
               onClick={() => setSelectedPlace(place)}
-              data-nearby-card="" className="roomo-shop-card group cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2"
+              data-nearby-card="" className="flex w-[84%] min-w-0 shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-slate-200 bg-white p-0 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
               aria-label={place.name ? `View details for ${place.name}` : "View nearby location details"}
             >
-              <div className="roomo-shop-card-image">
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                 {place.imageUrl ? (
                   <img src={place.imageUrl} alt={place.name || ""} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
                 ) : (
-                  <div className="roomo-shop-image-placeholder" aria-hidden="true">⌖</div>
+                  <div className="grid h-full w-full place-items-center text-4xl text-slate-400" aria-hidden="true">⌖</div>
                 )}
                 {place.location && <span className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#212529]">{place.location}</span>}
               </div>
-              <div className="roomo-shop-card-copy flex flex-1 flex-col">
+              <div className="flex flex-1 flex-col p-4 sm:p-5">
                 {place.name && <h3>{place.name}</h3>}
                 {place.description && <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#5F6670]">{place.description}</p>}
                 <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#2563A6]">Explore location <span aria-hidden="true">↗</span></span>
