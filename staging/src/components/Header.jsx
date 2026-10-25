@@ -99,7 +99,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   return (
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className={`flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "mx-auto max-w-7xl"}`}>
-        <a className="shrink-0" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] object-contain sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
+        <a className="roomo-logo-link shrink-0 focus:outline-none" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
         <div className="hidden items-center gap-2 text-[13px] text-slate-600 md:flex"><i className="bi bi-geo-alt text-roomo-blue" aria-hidden="true" />Tiruvannamalai, Tamil Nadu</div>
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="relative notranslate" translate="no">

@@ -6,7 +6,7 @@ const prisma = require("../lib/prisma");
 const router = express.Router();
 const reviewSchema = z.object({
   propertyId: z.string().uuid(),
-  rating: z.coerce.number().int().min(1).max(5),
+  rating: z.coerce.number().min(0.5).max(5).refine(value => Number.isInteger(value * 2), "Rating must use half-star increments."),
   comment: z.string().trim().min(10).max(2000),
 });
 

@@ -161,3 +161,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 #goog-gt-tt, .goog-te-balloon-frame, .goog-tooltip, .goog-tooltip:hover { display: none !important; visibility: hidden !important; }
 html, body { top: 0 !important; }
 body > .skiptranslate { display: none !important; }
+
+
+/* Avoid persistent mouse-click focus rings while retaining keyboard focus visibility. */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.roomo-logo-link:focus:not(:focus-visible),
+.roomo-logo-link img {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
