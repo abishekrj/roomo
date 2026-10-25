@@ -46,8 +46,6 @@ export default function AuthPage({ mode = "login" }) {
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(data.message || "Google sign-in failed. Please try again.");
             if (!data.user) throw new Error("The server response is missing the guest profile.");
-      localStorage.setItem("roomoGuest", JSON.stringify(data.user));
-            localStorage.setItem("roomoGuest", JSON.stringify(data.user));
             const returnTo = new URLSearchParams(window.location.search).get("returnTo");
             if (returnTo) {
               try {

@@ -5,12 +5,11 @@ const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/ap
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const languages = [{ code: "en", label: "English", short: "ENG" }, { code: "ta", label: "Tamil/தமிழ்", short: "Tamil" }, { code: "te", label: "Telugu/తెలుగు", short: "Telugu" }, { code: "kn", label: "Kannada/ಕನ್ನಡ", short: "Kannada" }];
 
-function readSession() { return { user: null }; }
 const linkClass = "block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50";
 
 export default function Header({ ownerPortal = false, adminNotifications = false } = {}) {
   const [language, setLanguage] = useState(() => languages.find(item => item.code === localStorage.getItem("roomoLanguage")) || languages[0]);
-  const [user, setUser] = useState(() => readSession().user);
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -44,6 +43,16 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   }, [hidden]);
 
   useEffect(() => {
+    // Remove legacy client-side guest profiles/tokens and locally cached favourites.
+    // Authentication and favourites now come from the HttpOnly session and API.
+    for (const storage of [localStorage, sessionStorage]) {
+      for (let index = storage.length - 1; index >= 0; index -= 1) {
+        const key = storage.key(index);
+        if (key === "roomoGuest" || key === "roomoGuestToken" || key?.startsWith("roomoFavourites:")) {
+          storage.removeItem(key);
+        }
+      }
+    }
     let cancelled = false;
     fetch(API_BASE + "/guest-auth/me", { credentials: "include", cache: "no-store" })
       .then(async response => { if (!response.ok) throw new Error("No active guest session"); const data = await response.json(); if (!data.user) throw new Error("Missing guest profile"); if (!cancelled) setUser(data.user); })

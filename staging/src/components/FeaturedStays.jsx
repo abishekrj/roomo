@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-const API_URL = "http://localhost:5001/api/homepage";
+const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+const API_URL = `${API_BASE}/homepage`;
 const API_ORIGIN = new URL(API_URL).origin;
+function csrfHeaders() {
+  const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf="));
+  return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {};
+}
 
 function resolveImageUrl(value) {
   const raw = typeof value === "string" ? value : (
@@ -38,28 +43,95 @@ export default function FeaturedStays() {
   const trackRef = useRef(null);
   const [favourites, setFavourites] = useState([]);
   const [favouriteNotice, setFavouriteNotice] = useState("");
-  const readGuestSession = () => { const token=sessionStorage.getItem("roomoGuestToken")||localStorage.getItem("roomoGuestToken"); const raw=sessionStorage.getItem("roomoGuest")||localStorage.getItem("roomoGuest"); let user=null; try{user=raw?JSON.parse(raw):null;}catch{} return {token,user}; };
-  const favouriteKey = user => "roomoFavourites:" + String(user?.id || user?.guestId || user?.email || "guest");
+  const [guestUser, setGuestUser] = useState(null);
+  const [guestReady, setGuestReady] = useState(false);
+  const [favouriteBusy, setFavouriteBusy] = useState(false);
+  const pendingFavouriteRef = useRef("");
+  const pendingFavouriteBusyRef = useRef(false);
+
+  // The HttpOnly cookie is the only authentication source. Never trust a profile
+  // or session token read from localStorage/sessionStorage.
   useEffect(() => {
-    const { user, token } = readGuestSession();
-    if (!user) { setFavourites([]); return; }
-    const key = favouriteKey(user);
-    let stored = [];
-    try { stored = JSON.parse(localStorage.getItem(key) || "[]"); } catch { stored = []; }
-    if (!Array.isArray(stored)) stored = [];
-    const query = new URLSearchParams(window.location.search);
-    const pendingId = query.get("favorite");
-    if (user && pendingId && !stored.map(String).includes(String(pendingId))) {
-      stored.push(String(pendingId));
-      localStorage.setItem(key, JSON.stringify(stored));
-      setFavouriteNotice("Stay added to your favourites.");
-      query.delete("favorite");
-      const nextUrl = window.location.pathname + (query.toString() ? "?" + query.toString() : "") + window.location.hash;
-      window.history.replaceState({}, "", nextUrl);
-    }
-    setFavourites(stored.map(String));
+    let cancelled = false;
+    fetch(`${API_BASE}/guest-auth/me`, { credentials: "include", cache: "no-store" })
+      .then(async response => {
+        if (!response.ok) throw new Error("No active guest session");
+        const data = await response.json();
+        if (!data.user) throw new Error("Missing guest profile");
+        if (!cancelled) setGuestUser(data.user);
+      })
+      .catch(() => { if (!cancelled) setGuestUser(null); })
+      .finally(() => { if (!cancelled) setGuestReady(true); });
+    return () => { cancelled = true; };
   }, []);
-  const toggleFavourite = stay => { if(!stay?.id)return; const {token,user}=readGuestSession(); if(!user){const returnUrl=new URL(window.location.href);returnUrl.searchParams.set("favorite",String(stay.id));window.location.assign("/staging/login?returnTo="+encodeURIComponent(returnUrl.pathname+returnUrl.search+returnUrl.hash));return;} const id=String(stay.id),current=favourites.includes(id),updated=current?favourites.filter(item=>item!==id):[...favourites,id];localStorage.setItem(favouriteKey(user),JSON.stringify(updated));setFavourites(updated);setFavouriteNotice(current?"Stay removed from your favourites.":"Stay added to your favourites."); };
+
+  useEffect(() => {
+    if (!guestReady || !guestUser) { setFavourites([]); return; }
+    let cancelled = false;
+    fetch(`${API_BASE}/favorites`, { credentials: "include", cache: "no-store" })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Unable to load your saved stays.");
+        const ids = Array.isArray(data.favorites) ? data.favorites.map(item => String(item.propertyId)) : [];
+        if (!cancelled) {
+          setFavourites(ids);
+          const pendingId = new URLSearchParams(window.location.search).get("favorite");
+          if (pendingId) pendingFavouriteRef.current = pendingId;
+        }
+      })
+      .catch(() => { if (!cancelled) setFavouriteNotice("Your saved stays could not be loaded. Please refresh and try again."); });
+    return () => { cancelled = true; };
+  }, [guestReady, guestUser]);
+
+  const propertySnapshot = stay => ({
+    id: String(stay.id),
+    name: String(stay.name || "ROOMO stay"),
+    type: String(stay.type || "Sanctuary stay"),
+    location: String(stay.location || ""),
+    rating: Number(stay.rating || 0),
+    reviews: Number(stay.reviews || 0),
+    price: Number(stay.price || 0),
+    img: stay.img || window.location.origin,
+    desc: String(stay.description || ""),
+    amenities: Array.isArray(stay.amenities) ? stay.amenities.map(String).slice(0, 50) : [],
+    perks: Array.isArray(stay.highlights) ? stay.highlights.map(String).slice(0, 50) : []
+  });
+
+  const toggleFavourite = async stay => {
+    if (!stay?.id || favouriteBusy) return;
+    if (!guestUser) {
+      const returnUrl = new URL(window.location.href);
+      returnUrl.searchParams.set("favorite", String(stay.id));
+      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+      return;
+    }
+    const id = String(stay.id);
+    const current = favourites.includes(id);
+    setFavouriteBusy(true);
+    setFavouriteNotice("");
+    try {
+      const response = await fetch(`${API_BASE}/favorites/${encodeURIComponent(id)}`, {
+        method: current ? "DELETE" : "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        ...(current ? {} : { body: JSON.stringify({ propertySnapshot: propertySnapshot(stay) }) })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        const returnUrl = new URL(window.location.href);
+        returnUrl.searchParams.set("favorite", id);
+        window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+        return;
+      }
+      if (!response.ok) throw new Error(data.message || "Unable to update your saved stays.");
+      setFavourites(items => current ? items.filter(item => item !== id) : [...new Set([...items, id])]);
+      setFavouriteNotice(current ? "Stay removed from your favourites." : "Stay added to your favourites.");
+    } catch (error) {
+      setFavouriteNotice(error.message || "Unable to update your saved stays. Please try again.");
+    } finally {
+      setFavouriteBusy(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -127,6 +199,38 @@ export default function FeaturedStays() {
           };
         })
 : [];
+  useEffect(() => {
+    const pendingId = pendingFavouriteRef.current;
+    if (!guestReady || !guestUser || !pendingId || pendingFavouriteBusyRef.current || !stays.length) return;
+    const stay = stays.find(item => String(item.id) === String(pendingId));
+    if (!stay) return;
+    pendingFavouriteBusyRef.current = true;
+    (async () => {
+      try {
+        if (!favourites.includes(String(stay.id))) {
+          const response = await fetch(`${API_BASE}/favorites/${encodeURIComponent(stay.id)}`, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({ propertySnapshot: propertySnapshot(stay) })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.message || "Unable to save this stay.");
+          setFavourites(items => [...new Set([...items, String(stay.id)])]);
+        }
+        setFavouriteNotice("Stay added to your favourites.");
+        const query = new URLSearchParams(window.location.search);
+        query.delete("favorite");
+        window.history.replaceState({}, "", window.location.pathname + (query.toString() ? "?" + query.toString() : "") + window.location.hash);
+        pendingFavouriteRef.current = "";
+      } catch (error) {
+        setFavouriteNotice(error.message || "Unable to save this stay. Please try again.");
+      } finally {
+        pendingFavouriteBusyRef.current = false;
+      }
+    })();
+  }, [guestReady, guestUser, stays, favourites]);
+
   if (content?.featuredSectionEnabled === false) return null;
 
   const scroll = direction => {
