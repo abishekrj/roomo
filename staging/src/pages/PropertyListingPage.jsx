@@ -146,7 +146,6 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite, onWriteR
         </div>
         {property.rating != null && <div className="shrink-0 rounded-lg bg-[#2563a6] px-2 py-1 text-sm font-semibold text-white">{Number(property.rating).toFixed(1)} ★</div>}
       </div>
-      {property.reviewCount > 0 && <p className="mt-1 text-xs text-slate-500">{property.reviewCount} approved {property.reviewCount === 1 ? "review" : "reviews"}</p>}
       <p className="mt-2 flex items-start gap-1.5 text-sm leading-6 text-slate-500"><Icon name="pin" className="mt-1 h-4 w-4 shrink-0"/><span>{[property.address, property.city, property.state].filter(Boolean).join(", ")}{property.distanceToLandmark ? ` · approx. ${property.distanceToLandmark}` : property.nearestLandmark ? ` · near ${property.nearestLandmark}` : ""}</span></p>
        {sacredDistances.length > 0 && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600" aria-label="Distances to sacred places">{sacredDistances.map((item,index)=><span key={item.name+index}>⌖ {item.name}: <strong className="font-semibold text-slate-700">{item.distance}</strong></span>)}</div>}
       <div className="mt-4 flex flex-wrap gap-2">
