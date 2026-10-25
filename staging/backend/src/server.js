@@ -20,7 +20,6 @@ const adminCommissionRoutes = require("./routes/adminCommissions");
 const homepageRoutes = require("./routes/homepage");
 const visitorCountRoutes = require("./routes/visitorCount");
 const nearbyPlacesRoutes = require("./routes/nearbyPlaces");
-const shoppingDirectoryRoutes = require("./routes/shoppingDirectory");
 const galleryRoutes = require("./routes/gallery");
 const adminGalleryRoutes = require("./routes/adminGallery");
 const roomFilterRoutes = require("./routes/roomFilters");
@@ -147,7 +146,6 @@ app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
 app.use("/api/homepage/visitor-count", visitorCountRoutes);
 app.use("/api/homepage", homepageRoutes);
 app.use("/api/homepage/nearby-places", nearbyPlacesRoutes);
-app.use("/api/homepage/shops", shoppingDirectoryRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/room-filters", roomFilterRoutes);
 app.use("/api/listing-display-settings", listingDisplaySettingsRoutes);
