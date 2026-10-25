@@ -136,7 +136,7 @@ router.get("/driver/requests", driverAuth, async (req, res, next) => {
       include: { booking: true }, orderBy: { offeredAt: "desc" }
     });
     const assigned = await prisma.transportBooking.findMany({
-      where: { assignedDriverId: req.driver.sub, status: { in: ["CONFIRMED", "IN_PROGRESS"] } },
+      where: { assignedDriverId: req.driver.sub, status: { in: ["CONFIRMED", "IN_PROGRESS", "COMPLETED"] } },
       orderBy: { travelAt: "asc" }
     });
     res.json({ requests: offers.map(offer => ({ offerId: offer.id, expiresAt: offer.expiresAt, booking: offer.booking })), assigned });
