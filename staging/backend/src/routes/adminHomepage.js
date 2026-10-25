@@ -287,7 +287,7 @@ router.put("/destination-suggestions/:id", async (req, res, next) => {
 
 router.post("/hero-image/second", heroUpload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
-  const baseUrl = process.env.PUBLIC_API_URL || "http://localhost:5001";
+  const baseUrl = req.protocol + "://" + req.get("host");
   res.status(201).json({ heroSecondImageUrl: baseUrl + "/uploads/hero/" + req.file.filename });
 });
 
