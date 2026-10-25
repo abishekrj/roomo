@@ -29,14 +29,26 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
   const [search, setSearch] = useState("");
 
   async function load() {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
     try {
-      const [driverData, bookingData] = await Promise.all([request("/drivers"), request("/bookings")]);
-      setDrivers(driverData.drivers || []); setBookings(bookingData.bookings || []);
-    } catch (e) { setError(e.message || "Unable to load driver management data."); }
-    finally { setLoading(false); }
+      if (isAdd) {
+        // The Add Driver page only depends on the driver directory. Do not let
+        // a separate booking-list/API failure block the form from opening.
+        const driverData = await request("/drivers");
+        setDrivers(driverData.drivers || []);
+      } else {
+        const [driverData, bookingData] = await Promise.all([request("/drivers"), request("/bookings")]);
+        setDrivers(driverData.drivers || []);
+        setBookings(bookingData.bookings || []);
+      }
+    } catch (e) {
+      setError(e.message || (isAdd ? "Unable to load the driver directory." : "Unable to load transport booking data."));
+    } finally {
+      setLoading(false);
+    }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [isAdd]);
 
   const filteredBookings = useMemo(() => bookings.filter(booking => {
     const categoryMatches = tab === "PENDING" ? booking.status === "PENDING" : ["CONFIRMED", "IN_PROGRESS"].includes(booking.status);
