@@ -16,8 +16,38 @@ export default function AuthPage({ mode = "login" }) {
   const [googleReady, setGoogleReady] = useState(false);
   const [googleConfigMessage, setGoogleConfigMessage] = useState("");
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const notify = (text, type = "error") => { setMessage(text); setMessageType(type); };
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/guest-auth/me`, { credentials: "include", cache: "no-store" })
+      .then(response => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then(data => {
+        if (cancelled) return;
+        if (data?.user) {
+          const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+          if (returnTo) {
+            try {
+              const target = new URL(returnTo, window.location.origin);
+              if (target.origin === window.location.origin && target.pathname !== "/staging/login" && target.pathname !== "/staging/signup") {
+                window.location.replace(target.href);
+                return;
+              }
+            } catch { /* Use the homepage for an invalid return URL. */ }
+          }
+          window.location.replace("/staging");
+          return;
+        }
+        setSessionChecked(true);
+      })
+      .catch(() => { if (!cancelled) setSessionChecked(true); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -162,6 +192,8 @@ export default function AuthPage({ mode = "login" }) {
       setBusy(false);
     }
   };
+
+  if (!sessionChecked) return <main className="flex min-h-[60vh] items-center justify-center bg-white font-sans text-slate-600"><p role="status">Checking your session…</p></main>;
 
   return <main className="mx-auto w-full max-w-7xl flex-1 bg-white font-sans text-[#212529]">
     <div className="grid min-h-[680px] lg:grid-cols-2">
