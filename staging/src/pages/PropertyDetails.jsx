@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import SearchSection from "../components/SearchSection.jsx";
+import { StarRatingDisplay, StarRatingPicker } from "../components/StarRating.jsx";
 
 const API_ORIGIN = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api").replace(/\/api$/, "");
 const PROPERTIES_API = API_ORIGIN + "/api/properties";
@@ -66,6 +67,11 @@ export default function PropertyDetails() {
   const [similarStays, setSimilarStays] = useState([]);
   const [favourite, setFavourite] = useState(false);
   const [favouriteNotice, setFavouriteNotice] = useState("");
+  const [reviewFormOpen, setReviewFormOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewNotice, setReviewNotice] = useState("");
+  const [reviewBusy, setReviewBusy] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -261,6 +267,53 @@ export default function PropertyDetails() {
     setFavourite(isSaved);
     setFavouriteNotice(isSaved ? "This stay has been added to your favourites." : "This stay has been removed from your favourites.");
   };
+  async function openReviewForm() {
+    setReviewNotice("");
+    try {
+      const response = await fetch((import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/guest-auth/me", { credentials: "include", cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.user) {
+        const returnTo = window.location.pathname + window.location.search + "#reviews";
+        window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnTo));
+        return;
+      }
+      setReviewRating(5);
+      setReviewComment("");
+      setReviewFormOpen(true);
+    } catch {
+      setReviewNotice("We couldn't verify your session. Please sign in and try again.");
+    }
+  }
+
+  async function submitReview(event) {
+    event.preventDefault();
+    if (!property?.id || reviewBusy) return;
+    setReviewBusy(true);
+    setReviewNotice("");
+    try {
+      const csrf = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf="));
+      const response = await fetch((import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/reviews", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...(csrf ? { "X-CSRF-Token": decodeURIComponent(csrf.slice("roomo_csrf=".length)) } : {}) },
+        body: JSON.stringify({ propertyId: property.id, rating: reviewRating, comment: reviewComment.trim() })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        window.location.assign("/staging/login?returnTo=" + encodeURIComponent(window.location.pathname + window.location.search + "#reviews"));
+        return;
+      }
+      if (!response.ok) throw new Error(data.message || "Unable to submit your review.");
+      setReviewNotice(data.message || "Thank you. Your review has been sent for approval.");
+      setReviewComment("");
+      setReviewFormOpen(false);
+    } catch (error) {
+      setReviewNotice(error.message || "Unable to submit your review.");
+    } finally {
+      setReviewBusy(false);
+    }
+  }
+
   useEffect(() => {
     if (!galleryOpen) return;
     const onKeyDown = event => {
@@ -332,8 +385,7 @@ export default function PropertyDetails() {
               <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{title}</h1>
               {location && <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-slate-600"><span aria-hidden="true">⌖</span><span>{location}</span></p>}
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {rating != null && <span className="inline-flex items-center gap-1 rounded-lg bg-[#2563a6] px-2.5 py-1.5 text-sm font-semibold text-white">{Number(rating).toFixed(1)} <span aria-hidden="true">★</span></span>}
-                {property.reviewCount != null && <span className="text-sm text-slate-500">{property.reviewCount} reviews</span>}
+                <StarRatingDisplay value={rating} count={property.reviewCount} size={13} />}
                 {property.isVerified === true || String(property.verificationStatus || "").toUpperCase() === "VERIFIED" ? <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800">✓ ROOMO verified</span> : null}
                 {property.badgeLabel && <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800">{property.badgeLabel}</span>}
                 {property.isGuestFavourite && <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700">Guest favourite</span>}
@@ -475,9 +527,17 @@ export default function PropertyDetails() {
 
               <section id="reviews" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div><h2 className="text-xl font-semibold">Guest reviews</h2><p className="mt-1 text-sm text-slate-500">Guest feedback for this stay</p></div>
-                  {rating != null && <div className="flex items-center gap-3 rounded-lg bg-[#2563a6] px-4 py-3 text-white"><span className="text-2xl font-semibold">{Number(rating).toFixed(1)}</span><span className="text-xs leading-5">Overall rating<br/>{property.reviewCount != null ? property.reviewCount + " reviews" : "Property rating"}</span></div>}
+                  <div><h2 className="text-xl font-semibold">Guest reviews</h2><p className="mt-1 text-sm text-slate-500">Share your experience and help fellow pilgrims choose their stay.</p><div className="mt-2"><StarRatingDisplay value={rating} count={property.reviewCount} size={16} /></div></div>
+                  <button type="button" onClick={openReviewForm} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1e4f85] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span aria-hidden="true">✎</span> Write a review</button>
                 </div>
+                {reviewNotice && <p role="status" className="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">{reviewNotice}</p>}
+                {reviewFormOpen && <form onSubmit={submitReview} className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-base font-semibold text-slate-900">How was your stay?</h3><p className="mt-1 text-sm text-slate-500">Your review will appear after ROOMO Super Admin approval.</p></div><button type="button" disabled={reviewBusy} onClick={() => setReviewFormOpen(false)} aria-label="Close review form" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 focus:outline-none">✕</button></div>
+                  <fieldset className="mt-4"><legend className="text-sm font-semibold text-slate-800">Your rating</legend><div className="mt-2 flex flex-wrap items-center gap-3"><StarRatingPicker value={reviewRating} onChange={setReviewRating} disabled={reviewBusy} /><span className="text-sm font-semibold text-slate-700">{Number(reviewRating).toFixed(1)} / 5</span></div><p className="mt-1 text-xs text-slate-500">Tap the left or right half of a star to choose half-star ratings.</p></fieldset>
+                  <label className="mt-4 block text-sm font-semibold text-slate-800">Your review<textarea required minLength={10} maxLength={2000} rows={5} value={reviewComment} onChange={event => setReviewComment(event.target.value)} placeholder="What did you like about the location, rooms, cleanliness or hospitality?" className="mt-2 block w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm font-normal outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-amber-100" /></label>
+                  <p className="mt-1 text-right text-xs text-slate-400">{reviewComment.length}/2000 characters</p>
+                  <div className="mt-4 flex flex-wrap justify-end gap-2"><button type="button" disabled={reviewBusy} onClick={() => setReviewFormOpen(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</button><button type="submit" disabled={reviewBusy || reviewComment.trim().length < 10} className="rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{reviewBusy ? "Submitting…" : "Submit review"}</button></div>
+                </form>}
                 {Array.isArray(property.reviews) && property.reviews.length > 0 ? <div className="mt-4 grid gap-3 md:grid-cols-2">{property.reviews.map((review,index) => <article key={review.id || index} className="rounded-lg border border-slate-200 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm font-semibold">{review.guestName || review.name || "Guest"}</p>{review.verifiedStay === true && <span className="mt-1 inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800">✓ Verified stay</span>}</div>{review.rating != null && <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-[#2563a6]">{review.rating} ★</span>}</div><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{review.comment || review.text || review.review || ""}</p>{review.ownerResponse && <div className="mt-3 rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold text-slate-700">Response from property</p><p className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-600">{typeof review.ownerResponse === "string" ? review.ownerResponse : review.ownerResponse.message || review.ownerResponse.text || ""}</p></div>}{review.createdAt && <p className="mt-3 text-xs text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>}</article>)}</div> : <div className="mt-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"><p className="text-sm font-medium text-slate-700">No guest reviews yet</p><p className="mt-1 text-sm leading-6 text-slate-500">ROOMO will show verified-stay feedback here when review data is available. No ratings or reviews are displayed unless they are supplied by the property data.</p></div>}
                 {property.reviewScores && typeof property.reviewScores === "object" && Object.entries(property.reviewScores).filter(([,score]) => Number.isFinite(Number(score))).length > 0 && <div className="mt-4 rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Category scores</h3><div className="mt-3 grid gap-3 sm:grid-cols-2">{Object.entries(property.reviewScores).filter(([,score]) => Number.isFinite(Number(score))).map(([label,score]) => <div key={label} className="flex items-center justify-between gap-3 text-sm"><span className="capitalize text-slate-600">{label.replace(/([A-Z])/g, " $1").replace(/[_-]/g, " ")}</span><span className="font-semibold text-slate-800">{Number(score).toFixed(1)} / 10</span></div>)}</div></div>}
                 {property.ownerResponse && <div className="mt-4 rounded-lg border border-slate-200 p-4"><h3 className="text-sm font-semibold">Response from property</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{typeof property.ownerResponse === "string" ? property.ownerResponse : property.ownerResponse.message || property.ownerResponse.text || ""}</p></div>}
