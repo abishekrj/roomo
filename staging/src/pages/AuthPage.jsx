@@ -147,6 +147,9 @@ export default function AuthPage({ mode = "login" }) {
         return;
       }
       if (!data.user) throw new Error("The server response is missing the guest profile.");
+      // Keep the guest profile in sync with the cookie-backed session so homepage
+      // favourites and other client UI recognise a successful email/password login.
+      localStorage.setItem("roomoGuest", JSON.stringify(data.user));
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       if (returnTo) {
         try {
