@@ -20,11 +20,11 @@ export default function TransportPromoBanner() {
         <div className="relative isolate grid items-center gap-6 overflow-hidden rounded-lg bg-[#2563a6] px-5 py-7 text-white sm:px-8 sm:py-9 md:grid-cols-[1.2fr_.8fr] md:gap-10 lg:px-12 lg:py-11">
           
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <svg viewBox="0 0 180 180" className="absolute -right-4 -top-8 h-40 w-40 text-white/[0.11] animate-pulse sm:h-52 sm:w-52" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 180 180" className="absolute -right-4 -top-8 h-40 w-40 text-white opacity-25 animate-pulse sm:h-52 sm:w-52" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M18 110h144l-12-39a12 12 0 0 0-11-8H48a12 12 0 0 0-11 8l-19 39ZM27 110v24h126v-24M43 134v12m94-12v12"/>
             <circle cx="49" cy="111" r="10"/><circle cx="131" cy="111" r="10"/><path d="M45 80h90M61 64l-7 29m65-29 7 29"/>
           </svg>
-          <svg viewBox="0 0 160 160" className="absolute -bottom-9 left-[38%] h-32 w-32 text-white/[0.09] animate-[spin_32s_linear_infinite] sm:h-40 sm:w-40" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 160 160" className="absolute -bottom-9 left-[38%] h-32 w-32 text-white opacity-20 animate-[spin_32s_linear_infinite] sm:h-40 sm:w-40" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M80 143s45-30 45-76a45 45 0 1 0-90 0c0 46 45 76 45 76Z"/><circle cx="80" cy="66" r="16"/><path d="M80 50v16l11 7"/>
             <path d="M22 126c16-9 26-9 42 0s26 9 42 0 26-9 32-7" strokeDasharray="4 5"/>
           </svg>
