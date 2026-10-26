@@ -51,6 +51,7 @@ model GuestUser {
   reservations Reservation[]
   favorites    GuestFavorite[]
   transportBookings TransportBooking[]
+  propertyReviews PropertyReview[]
 
   @@map("guest_users")
 }
@@ -95,6 +96,7 @@ model Property {
   reservations  Reservation[]
   enquiries     Enquiry[]
   roomTypes     RoomType[]
+  reviews       PropertyReview[]
 
   @@index([ownerId])
   @@index([city, status])
@@ -277,6 +279,23 @@ model GuestFavorite {
   @@map("guest_favorites")
 }
 
+
+model PropertyReview {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid @map("property_id")
+  guestId    String   @db.Uuid @map("guest_id")
+  rating     Float
+  comment    String   @db.VarChar(2000)
+  status     String   @default("PENDING") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  guest      GuestUser @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, status, createdAt])
+  @@index([guestId, createdAt])
+  @@map("property_reviews")
+}
 
 model RoomFilterGroup {
   id        String       @id @default(uuid()) @db.Uuid
