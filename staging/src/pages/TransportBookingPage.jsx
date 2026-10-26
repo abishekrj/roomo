@@ -55,8 +55,9 @@ export default function TransportBookingPage() {
     finally { setBusy(false); }
   }
 
-  const loginHref = "/staging/login?returnTo=" + encodeURIComponent("/staging/transport-booking");
-  const signupHref = "/staging/signup?returnTo=" + encodeURIComponent("/staging/transport-booking");
+  const bookingReturnPath = window.location.pathname + window.location.search;
+  const loginHref = "/staging/login?returnTo=" + encodeURIComponent(bookingReturnPath);
+  const signupHref = "/staging/signup?returnTo=" + encodeURIComponent(bookingReturnPath);
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink"><Header /><main className="flex-1 py-8 sm:py-12"><div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
     <section className="rounded-lg bg-[#102747] p-6 text-white sm:p-8 lg:sticky lg:top-6"><span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue-100">ROOMO Travel</span><h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl">Travel comfortably around Tiruvannamalai.</h1><p className="mt-4 text-sm leading-7 text-blue-100">Request a car or van for temple visits, Girivalam, station transfers and local journeys. Eligible drivers are notified, and the first driver to accept is assigned to your trip.</p><div className="mt-8 space-y-4 text-sm"><p className="flex gap-3"><span className="text-emerald-300">✓</span> Request a ride in a few simple steps</p><p className="flex gap-3"><span className="text-emerald-300">✓</span> Driver assignment handled by ROOMO</p><p className="flex gap-3"><span className="text-emerald-300">✓</span> Track requests in My Travel after signing in</p></div></section>
