@@ -13,6 +13,8 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   const [authChecked, setAuthChecked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const languageRef = useRef(null);
+  const notificationsRef = useRef(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -22,8 +24,16 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   useEffect(() => {
     const closeOnOutsideClick = event => {
       if (menuRef.current && !menuRef.current.contains(event.target)) setMenuOpen(false);
+      if (languageRef.current && !languageRef.current.contains(event.target)) setLanguageOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) setNotificationsOpen(false);
     };
-    const closeOnEscape = event => { if (event.key === "Escape") setMenuOpen(false); };
+    const closeOnEscape = event => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setLanguageOpen(false);
+        setNotificationsOpen(false);
+      }
+    };
     document.addEventListener("pointerdown", closeOnOutsideClick);
     document.addEventListener("keydown", closeOnEscape);
     return () => { document.removeEventListener("pointerdown", closeOnOutsideClick); document.removeEventListener("keydown", closeOnEscape); };
@@ -124,7 +134,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
             </nav>}
           </div>}
 
-          <div className="relative notranslate shrink-0" translate="no">
+          <div className="relative notranslate shrink-0" translate="no" ref={languageRef}>
             <button translate="no" className="notranslate inline-flex min-h-10 items-center gap-1.5 rounded-roomo border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3" type="button" aria-expanded={languageOpen} onClick={() => {setLanguageOpen(!languageOpen);setMenuOpen(false);}}>
               <i className="bi bi-translate text-[#2563a6]" aria-hidden="true" /><span>{language.short}</span><i className="bi bi-chevron-down text-[10px]" aria-hidden="true" />
             </button>
