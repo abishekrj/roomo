@@ -213,11 +213,8 @@ export default function SuperAdminPortal() {
       ["Featured Rooms", routePrefix + "/rooms/featured"], ["Listing Display Settings", routePrefix + "/rooms/listing-display"]
     ] },
     { id: "home-page", label: "Home Page", icon: "▧", children: homeSections.map(([id, label]) => [label, routePrefix + "/homepage/" + id]) },
-    { id: "drivers", label: "Driver", icon: "🚐", children: [["Add Driver", routePrefix + "/drivers/add"], ["Booking List", routePrefix + "/drivers/bookings"]] },
     { id: "cms-pages", label: "CMS Pages", icon: "▤", href: routePrefix + "/cms-pages" },
     { id: "destinations", label: "Destinations", icon: "⌖", href: routePrefix + "/destinations" },
-    { id: "outstations", label: "Outstations", icon: "⌁", href: routePrefix + "/outstations" },
-    { id: "outstations-bookings", label: "Outstations Booking", icon: "🚗", href: routePrefix + "/outstations-bookings" },
     { id: "testimonials", label: "Testimonials", icon: "❝", href: routePrefix + "/testimonials" },
     { id: "reviews", label: "Guest Reviews", icon: "★", href: routePrefix + "/reviews" },
     { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", routePrefix + "/gallery/add"], ["Gallery List", routePrefix + "/gallery/list"]] },
@@ -248,12 +245,21 @@ export default function SuperAdminPortal() {
             <div className="px-3 pb-5 pt-2"><p className="text-xl font-semibold tracking-tight">ROOMO</p><p className="mt-1 text-[10px] font-semibold tracking-[.18em] text-blue-200">SUPER ADMIN</p></div>
             <p className="px-3 pb-3 text-[10px] font-semibold tracking-[.16em] text-slate-400">WORKSPACE</p>
             <nav className="space-y-1" aria-label="Super Admin navigation">
-              {navItems.map(item => item.children ? <details key={item.id} className="group rounded-lg" open={(item.id === "home-page" && isHomePageEditor) || (item.id === "rooms" && activePage === "rooms") || (item.id === "gallery" && activePage === "gallery") || (item.id === "drivers" && activePage === "drivers") ? true : undefined}>
+              {navItems.map(item => item.children ? <details key={item.id} className="group rounded-lg" open={(item.id === "home-page" && isHomePageEditor) || (item.id === "rooms" && activePage === "rooms") || (item.id === "gallery" && activePage === "gallery") ? true : undefined}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span><span className="flex-1">{item.label}</span><span className="text-xs transition group-open:rotate-180" aria-hidden="true">⌄</span></summary>
                 <div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{item.children.map(([label, href]) => <a key={label} href={href} className={(currentPath === href || (isHomePageEditor && href.endsWith("/" + homePageSection))) ? "block rounded-md bg-[#2563a6] px-3 py-2 text-xs font-semibold leading-5 text-white" : "block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white"}>{label}</a>)}</div>
               </details> : <a key={item.id} href={item.href} aria-current={activePage === item.id ? "page" : undefined} className={activePage === item.id ? "flex items-center gap-3 rounded-lg bg-[#2563a6] px-3 py-3 text-sm font-medium text-white shadow-sm" : "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
             </nav>
-            <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Platform administration</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
+            <div className="mt-6 border-t border-white/10 pt-4">
+              <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.18em] text-blue-200">Travels</p>
+              <details className="group rounded-lg" open={activePage === "drivers" ? true : undefined}>
+                <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">🚐</span><span className="flex-1">Driver</span><span className="text-xs transition group-open:rotate-180" aria-hidden="true">⌄</span></summary>
+                <div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{[["Add Driver", routePrefix + "/drivers/add"], ["Booking List", routePrefix + "/drivers/bookings"]].map(([label, href]) => <a key={label} href={href} className={currentPath === href ? "block rounded-md bg-[#2563a6] px-3 py-2 text-xs font-semibold leading-5 text-white" : "block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white"}>{label}</a>)}</div>
+              </details>
+              {[{ id: "outstations", label: "Outstations", icon: "⌁", href: routePrefix + "/outstations" }, { id: "outstations-bookings", label: "Outstations Booking", icon: "🚗", href: routePrefix + "/outstations-bookings" }].map(item => <a key={item.id} href={item.href} aria-current={activePage === item.id ? "page" : undefined} className={activePage === item.id ? "flex items-center gap-3 rounded-lg bg-[#2563a6] px-3 py-3 text-sm font-medium text-white shadow-sm" : "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
+              <p className="px-3 pt-3 text-xs text-slate-300">Platform administration</p>
+              <button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button>
+            </div>
           </aside>
           <div className="min-w-0">
             <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-[.16em] text-roomo-blue">Administration</p><h1 className="mt-2 text-3xl font-semibold">{isHomePageEditor ? (pageTitles[homePageSection] || "Home Page") : adminPageTitles[adminPageKey] || (activePage === "properties" ? "Property Listings" : activePage === "users" ? "Registered Users" : "Super Admin Dashboard")}</h1><p className="mt-2 text-sm text-slate-500">Manage ROOMO Sacred platform activity.</p></div>
