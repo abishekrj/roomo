@@ -15,6 +15,48 @@ const router = express.Router();
 // Every route in this file requires authentication and ADMIN permission.
 router.use(authenticateToken, requireAdmin);
 
+function indiaDayStart(daysAgo = 0) {
+  const indiaOffsetMs = 5.5 * 60 * 60 * 1000;
+  const indiaNow = new Date(Date.now() + indiaOffsetMs);
+  indiaNow.setUTCHours(0, 0, 0, 0);
+  indiaNow.setUTCDate(indiaNow.getUTCDate() - daysAgo);
+  return new Date(indiaNow.getTime() - indiaOffsetMs);
+}
+
+// GET /api/admin/dashboard-stats — booking activity by creation date in India time.
+router.get("/dashboard-stats", async (req, res, next) => {
+  try {
+    const todayStart = indiaDayStart(0);
+    const tomorrowStart = indiaDayStart(-1);
+    const sevenDayStart = indiaDayStart(6);
+    const activeRoomStatuses = ["REQUESTED", "CONFIRMED"];
+    const [roomsToday, roomsLast7Days, travelsToday, travelsLast7Days] = await Promise.all([
+      prisma.reservation.aggregate({
+        where: { createdAt: { gte: todayStart, lt: tomorrowStart }, status: { in: activeRoomStatuses } },
+        _sum: { roomCount: true }
+      }),
+      prisma.reservation.aggregate({
+        where: { createdAt: { gte: sevenDayStart, lt: tomorrowStart }, status: { in: activeRoomStatuses } },
+        _sum: { roomCount: true }
+      }),
+      prisma.transportBooking.count({
+        where: { createdAt: { gte: todayStart, lt: tomorrowStart }, status: { not: "CANCELLED" } }
+      }),
+      prisma.transportBooking.count({
+        where: { createdAt: { gte: sevenDayStart, lt: tomorrowStart }, status: { not: "CANCELLED" } }
+      })
+    ]);
+    res.json({
+      roomsBookedToday: roomsToday._sum.roomCount || 0,
+      roomsBookedLast7Days: roomsLast7Days._sum.roomCount || 0,
+      travelsBookedToday: travelsToday,
+      travelsBookedLast7Days: travelsLast7Days
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Store new property images alongside existing ROOMO uploads, matching the directory served by server.js.
 const uploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../../roomo-backend/uploads"));
 const propertyUploadDir = path.join(uploadsRoot, "properties");
