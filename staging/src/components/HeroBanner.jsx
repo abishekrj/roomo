@@ -3,7 +3,7 @@ import templeHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jp
 
 const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
 const SLIDE_INTERVAL = 6500;
-const travelHeroImage = "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=85";
+const travelHeroImage = "https://images.unsplash.com/photo-1635802015710-ebb34eecd8d3?auto=format&fit=crop&w=2000&q=85";
 
 export default function HeroBanner() {
   const [content, setContent] = useState(null);
