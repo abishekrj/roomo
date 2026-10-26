@@ -98,33 +98,38 @@ export default function Header({ ownerPortal = false, adminNotifications = false
 
   return (
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
-      <div className={`flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "mx-auto max-w-7xl"}`}>
+      <div className={`mx-auto flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "max-w-7xl"}`}>
         <a className="roomo-logo-link shrink-0 focus:outline-none" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
-        <div className="hidden items-center gap-2 text-[13px] text-slate-600 md:flex"><i className="bi bi-geo-alt text-roomo-blue" aria-hidden="true" />Tiruvannamalai, Tamil Nadu</div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="relative notranslate" translate="no">
-            <button translate="no" className="notranslate inline-flex items-center gap-1.5 rounded-roomo border border-slate-200 bg-white px-2 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3" type="button" aria-expanded={languageOpen} onClick={() => {setLanguageOpen(!languageOpen);setMenuOpen(false);}}><i className="bi bi-translate text-roomo-blue" /><span>{language.short}</span><i className="bi bi-chevron-down text-[10px]" /></button>
-            {languageOpen && <div translate="no" className="notranslate absolute right-0 mt-2 min-w-44 rounded-roomo border border-slate-200 bg-white p-1 shadow-lg">{languages.map(item => <button key={item.code} className={`${linkClass} w-full text-left`} type="button" onClick={() => chooseLanguage(item)}>{item.label}</button>)}</div>}
-          </div>
-          {adminNotifications && <div className="relative notranslate" translate="no">
-            <button className="relative inline-flex h-10 w-10 items-center justify-center rounded-roomo border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" type="button" aria-label="Notifications" aria-expanded={notificationsOpen} onClick={() => { const open = !notificationsOpen; setNotificationsOpen(open); setLanguageOpen(false); setMenuOpen(false); if (open) loadAdminNotifications(); }}><i className="bi bi-bell text-lg" aria-hidden="true" /><span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" /></button>
-            {notificationsOpen && <div className="absolute right-0 z-[100] mt-2 max-h-[min(70vh,480px)] w-[min(370px,calc(100vw-24px))] overflow-y-auto rounded-roomo border border-slate-200 bg-white text-left shadow-xl">
-              <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3"><strong className="text-sm text-slate-800">Notifications</strong><button type="button" className="text-xs font-semibold text-roomo-blue" onClick={loadAdminNotifications}>Refresh</button></div>
-              {notifications.length ? notifications.map((item, index) => <a key={item.title + item.detail + index} href={item.href} className="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 text-slate-800 last:border-b-0 hover:bg-slate-50"><strong className="text-xs">{item.title}</strong><span className="break-words text-xs text-slate-600">{item.detail}</span><small className="text-[10px] text-slate-400">{item.date ? new Date(item.date).toLocaleString() : "Recent activity"}</small></a>) : <p className="px-4 py-6 text-center text-xs text-slate-500">{notificationsMessage || "No notifications yet."}</p>}
-            </div>}
-          </div>}
-          {!ownerPortal && <a href="/staging/owner/signup" aria-label="Property owner" title="Property owner" className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-roomo bg-[#feba02] px-3 py-2 text-xs font-semibold text-[#212529] shadow-sm transition hover:bg-[#e5a900] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88700] sm:px-4 sm:text-sm"><svg className="h-5 w-5 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7" /><path d="M5 9v12h14V9" /><path d="M9 21v-7h6v7" /></svg><span className="hidden sm:inline">Property owner</span></a>}
+
+        {!ownerPortal && <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+          <a href="/staging/" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname === "/staging/" || window.location.pathname === "/staging" ? "text-[#2563a6]" : "text-slate-700"}`}>Home</a>
+          <a href="/staging/properties" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/properties") || window.location.pathname.startsWith("/staging/property-details") ? "text-[#2563a6]" : "text-slate-700"}`}>Stays</a>
+          <a href="/staging/transport-booking" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/transport-booking") ? "text-[#2563a6]" : "text-slate-700"}`}>Travels</a>
+        </nav>}
+
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {!ownerPortal && <div className="relative" ref={menuRef}>
-            <button className="inline-flex items-center justify-center gap-2 rounded-roomo border border-[#2563a6] bg-[#2563a6] px-2 py-2 text-xs font-semibold text-white transition hover:bg-[#1e4f85] sm:px-3 sm:text-sm" type="button" aria-label={user?.fullName || (authChecked ? "Login / Signup" : "Account")} title={user?.fullName || (authChecked ? "Login / Signup" : "Account")} aria-expanded={menuOpen} aria-haspopup="true" onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg><span className="hidden max-w-28 truncate sm:inline">{user?.fullName || (authChecked ? "Login / Signup" : "Account")}</span><svg className="hidden h-3 w-3 sm:inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-            {menuOpen && <nav className="absolute right-0 mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
+            <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-roomo border border-[#2563a6] bg-[#2563a6] px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-[#1e4f85] sm:px-3 sm:text-sm" type="button" aria-label={user?.fullName || (authChecked ? "Login / Signup" : "Account")} title={user?.fullName || (authChecked ? "Login / Signup" : "Account")} aria-expanded={menuOpen} aria-haspopup="true" onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg>
+              <span className="hidden max-w-32 truncate sm:inline">{user?.fullName || (authChecked ? "Login / Signup" : "Account")}</span>
+              <svg className="hidden h-3 w-3 sm:inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            {menuOpen && <nav className="absolute right-0 z-[100] mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
               {!authChecked ? <p className="px-3 py-2 text-sm text-slate-500" role="status">Checking your account…</p> : <>
-                {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/staging/owner/signup">Property Owner</a><hr className="my-1 border-slate-100" /></>}
+                {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/staging/owner/signup">Bring Your Property</a><hr className="my-1 border-slate-100" /></>}
                 <a className={linkClass} href="/staging/my-bookings">My Travel</a>
                 <a className={linkClass} href={user ? "/staging/my-profile" : authHref("/staging/login")}>My Profile</a>
-                {user && <button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button>}
+                {user && <><a className={linkClass} href="/staging/owner/signup">Bring Your Property</a><button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button></>}
               </>}
             </nav>}
           </div>}
+
+          <div className="relative notranslate shrink-0" translate="no">
+            <button translate="no" className="notranslate inline-flex min-h-10 items-center gap-1.5 rounded-roomo border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 hover:bg-slate-50 sm:px-3" type="button" aria-expanded={languageOpen} onClick={() => {setLanguageOpen(!languageOpen);setMenuOpen(false);}}>
+              <i className="bi bi-translate text-[#2563a6]" aria-hidden="true" /><span>{language.short}</span><i className="bi bi-chevron-down text-[10px]" aria-hidden="true" />
+            </button>
+            {languageOpen && <div translate="no" className="notranslate absolute right-0 mt-2 min-w-44 rounded-roomo border border-slate-200 bg-white p-1 shadow-lg">{languages.map(item => <button key={item.code} className={`${linkClass} w-full text-left`} type="button" onClick={() => chooseLanguage(item)}>{item.label}</button>)}</div>}
+          </div>
         </div>
       </div>
     </header>
