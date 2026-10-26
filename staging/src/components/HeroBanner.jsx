@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import templeHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jpg";
+import travelHeroImage from "../../../roomo-frontend/assets/roomo-travel-hero.png";
 
 const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
 const SLIDE_INTERVAL = 6500;
-const travelHeroImage = "https://images.unsplash.com/photo-1635802015710-ebb34eecd8d3?auto=format&fit=crop&w=2000&q=85";
 
 export default function HeroBanner() {
   const [content, setContent] = useState(null);
