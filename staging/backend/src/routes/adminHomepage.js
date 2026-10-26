@@ -53,6 +53,15 @@ const featuredSectionSchema = z.object({
 
 const homepageSchema = z.object({
   searchSuggestionLimit: z.coerce.number().int().min(1).max(10).default(5),
+  transportPromo: z.object({
+    enabled: z.boolean().default(true),
+    eyebrow: z.string().trim().max(120).default("ROOMO Travel"),
+    title: z.string().trim().min(2).max(160),
+    description: z.string().trim().min(5).max(1000),
+    buttonLabel: z.string().trim().min(2).max(80),
+    helperText: z.string().trim().max(200).default(""),
+    imageLabel: z.string().trim().max(100).default("")
+  }).optional(),
   siteTitle: z.string().trim().min(5).max(160),
   heroBadge: z.string().trim().min(1).max(160),
   heroTitleLine: z.string().trim().min(1).max(120),
