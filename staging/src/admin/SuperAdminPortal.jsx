@@ -42,7 +42,7 @@ export default function SuperAdminPortal() {
     "rooms/types": "Room Types", "rooms/filters": "Room Filters", "rooms/featured": "Featured Rooms",
     "rooms/listing-display": "Listing Display Settings", "cms-pages": "CMS Pages", destinations: "Destinations",
     "nearby-locations": "Travel Outstations", outstations: "Travel Outstations", "outstations-bookings": "Outstations Booking", testimonials: "Testimonials",
-    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports", "drivers/add": "Add Driver", "drivers/bookings": "Booking List"
+    "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports", "drivers/add": "Add Driver", "drivers/list": "Drivers List"
   };
   const adminPageKey = currentPath.startsWith(routePrefix + "/") ? currentPath.slice(routePrefix.length + 1) : "";
   const pageTitles = Object.fromEntries(homeSections);
@@ -271,9 +271,9 @@ export default function SuperAdminPortal() {
             </nav>
             <div className="mt-6 border-t border-white/10 pt-4">
               <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.18em] text-blue-200">Travels</p>
-              <details className="group rounded-lg" open={activePage === "drivers" ? true : undefined}>
+              <details className="group rounded-lg" open={currentPath.includes("/drivers/") ? true : undefined}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"><span className="w-5 text-center text-lg" aria-hidden="true">🚐</span><span className="flex-1">Driver</span><span className="text-xs transition group-open:rotate-180" aria-hidden="true">⌄</span></summary>
-                <div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{[["Add Driver", routePrefix + "/drivers/add"], ["Booking List", routePrefix + "/drivers/bookings"]].map(([label, href]) => <a key={label} href={href} className={currentPath === href ? "block rounded-md bg-[#2563a6] px-3 py-2 text-xs font-semibold leading-5 text-white" : "block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white"}>{label}</a>)}</div>
+                <div className="ml-5 space-y-1 border-l border-white/15 py-1 pl-3">{[["Add Driver", routePrefix + "/drivers/add"], ["Drivers List", routePrefix + "/drivers/list"]].map(([label, href]) => <a key={label} href={href} className={currentPath === href ? "block rounded-md bg-[#2563a6] px-3 py-2 text-xs font-semibold leading-5 text-white" : "block rounded-md px-3 py-2 text-xs leading-5 text-slate-300 transition hover:bg-white/10 hover:text-white"}>{label}</a>)}</div>
               </details>
               {[{ id: "outstations", label: "Outstations", icon: "⌁", href: routePrefix + "/outstations" }, { id: "outstations-bookings", label: "Outstations Booking", icon: "🚗", href: routePrefix + "/outstations-bookings" }].map(item => <a key={item.id} href={item.href} aria-current={activePage === item.id ? "page" : undefined} className={activePage === item.id ? "flex items-center gap-3 rounded-lg bg-[#2563a6] px-3 py-3 text-sm font-medium text-white shadow-sm" : "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"}><span className="w-5 text-center text-lg" aria-hidden="true">{item.icon}</span>{item.label}</a>)}
               <p className="px-3 pt-3 text-xs text-slate-300">Platform administration</p>
