@@ -333,7 +333,7 @@ function GalleryManager({token,items,load,notify,busy,startAdd,pageKey}) {
      let sourceType=f.sourceType;
      if(sourceType==="UPLOAD"){
        if(selectedFile){
-         if(!/^image\\/(jpeg|png|webp|avif)$/i.test(selectedFile.type))throw new Error("Choose a JPG, PNG, WebP, or AVIF image.");
+          if(!["image/jpeg","image/png","image/webp","image/avif"].includes(selectedFile.type))throw new Error("Choose a JPG, PNG, WebP, or AVIF image.");
          if(selectedFile.size>8*1024*1024)throw new Error("Image size must be 8 MB or less.");
          mediaUrl=await uploadImage(selectedFile);
        }else if(!mediaUrl)throw new Error("Choose an image from your system.");
