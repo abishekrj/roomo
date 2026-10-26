@@ -8,7 +8,7 @@ function csrfHeaders() { const item = document.cookie.split("; ").find(part => p
 const homeSections = [
   ["header", "Header"], ["hero-banner", "Hero Banner"], ["search-section", "Search Section"],
   ["featured-stays", "Featured Stays"], ["upcoming-festival", "Upcoming Festival"],
-  ["pilgrim-guide", "Pilgrim Guide"], ["nearby-locations", "Nearby Locations"],
+  ["pilgrim-guide", "Pilgrim Guide"], ["nearby-locations", "Famous Places Nearby"], ["transport-promo", "Sacred Journey / Transport"],
   ["galleries", "Galleries"], ["testimonials", "Testimonials"], ["footer", "Footer"]
 ];
 
