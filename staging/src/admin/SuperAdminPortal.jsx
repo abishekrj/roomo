@@ -47,6 +47,12 @@ export default function SuperAdminPortal() {
   const pageTitles = Object.fromEntries(homeSections);
 
   useEffect(() => {
+    if (!loginPage && currentPath === routePrefix + "/properties") {
+      window.location.replace(routePrefix + "/rooms/listings");
+    }
+  }, [currentPath, routePrefix, loginPage]);
+
+  useEffect(() => {
     if (loginPage) { if (token) window.location.replace("/staging/admin/dashboard"); else setAuthReady(true); return; }
     let cancelled = false;
     fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
@@ -219,7 +225,6 @@ export default function SuperAdminPortal() {
     { id: "reviews", label: "Guest Reviews", icon: "★", href: routePrefix + "/reviews" },
     { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", routePrefix + "/gallery/add"], ["Gallery List", routePrefix + "/gallery/list"]] },
     { id: "reports", label: "Reports", icon: "▥", href: routePrefix + "/reports" },
-    { id: "properties", label: "Property Listings", icon: "⌂", href: routePrefix + "/properties" },
     { id: "users", label: "Registered Users", icon: "♙", href: routePrefix + "/users" }
   ];
 
@@ -298,7 +303,7 @@ export default function SuperAdminPortal() {
             {isHomePageEditor && !isHeroEditor && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
             {adminPageTitles[adminPageKey] && !isHomePageEditor && !adminPageKey.startsWith("drivers/") && adminPageKey !== "outstations-bookings" && <SuperAdminWorkspace pageKey={adminPageKey} token={token} onNotice={setNotice} />}
             {(adminPageKey.startsWith("drivers/") || adminPageKey === "outstations-bookings") && <DriverAdminWorkspace pageKey={adminPageKey === "outstations-bookings" ? "drivers/bookings" : adminPageKey} token={token} onNotice={setNotice} />}
-            {activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/properties"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage properties →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}
+            {activePage === "dashboard" && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><a href={routePrefix + "/rooms/listings"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Room listings</span><strong className="mt-3 block text-3xl font-semibold">{stats.properties}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage room listings →</span></a><a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a></div>}
             {activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}
             {activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}
           </div>
