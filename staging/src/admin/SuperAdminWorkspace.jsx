@@ -47,6 +47,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
   const [editingId, setEditingId] = useState("");
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState("");
+  const [queryForGallery, setQueryForGallery] = useState("");
   const [selectedProperty, setSelectedProperty] = useState("");
   const [propertyToEdit, setPropertyToEdit] = useState(null);
   const [localMessage, setLocalMessage] = useState("");
@@ -191,7 +192,7 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
 
   if (pageKey === "testimonials" || pageKey === "homepage/testimonials") return <TestimonialsManager token={token} data={data?.draft || {eyebrow:"",title:"",description:"",ratingSummary:"",items:[]}} load={load} notify={notify} busy={busy} />;
 
-  if (["gallery/add","gallery/list","homepage/galleries"].includes(pageKey)) return <GalleryManager token={token} items={data?.items||[]} load={load} notify={notify} busy={busy} startAdd={pageKey==="gallery/add"} />;
+  if (["gallery/add","gallery/list","homepage/galleries"].includes(pageKey)) return <GalleryManager token={token} items={data?.items||[]} load={load} notify={notify} busy={busy} startAdd={pageKey==="gallery/add"} pageKey={pageKey} />;
 
   if (pageKey === "reports") return <div className="space-y-5"><Panel title="Reservations report" description="Reservation activity available to Super Admin."><DataTable rows={data?.reservations||[]} columns={[["Reference",r=>r.referenceCode||r.id],["Guest",r=>r.guest?.fullName||"—"],["Property",r=>r.property?.title||"—"],["Check-in",r=>fmtDate(r.checkIn)],["Check-out",r=>fmtDate(r.checkOut)],["Status",r=>r.status||"—"],["Total",r=>r.totalAmount!=null?"₹"+Number(r.totalAmount).toLocaleString("en-IN"):"—"]]} /></Panel><Panel title="Commission overview" description="Current owner commission rates and reservation settlement details."><p className="mb-3 text-sm text-slate-600">Use the owner commission settings to change future rates. Existing reservations retain their saved rate.</p><DataTable rows={data?.commissionSummary?.owners||[]} columns={[["Owner",r=>r.fullName],["Email",r=>r.email],["Commission rate",r=>r.commissionRate+"%"],["Reservations",r=>r.reservationCount ?? "—"]]} /></Panel></div>;
 
@@ -308,14 +309,75 @@ function TestimonialsManager({token,data,load,notify,busy}) {
  const add=()=>setDraft(s=>({...s,items:[...s.items,{id:"testimonial-"+Date.now(),quote:"",name:"",location:"",rating:5,hidden:false}]}));
  return <Panel title="Testimonials" description="Edit testimonial copy and visibility; save the draft and publish it when ready."><div className="grid gap-4 sm:grid-cols-2"><Field label="Eyebrow" value={draft.eyebrow} onChange={v=>set("eyebrow",v)} required/><Field label="Rating summary" value={draft.ratingSummary} onChange={v=>set("ratingSummary",v)} required/><Field label="Section title" value={draft.title} onChange={v=>set("title",v)} required/><div className="sm:col-span-2"><TextField label="Section description" value={draft.description} onChange={v=>set("description",v)} required/></div></div><div className="my-5 flex items-center justify-between"><h3 className="font-semibold">Reviews ({draft.items?.length||0})</h3><button className={secondaryClass} onClick={add}>Add testimonial</button></div><div className="space-y-4">{(draft.items||[]).map((it,i)=><div key={it.id} className="rounded-lg border border-slate-200 p-4"><div className="grid gap-3 sm:grid-cols-2"><Field label="Reviewer name" value={it.name} onChange={v=>updateItem(i,"name",v)} required/><Field label="Location" value={it.location} onChange={v=>updateItem(i,"location",v)}/><div className="sm:col-span-2"><TextField label="Review" value={it.quote} onChange={v=>updateItem(i,"quote",v)} required/></div><Field label="Rating (1–5)" type="number" min="1" max="5" value={it.rating} onChange={v=>updateItem(i,"rating",Number(v))}/><Toggle label="Hide this review" checked={it.hidden} onChange={v=>updateItem(i,"hidden",v)}/></div><button className={secondaryClass+" mt-3"} onClick={()=>setDraft(s=>({...s,items:s.items.filter((_,j)=>j!==i)}))}>Remove review</button></div>)}</div><div className="mt-5 flex flex-wrap gap-2"><button className={buttonClass} disabled={busy} onClick={async()=>{try{await api("/admin/testimonials",token,jsonBody(draft));notify("Testimonials draft saved.");await load();}catch(e){notify(e.message);}}}>Save draft</button><button className={secondaryClass} disabled={busy} onClick={async()=>{try{await api("/admin/testimonials/publish",token,{method:"POST"});notify("Testimonials published.");await load();}catch(e){notify(e.message);}}}>Publish testimonials</button></div></Panel>;
 }
-function GalleryManager({token,items,load,notify,busy,startAdd}) {
- const [f,setF]=useState({title:"",description:"",type:"IMAGE",sourceType:"URL",mediaUrl:"",thumbnailUrl:"",status:"DRAFT",sortOrder:"0"});
- const [showForm,setShowForm]=useState(startAdd);
+function GalleryManager({token,items,load,notify,busy,startAdd,pageKey}) {
+ const [editingId,setEditingId]=useState("");
+ const [f,setF]=useState({title:"",description:"",sourceType:"UPLOAD",mediaUrl:"",status:"DRAFT",sortOrder:"0"});
+ const [selectedFile,setSelectedFile]=useState(null);
+ const [saving,setSaving]=useState(false);
  const set=(k,v)=>setF(s=>({...s,[k]:v}));
- return <div className="space-y-5">{showForm&&<Panel title="Add gallery image or video" description="Add media by URL. Uploaded media can also be managed from this React page."><form className="grid gap-4 sm:grid-cols-2" onSubmit={e=>{e.preventDefault();runGalleryCreate(token,f,notify,load,setBusy,setShowForm,setF);}}><Field label="Title" value={f.title} onChange={v=>set("title",v)} required/><label className="block text-sm font-medium">Media type<select className={inputClass} value={f.type} onChange={e=>set("type",e.target.value)}><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></label><label className="block text-sm font-medium">Source<select className={inputClass} value={f.sourceType} onChange={e=>set("sourceType",e.target.value)}><option value="URL">URL</option><option value="UPLOAD">Uploaded file URL</option>{f.type==="VIDEO"&&<option value="YOUTUBE">YouTube embed</option>}</select></label><Field label="Media URL" value={f.mediaUrl} onChange={v=>set("mediaUrl",v)} type="url" required/><Field label="Thumbnail URL (optional)" value={f.thumbnailUrl} onChange={v=>set("thumbnailUrl",v)} type="url"/><Field label="Sort order" type="number" value={f.sortOrder} onChange={v=>set("sortOrder",v)}/><div className="sm:col-span-2"><TextField label="Description" value={f.description} onChange={v=>set("description",v)}/></div><div className="sm:col-span-2"><button className={buttonClass} disabled={busy}>Add media</button></div></form></Panel>}{!startAdd&&<div className="flex justify-end"><button className={buttonClass} onClick={()=>setShowForm(v=>!v)}>{showForm?"Close add form":"Add media"}</button></div>}<Panel title="Gallery library" description="Manage image and video items used by ROOMO."><DataTable rows={items} columns={[["Preview",r=>r.type==="VIDEO"?"Video":<img src={r.thumbnailUrl||r.mediaUrl} alt={r.title} className="h-12 w-16 rounded object-cover"/>],["Title",r=>r.title],["Type",r=>r.type],["Status",r=>r.status],["Updated",r=>fmtDate(r.updatedAt)]]} actions={r=><button className={secondaryClass} onClick={()=>runGalleryDelete(token,r.id,notify,load,setBusy)}>Delete</button>} /></Panel></div>;
+ const reset=()=>{setEditingId("");setF({title:"",description:"",sourceType:"UPLOAD",mediaUrl:"",status:"DRAFT",sortOrder:"0"});setSelectedFile(null);};
+ const imageItems=(items||[]).filter(item=>item.type==="IMAGE"&&item.sourceType!=="YOUTUBE");
+ const isAddPage=pageKey==="gallery/add";
+ async function uploadImage(file){
+   const formData=new FormData();formData.append("file",file);
+   const response=await fetch(API+"/admin/gallery/upload?type=image",{method:"POST",credentials:"include",headers:{...(token?{Authorization:"Bearer "+token}:{}),...csrfHeaders()},body:formData});
+   const result=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(result.message||"Unable to upload this image.");
+   if(!result.mediaUrl)throw new Error("The upload did not return an image URL.");
+   return result.mediaUrl;
+ }
+ async function save(event){
+   event.preventDefault();setSaving(true);
+   try{
+     let mediaUrl=f.mediaUrl.trim();
+     let sourceType=f.sourceType;
+     if(sourceType==="UPLOAD"){
+       if(selectedFile){
+         if(!/^image\\/(jpeg|png|webp|avif)$/i.test(selectedFile.type))throw new Error("Choose a JPG, PNG, WebP, or AVIF image.");
+         if(selectedFile.size>8*1024*1024)throw new Error("Image size must be 8 MB or less.");
+         mediaUrl=await uploadImage(selectedFile);
+       }else if(!mediaUrl)throw new Error("Choose an image from your system.");
+     }
+     if(sourceType==="URL"&&!mediaUrl)throw new Error("Enter the image URL.");
+     const payload={title:f.title.trim(),description:(f.description||"").trim(),type:"IMAGE",sourceType,mediaUrl,thumbnailUrl:null,status:f.status||"DRAFT",sortOrder:Number(f.sortOrder)||0};
+     const response=await api("/admin/gallery"+(editingId?"/"+encodeURIComponent(editingId):""),token,{method:editingId?"PUT":"POST",body:JSON.stringify(payload)});
+     notify(response.message||(editingId?"Gallery image updated.":"Gallery image added."));
+     reset();await load();
+     if(!isAddPage) setShowInlineForm(false);
+   }catch(error){notify(error.message||"Unable to save the gallery image.");}
+   finally{setSaving(false);}
+ }
+ const [setShowInlineFormState,setShowInlineForm]=useState(false);
+ function edit(item){
+   setEditingId(item.id);setF({title:item.title||"",description:item.description||"",sourceType:item.sourceType==="URL"?"URL":"UPLOAD",mediaUrl:item.mediaUrl||"",status:item.status||"DRAFT",sortOrder:String(item.sortOrder??0)});setSelectedFile(null);setShowInlineForm(true);
+   if(isAddPage)window.scrollTo({top:0,behavior:"smooth"});
+ }
+ async function remove(item){
+   if(!window.confirm('Delete "'+item.title+'" from the gallery? This cannot be undone.'))return;
+   try{await api("/admin/gallery/"+encodeURIComponent(item.id),token,{method:"DELETE"});if(editingId===item.id)reset();notify("Gallery image deleted.");await load();}
+   catch(error){notify(error.message||"Unable to delete the gallery image.");}
+ }
+ const formPanel=<Panel title={editingId?"Edit gallery image":"Add gallery image"} description="Upload an image from your computer or provide a direct image URL. Supported formats: JPG, PNG, WebP and AVIF (maximum 8 MB).">
+   <form className="grid gap-4 sm:grid-cols-2" onSubmit={save}>
+     <Field label="Image title" value={f.title} onChange={v=>set("title",v)} required/>
+     <label className="block text-sm font-medium text-slate-700">Image source<select className={inputClass} value={f.sourceType} onChange={e=>{set("sourceType",e.target.value);setSelectedFile(null);}}><option value="UPLOAD">Upload from computer</option><option value="URL">Direct image URL</option></select></label>
+     {f.sourceType==="UPLOAD"?<label className="block text-sm font-medium text-slate-700 sm:col-span-2">Choose image from your system<input className={inputClass+" file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-[#2563a6]"} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={e=>setSelectedFile(e.target.files?.[0]||null)}/><span className="mt-1 block text-xs font-normal text-slate-500">{selectedFile?selectedFile.name:(editingId?"Leave empty to keep the current image, or choose a replacement.":"Select an image file to upload.")}</span></label>:<div className="sm:col-span-2"><Field label="Direct image URL" value={f.mediaUrl} onChange={v=>set("mediaUrl",v)} type="url" required placeholder="https://…"/></div>}
+     {(selectedFile||f.mediaUrl)&&<div className="sm:col-span-2"><p className="mb-2 text-sm font-medium text-slate-700">Preview</p>{selectedFile?<img src={URL.createObjectURL(selectedFile)} alt="Selected gallery preview" className="max-h-64 max-w-full rounded-lg border border-slate-200 object-contain"/>:f.mediaUrl&&<img src={f.mediaUrl} alt="Current gallery image" className="max-h-64 max-w-full rounded-lg border border-slate-200 object-contain" onError={e=>{e.currentTarget.style.display="none";}}/>}</div>}
+     <Field label="Sort order" type="number" value={f.sortOrder} onChange={v=>set("sortOrder",v)}/>
+     <label className="block text-sm font-medium text-slate-700">Publication status<select className={inputClass} value={f.status} onChange={e=>set("status",e.target.value)}><option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="ARCHIVED">Archived</option></select></label>
+     <div className="sm:col-span-2"><TextField label="Description (optional)" value={f.description} onChange={v=>set("description",v)} rows={3}/></div>
+     <div className="sm:col-span-2 flex flex-wrap gap-2"><button className={buttonClass} disabled={saving||busy}>{saving?"Saving…":editingId?"Update image":"Upload and save image"}</button>{editingId&&<button type="button" className={secondaryClass} onClick={reset}>Cancel edit</button>}</div>
+   </form>
+ </Panel>;
+ if(isAddPage)return <div className="space-y-5">{formPanel}</div>;
+ return <div className="space-y-5">
+   {!showInlineForm&&<div className="flex justify-end"><button className={buttonClass} onClick={()=>{reset();setShowInlineForm(true);}}>Add gallery image</button></div>}
+   {showInlineForm&&formPanel}
+   <Panel title="Gallery listing" description="Edit, publish or delete uploaded gallery images. YouTube videos are not included in this list.">
+     <SearchBar query={queryForGallery} setQuery={setQueryForGallery}/>
+     <DataTable rows={imageItems.filter(item=>JSON.stringify(item).toLowerCase().includes(queryForGallery.toLowerCase()))} columns={[["Image",r=><img src={r.thumbnailUrl||r.mediaUrl} alt={r.title} className="h-14 w-20 rounded-lg border border-slate-200 object-cover"/>],["Title",r=>r.title],["Description",r=>r.description||"—"],["Status",r=>r.status],["Sort order",r=>r.sortOrder??0],["Updated",r=>fmtDate(r.updatedAt)]]} actions={r=><div className="flex flex-wrap gap-2"><button className={secondaryClass} onClick={()=>edit(r)}>Edit</button><button disabled={busy} className={r.status==="PUBLISHED"?"rounded-lg border border-amber-200 px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50":"rounded-lg border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"} onClick={async()=>{try{await api("/admin/gallery/"+encodeURIComponent(r.id),token,{method:"PUT",body:JSON.stringify({...r,status:r.status==="PUBLISHED"?"DRAFT":"PUBLISHED"})});notify(r.status==="PUBLISHED"?"Gallery image unpublished.":"Gallery image published.");await load();}catch(error){notify(error.message);}}}>{r.status==="PUBLISHED"?"Unpublish":"Publish"}</button><button disabled={busy} className="rounded-lg border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50" onClick={()=>remove(r)}>Delete</button></div>}/></Panel>
+ </div>;
 }
-async function runGalleryCreate(token,f,notify,load,setBusy,setShowForm,setF){setBusy(true);try{await api("/admin/gallery",token,postBody({...f,sortOrder:Number(f.sortOrder),thumbnailUrl:f.thumbnailUrl||null}));notify("Gallery item created.");setShowForm(false);setF({title:"",description:"",type:"IMAGE",sourceType:"URL",mediaUrl:"",thumbnailUrl:"",status:"DRAFT",sortOrder:"0"});await load();}catch(e){notify(e.message);}finally{setBusy(false);}}
-async function runGalleryDelete(token,id,notify,load,setBusy){setBusy(true);try{await api("/admin/gallery/"+id,token,{method:"DELETE"});notify("Gallery item deleted.");await load();}catch(e){notify(e.message);}finally{setBusy(false);}}
 function ListingDisplayEditor({token,settings,notify,busy}) {
  const [draft,setDraft]=useState(settings); useEffect(()=>setDraft(settings),[settings]);
  const set=(key,value)=>setDraft(s=>({...s,[key]:value}));
