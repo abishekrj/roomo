@@ -49,6 +49,7 @@ const homepageDefaults = {
   festivalSectionEnabled: true,
   festivalEyebrow: "Upcoming Festival",
   festivalTitle: "Karthigai Maha Deepam 🪔",
+  festivalImageUrl: "",
   festivalCountdownLabel: "Time until the celebration",
   festivalCountdownCompleteLabel: "Festival day has arrived",
   festivalDescription: "Experience the sacred celebration of Maha Deepam on Arunachala. Plan your visit to Tiruvannamalai and explore peaceful stays for your pilgrimage.",
