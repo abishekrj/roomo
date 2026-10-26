@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const API = "http://localhost:5001/api/gallery";
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
-  const [filter, setFilter] = useState("ALL");
-  const [selected, setSelected] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [loading, setLoading] = useState(true);
+  const carouselRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,32 +27,31 @@ export default function Gallery() {
     return () => { cancelled = true; };
   }, []);
 
+  // Visual Stories is a photo gallery. YouTube and other video entries are not displayed here.
+  const photos = useMemo(() => items.filter((item) => item.type === "IMAGE" && item.mediaUrl), [items]);
+  const selected = selectedIndex === null ? null : photos[selectedIndex];
+
+  const showPrevious = () => setSelectedIndex((current) => current === null ? null : (current - 1 + photos.length) % photos.length);
+  const showNext = () => setSelectedIndex((current) => current === null ? null : (current + 1) % photos.length);
+
   useEffect(() => {
-    if (!selected) return undefined;
+    if (selectedIndex === null) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setSelected(null);
+      if (event.key === "Escape") setSelectedIndex(null);
+      if (event.key === "ArrowLeft") showPrevious();
+      if (event.key === "ArrowRight") showNext();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selected]);
+  }, [selectedIndex, photos.length]);
 
-  const visibleItems = useMemo(
-    () => items.filter((item) => filter === "ALL" || item.type === filter),
-    [items, filter]
-  );
-
-  const videoUrl = (item) => {
-    if (item.sourceType === "YOUTUBE") {
-      try {
-        const url = new URL(item.mediaUrl);
-        url.searchParams.set("autoplay", "1");
-        url.searchParams.set("rel", "0");
-        return url.toString();
-      } catch {
-        return item.mediaUrl;
-      }
-    }
-    return item.mediaUrl;
+  const moveCarousel = (direction) => {
+    const element = carouselRef.current;
+    if (!element) return;
+    const firstCard = element.querySelector("[data-gallery-card]");
+    const gap = 16;
+    const amount = firstCard ? firstCard.getBoundingClientRect().width + gap : element.clientWidth;
+    element.scrollBy({ left: amount * direction * (window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1), behavior: "smooth" });
   };
 
   return (
@@ -62,48 +61,45 @@ export default function Gallery() {
           <div className="max-w-3xl">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#2563A6] sm:text-sm">Visual stories</p>
             <h2 id="roomo-gallery-title" className="text-2xl font-semibold leading-tight tracking-tight text-[#212529] sm:text-3xl lg:text-4xl">Gallery</h2>
-            <p className="mt-3 text-sm leading-6 text-[#5F6670] sm:text-base sm:leading-7">Explore sacred places, memorable moments and video stories from Tiruvannamalai.</p>
+            <p className="mt-3 text-sm leading-6 text-[#5F6670] sm:text-base sm:leading-7">Explore sacred places and memorable moments from Tiruvannamalai.</p>
           </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter gallery">
-            {[{ value: "ALL", label: "All media" }, { value: "IMAGE", label: "Photos" }, { value: "VIDEO", label: "Videos" }].map((option) => (
-              <button key={option.value} type="button" onClick={() => setFilter(option.value)} aria-pressed={filter === option.value}
-                className={`rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 ${filter === option.value ? "border-[#2563A6] bg-[#2563A6] text-white" : "border-[#D9E0E8] bg-white text-[#354252] hover:border-[#2563A6] hover:text-[#2563A6]"}`}>
-                {option.label}
+          {!loading && photos.length > 1 && (
+            <div className="flex shrink-0 items-center gap-2 self-end">
+              <button type="button" onClick={() => moveCarousel(-1)} aria-label="Previous gallery photos" className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#D9E0E8] bg-white text-[#2563A6] transition hover:border-[#2563A6] hover:bg-[#2563A6] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
               </button>
-            ))}
-          </div>
+              <button type="button" onClick={() => moveCarousel(1)} aria-label="Next gallery photos" className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#D9E0E8] bg-white text-[#2563A6] transition hover:border-[#2563A6] hover:bg-[#2563A6] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading gallery">
-            {[1, 2, 3, 4, 5, 6].map((number) => <div key={number} className="aspect-[4/3] animate-pulse rounded-lg bg-slate-200" />)}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Loading gallery">
+            {[1, 2, 3, 4].map((number) => <div key={number} className="aspect-[4/3] animate-pulse rounded-lg bg-slate-200" />)}
           </div>
-        ) : visibleItems.length === 0 ? (
+        ) : photos.length === 0 ? (
           <div className="rounded-lg border border-dashed border-[#D9E0E8] bg-white px-6 py-12 text-center text-sm text-[#5F6670]">
-            {items.length === 0 ? "Gallery media will appear here soon." : "No media in this category yet."}
+            Gallery photos will appear here soon.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-            {visibleItems.map((item, index) => (
-              <button key={item.id || item.title || index} type="button" onClick={() => setSelected(item)}
-                className="group overflow-hidden rounded-lg border border-[#E3E8EF] bg-white text-left shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2"
-                aria-label={`Open ${item.type === "VIDEO" ? "video" : "photo"}: ${item.title || "Gallery item"}`}>
+          <div ref={carouselRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Gallery photo carousel">
+            {photos.map((item, index) => (
+              <button key={item.id || item.title || index} data-gallery-card type="button" onClick={() => setSelectedIndex(index)}
+                className="group w-[calc(100%-0.25rem)] shrink-0 snap-start overflow-hidden rounded-lg border border-[#E3E8EF] bg-white text-left shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)]"
+                aria-label={`Open photo: ${item.title || "Gallery photo"}`}>
                 <div className="relative aspect-[4/3] overflow-hidden bg-[#EAF0F7]">
-                  {item.type === "VIDEO" && item.sourceType === "YOUTUBE" ? (
-                    <img src={item.thumbnailUrl || item.mediaUrl.replace(/\/embed\/([^?&/]+)/, "/vi/$1/hqdefault.jpg")} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-                  ) : item.type === "VIDEO" && item.thumbnailUrl ? (
-                    <img src={item.thumbnailUrl} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-                  ) : item.type === "VIDEO" ? (
-                    <video src={item.mediaUrl} preload="metadata" muted playsInline className="h-full w-full object-cover" aria-label={item.title || "Gallery video preview"} />
-                  ) : (
-                    <img src={item.mediaUrl} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-                  )}
-                  {item.type === "VIDEO" && <span className="absolute inset-0 flex items-center justify-center bg-black/15"><span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/70 bg-black/50 text-2xl text-white shadow-lg" aria-hidden="true">▶</span><span className="sr-only">Play video</span></span>}
-                  <span className="absolute left-3 top-3 rounded-lg bg-white/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#2563A6]">{item.type === "VIDEO" ? "Video" : "Photo"}</span>
+                  <img src={item.thumbnailUrl || item.mediaUrl} alt={item.title || "ROOMO gallery photo"} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/10">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#2563A6] opacity-0 shadow transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /><path d="M11 8v6M8 11h6" /></svg>
+                    </span>
+                  </span>
                 </div>
-                <div className="p-4 sm:p-5">
-                  <h3 className="text-base font-semibold text-[#212529]">{item.title}</h3>
-                  {item.description && <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#5F6670]">{item.description}</p>}
+                <div className="p-4">
+                  <h3 className="line-clamp-1 text-sm font-semibold text-[#212529] sm:text-base">{item.title || "Visual story"}</h3>
+                  {item.description && <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-[#5F6670]">{item.description}</p>}
                 </div>
               </button>
             ))}
@@ -113,22 +109,27 @@ export default function Gallery() {
 
       {selected && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#101820]/85 p-3 sm:p-6" role="presentation"
-          onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
+          onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedIndex(null); }}>
           <div role="dialog" aria-modal="true" aria-labelledby="roomo-gallery-dialog-title" className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 p-4 sm:p-5">
               <div>
-                <h3 id="roomo-gallery-dialog-title" className="text-lg font-semibold text-[#212529] sm:text-xl">{selected.title}</h3>
+                <h3 id="roomo-gallery-dialog-title" className="text-lg font-semibold text-[#212529] sm:text-xl">{selected.title || "Visual story"}</h3>
                 {selected.description && <p className="mt-1 text-sm leading-6 text-[#5F6670]">{selected.description}</p>}
+                <p className="mt-1 text-xs text-slate-500">{selectedIndex + 1} of {photos.length}</p>
               </div>
-              <button type="button" onClick={() => setSelected(null)} aria-label="Close gallery viewer" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D9E0E8] text-xl text-[#354252] hover:bg-slate-50">×</button>
+              <button type="button" onClick={() => setSelectedIndex(null)} aria-label="Close gallery viewer" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D9E0E8] text-xl text-[#354252] hover:bg-slate-50">×</button>
             </div>
-            <div className="flex max-h-[72vh] items-center justify-center bg-black">
-              {selected.type === "VIDEO" && selected.sourceType === "YOUTUBE" ? (
-                <iframe src={videoUrl(selected)} title={selected.title || "ROOMO gallery video"} className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
-              ) : selected.type === "VIDEO" ? (
-                <video src={selected.mediaUrl} controls autoPlay playsInline className="max-h-[72vh] w-full" />
-              ) : (
-                <img src={selected.mediaUrl} alt={selected.title || ""} className="max-h-[72vh] w-full object-contain" />
+            <div className="relative flex min-h-[240px] max-h-[72vh] items-center justify-center bg-black">
+              <img src={selected.mediaUrl} alt={selected.title || "ROOMO gallery photo"} className="max-h-[72vh] w-full object-contain" />
+              {photos.length > 1 && (
+                <>
+                  <button type="button" onClick={showPrevious} aria-label="Previous photo" className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/55 text-white shadow-lg transition hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                  </button>
+                  <button type="button" onClick={showNext} aria-label="Next photo" className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/55 text-white shadow-lg transition hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                </>
               )}
             </div>
           </div>
