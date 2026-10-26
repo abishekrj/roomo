@@ -17,6 +17,7 @@ function statusStyle(status) { return status === "CONFIRMED" || status === "IN_P
 
 export default function DriverAdminWorkspace({ pageKey, onNotice }) {
   const isAdd = pageKey === "drivers/add";
+  const isList = pageKey === "drivers/list";
   const [form, setForm] = useState(emptyDriver);
   const [drivers, setDrivers] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -32,7 +33,7 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
     setLoading(true);
     setError("");
     try {
-      if (isAdd) {
+      if (isAdd || isList) {
         // The Add Driver page only depends on the driver directory. Do not let
         // a separate booking-list/API failure block the form from opening.
         const driverData = await request("/drivers");
@@ -48,7 +49,7 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
       setLoading(false);
     }
   }
-  useEffect(() => { load(); }, [isAdd]);
+  useEffect(() => { load(); }, [isAdd, isList]);
 
   const filteredBookings = useMemo(() => bookings.filter(booking => {
     const categoryMatches = tab === "PENDING" ? booking.status === "PENDING" : ["CONFIRMED", "IN_PROGRESS"].includes(booking.status);
@@ -118,10 +119,11 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
         <div className="sm:col-span-2 xl:col-span-3"><button disabled={saving} className={primaryButton}>{saving ? "Creating driver…" : "Create driver"}</button></div>
       </form>
     </section>
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 p-5"><div><h2 className="font-semibold">Driver directory</h2><p className="mt-1 text-sm text-slate-500">{drivers.length} driver account{drivers.length === 1 ? "" : "s"}</p></div><button className={secondaryButton} onClick={load}>Refresh</button></div>
-      {loading ? <p className="p-5 text-sm text-slate-500">Loading drivers…</p> : drivers.length ? <div className="divide-y divide-slate-100">{drivers.map(driver => <div key={driver.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><div><p className="font-semibold">{driver.fullName}</p><p className="mt-1 text-sm text-slate-500">{driver.email} · {driver.phoneNumber}</p><p className="mt-1 text-xs text-slate-500">{driver.vehicleType.replaceAll("_", " ")} · {driver.vehicleNumber} · {driver.passengerCapacity} seats</p></div><div className="flex flex-wrap gap-2"><button className={secondaryButton} onClick={() => changeDriverStatus(driver, "isAvailable")}>{driver.isAvailable ? "Set unavailable" : "Set available"}</button><button className={secondaryButton} onClick={() => changeDriverStatus(driver, "isActive")}>{driver.isActive ? "Deactivate" : "Activate"}</button></div></div>)}</div> : <p className="p-5 text-sm text-slate-500">No drivers have been added yet.</p>}
-    </section>
   </div>;
+
+  if (isList) return <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 p-5"><div><h2 className="font-semibold">Driver directory</h2><p className="mt-1 text-sm text-slate-500">{drivers.length} driver account{drivers.length === 1 ? "" : "s"}</p></div><button className={secondaryButton} onClick={load}>Refresh</button></div>
+      {loading ? <p className="p-5 text-sm text-slate-500">Loading drivers…</p> : drivers.length ? <div className="divide-y divide-slate-100">{drivers.map(driver => <div key={driver.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"><div><p className="font-semibold">{driver.fullName}</p><p className="mt-1 text-sm text-slate-500">{driver.email} · {driver.phoneNumber}</p><p className="mt-1 text-xs text-slate-500">{driver.vehicleType.replaceAll("_", " ")} · {driver.vehicleNumber} · {driver.passengerCapacity} seats</p></div><div className="flex flex-wrap gap-2"><button className={secondaryButton} onClick={() => changeDriverStatus(driver, "isAvailable")}>{driver.isAvailable ? "Set unavailable" : "Set available"}</button><button className={secondaryButton} onClick={() => changeDriverStatus(driver, "isActive")}>{driver.isActive ? "Deactivate" : "Activate"}</button></div></div>)}</div> : <p className="p-5 text-sm text-slate-500">No drivers have been added yet.</p>}
+</section>;
 
   return <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
     <div className="border-b border-slate-200 p-5 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Transport operations</p><h2 className="mt-2 text-xl font-semibold">Transport booking list</h2><p className="mt-1 text-sm text-slate-500">Open any trip to view the full request and assign a driver if needed.</p></div><button className={secondaryButton} onClick={load}>↻ Refresh</button></div>
