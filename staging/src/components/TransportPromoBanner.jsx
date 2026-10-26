@@ -1,3 +1,50 @@
-import {useEffect,useState} from "react";
-const API_URL=(import.meta.env.VITE_ROOMO_API_URL||"http://localhost:5001/api")+"/homepage";
-export default function TransportPromoBanner(){const [section,setSection]=useState(null);useEffect(()=>{let cancelled=false;fetch(API_URL,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(!cancelled)setSection(d?.content?.transportPromo||null)}).catch(()=>{if(!cancelled)setSection(null)});return()=>{cancelled=true}},[]);if(!section||section.enabled===false)return null;return <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#2563A6] py-8 sm:py-10"><div className="relative mx-auto grid w-full max-w-7xl items-center gap-8 overflow-hidden rounded-lg bg-[#2563A6] px-4 text-white sm:px-6 md:grid-cols-[1.15fr_.85fr] md:gap-12"><div className="relative z-10 min-w-0">{section.eyebrow&&<span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.16em] text-blue-100"><span className="h-1.5 w-1.5 rounded-full bg-emerald-300"/>{section.eyebrow}</span>}<h2 id="roomo-transport-promo-title" className="mt-4 max-w-xl text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">{section.title||"Your sacred journey, from door to destination."}</h2>{section.description&&<p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base sm:leading-7">{section.description}</p>}<div className="mt-6 flex flex-wrap items-center gap-3"><a href="/staging/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[4px] border border-white px-5 py-3 text-sm font-semibold text-white hover:bg-white hover:text-[#2563a6]">{section.buttonLabel||"Plan your journey"} →</a>{section.helperText&&<span className="text-xs text-blue-100/80">{section.helperText}</span>}</div></div><div className="relative flex min-h-48 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-[#1d4774] md:min-h-64"><svg viewBox="0 0 440 220" role="img" aria-label="Illustration of a comfortable passenger van on the road" className="relative z-10 w-full max-w-md drop-shadow-2xl"><path d="M22 183 C105 169 138 194 220 181 S345 167 418 183" fill="none" stroke="#9cc7f1" strokeOpacity=".35" strokeWidth="3" strokeLinecap="round"/><path d="M72 144 L91 95 Q96 81 115 81 H273 Q292 81 306 101 L337 144 Z" fill="#f8fbff"/><path d="M110 91 H171 V126 H96 Z" fill="#9fc8ed"/><path d="M181 91 H267 Q282 91 293 108 L307 126 H181 Z" fill="#9fc8ed"/><path d="M68 140 H343 Q354 140 354 152 V166 H61 V151 Q61 140 68 140Z" fill="#dce9f7"/><path d="M73 146 H341 V163 H73 Z" fill="#2563a6"/><rect x="202" y="145" width="3" height="17" rx="1.5" fill="#dce9f7"/><rect x="242" y="145" width="3" height="17" rx="1.5" fill="#dce9f7"/><circle cx="112" cy="166" r="22" fill="#0c1e33"/><circle cx="112" cy="166" r="10" fill="#b7cde2"/><circle cx="112" cy="166" r="4" fill="#54728f"/><circle cx="303" cy="166" r="22" fill="#0c1e33"/><circle cx="303" cy="166" r="10" fill="#b7cde2"/><circle cx="303" cy="166" r="4" fill="#54728f"/><rect x="331" y="145" width="14" height="7" rx="3.5" fill="#ffcf87"/><rect x="64" y="146" width="10" height="7" rx="3.5" fill="#ffcf87"/><path d="M350 95 Q366 83 379 95" fill="none" stroke="#8cb6e2" strokeWidth="3" strokeLinecap="round"/><path d="M360 80 Q380 63 398 80" fill="none" stroke="#8cb6e2" strokeWidth="3" strokeLinecap="round" opacity=".65"/><circle cx="371" cy="112" r="4" fill="#8cb6e2"/></svg>{section.imageLabel&&<div className="absolute right-3 top-3 rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs font-medium text-white sm:right-6 sm:top-6">{section.imageLabel} <span className="ml-1 text-emerald-300">✓</span></div>}</div></div></section>}
+import { useEffect, useState } from "react";
+
+const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
+
+export default function TransportPromoBanner() {
+  const [section, setSection] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(API_URL, { cache: "no-store" })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!cancelled) setSection(data?.content?.transportPromo || null); })
+      .catch(() => { if (!cancelled) setSection(null); });
+    return () => { cancelled = true; };
+  }, []);
+  if (!section || section.enabled === false) return null;
+
+  return (
+    <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#f4f7fb] py-8 sm:py-10 lg:py-12">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-6 overflow-hidden rounded-lg bg-[#2563a6] px-5 py-7 text-white sm:px-8 sm:py-9 md:grid-cols-[1.2fr_.8fr] md:gap-10 lg:px-12 lg:py-11">
+          <div className="min-w-0">
+            {section.eyebrow && <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.16em] text-blue-100">{section.eyebrow}</span>}
+            <h2 id="roomo-transport-promo-title" className="mt-4 max-w-2xl text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">{section.title || "Your sacred journey, from door to destination."}</h2>
+            {section.description && <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-100 sm:text-base sm:leading-7">{section.description}</p>}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a href="/staging/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white bg-white px-5 py-3 text-sm font-semibold text-[#2563a6] transition-colors hover:bg-blue-50">{section.buttonLabel || "Plan your journey"} <span aria-hidden="true">→</span></a>
+              {section.helperText && <span className="text-xs text-blue-100/85">{section.helperText}</span>}
+            </div>
+          </div>
+          <div className="flex min-h-44 flex-col justify-center gap-3 rounded-lg border border-white/15 bg-white/10 p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white text-[#2563a6]"><svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M3 15v-3l2-6h14l2 6v3M5 15h14M7 15v3m10-3v3M5 12h14"/><circle cx="7" cy="12" r="1"/><circle cx="17" cy="12" r="1"/></svg></span>
+              <div><p className="text-sm font-semibold text-white">Comfortable local rides</p><p className="mt-1 text-xs leading-5 text-blue-100">Choose a car or van for temple visits and local travel.</p></div>
+            </div>
+            <div className="h-px bg-white/15" />
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white text-[#2563a6]"><svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+              <div><p className="text-sm font-semibold text-white">Convenient pickups</p><p className="mt-1 text-xs leading-5 text-blue-100">Request station pickups and trips around Tiruvannamalai.</p></div>
+            </div>
+            <div className="h-px bg-white/15" />
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white text-[#2563a6]"><svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+              <div><p className="text-sm font-semibold text-white">Plan your journey in one place</p><p className="mt-1 text-xs leading-5 text-blue-100">Send a ride request for Girivalam, temple visits and day trips.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
