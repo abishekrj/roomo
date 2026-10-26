@@ -301,7 +301,13 @@ router.post("/hero-image/second", heroUpload.single("image"), (req, res) => {
   res.status(201).json({ heroSecondImageUrl: baseUrl + "/uploads/hero/" + req.file.filename });
 });
 
-router.post("/festival-image", heroUpload.single("image"), (req, res) => {\n  if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });\n  const baseUrl = req.protocol + "://" + req.get("host");\n  res.status(201).json({ festivalImageUrl: baseUrl + "/uploads/hero/" + req.file.filename });\n});\n\nrouter.post("/hero-image", heroUpload.single("image"), (req, res) => {
+router.post("/festival-image", heroUpload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
+  const baseUrl = req.protocol + "://" + req.get("host");
+  res.status(201).json({ festivalImageUrl: baseUrl + "/uploads/hero/" + req.file.filename });
+});
+
+router.post("/hero-image", heroUpload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "Choose an image to upload." });
   const baseUrl = req.protocol + "://" + req.get("host");
   res.status(201).json({
