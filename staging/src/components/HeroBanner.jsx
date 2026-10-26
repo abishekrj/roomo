@@ -35,7 +35,7 @@ export default function HeroBanner() {
       titleLine: content?.heroSecondTitleLine || "Your Journey Beyond",
       titleAccent: content?.heroSecondTitleAccent || "Tiruvannamalai",
       description: content?.heroSecondDescription || "Arrange a comfortable outstation journey with ROOMO. Plan your pickup, destination and travel time in a few simple steps.",
-      image: content?.heroSecondImageUrl || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=85",
+      image: "/staging/assets/roomo-travel-hero.png",
       imageAlt: "Comfortable car ready for an outstation journey",
       buttonLabel: "Book a Cab",
       buttonHref: "/staging/transport-booking",
