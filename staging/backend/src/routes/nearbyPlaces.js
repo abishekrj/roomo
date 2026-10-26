@@ -33,7 +33,7 @@ const placesSchema = z.object({
 });
 
 const defaultConfig = {
- enabled:true, eyebrow:"Travel beyond Tiruvannamalai", title:"Famous Places Nearby",
+ enabled:true, eyebrow:"Travel beyond Tiruvannamalai", title:"Travel Outstations",
  description:"Planning your journey to Tiruvannamalai? Explore popular cities and towns we connect with. Choose your destination to start a ROOMO outstation ride request.",
  places:[
  {id:"chennai",name:"Chennai",category:"Major city",location:"Tamil Nadu",distance:"Approx. 190 km",travelTime:"Allow around 4–5 hours by road",openingHours:"Travel times vary with traffic and pickup point",description:"Plan an outstation journey between Chennai and Tiruvannamalai for pilgrimage stays, family visits or a return trip.",imageUrl:"https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1000&q=80",mapUrl:"https://www.google.com/maps/dir/?api=1&origin=Chennai&destination=Tiruvannamalai",visible:true,sortOrder:1},
@@ -50,6 +50,9 @@ function getConfig(row, key) {
   const saved = row?.published?.[key] || row?.draft?.[key];
   const legacyIds = new Set(["sathanur-dam", "yelagiri-hills", "parvathamalai", "gingee-fort", "javadu-hills", "annamalaiyar-temple", "sri-ramanasramam", "girivalam-path", "virupaksha-cave", "skandashramam"]);
   if (key === "nearbyPlaces" && Array.isArray(saved?.places) && saved.places.some(place => legacyIds.has(place.id))) return defaultConfig;
+  if (key === "nearbyPlaces" && saved) {
+    return { ...saved, title: saved.title === "Famous Places Nearby" || !saved.title ? "Travel Outstations" : saved.title };
+  }
   return saved || fallback;
 }
 router.get("/", async (req, res, next) => {
