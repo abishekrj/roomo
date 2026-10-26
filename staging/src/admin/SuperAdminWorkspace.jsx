@@ -47,7 +47,6 @@ export default function SuperAdminWorkspace({ pageKey, token, onNotice }) {
   const [editingId, setEditingId] = useState("");
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState("");
-  const [queryForGallery, setQueryForGallery] = useState("");
   const [selectedProperty, setSelectedProperty] = useState("");
   const [propertyToEdit, setPropertyToEdit] = useState(null);
   const [localMessage, setLocalMessage] = useState("");
@@ -314,6 +313,7 @@ function GalleryManager({token,items,load,notify,busy,startAdd,pageKey}) {
  const [f,setF]=useState({title:"",description:"",sourceType:"UPLOAD",mediaUrl:"",status:"DRAFT",sortOrder:"0"});
  const [selectedFile,setSelectedFile]=useState(null);
  const [saving,setSaving]=useState(false);
+ const [queryForGallery,setQueryForGallery]=useState("");
  const set=(k,v)=>setF(s=>({...s,[k]:v}));
  const reset=()=>{setEditingId("");setF({title:"",description:"",sourceType:"UPLOAD",mediaUrl:"",status:"DRAFT",sortOrder:"0"});setSelectedFile(null);};
  const imageItems=(items||[]).filter(item=>item.type==="IMAGE"&&item.sourceType!=="YOUTUBE");
