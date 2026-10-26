@@ -347,7 +347,7 @@ function GalleryManager({token,items,load,notify,busy,startAdd,pageKey}) {
    }catch(error){notify(error.message||"Unable to save the gallery image.");}
    finally{setSaving(false);}
  }
- const [setShowInlineFormState,setShowInlineForm]=useState(false);
+ const [showInlineForm,setShowInlineForm]=useState(false);
  function edit(item){
    setEditingId(item.id);setF({title:item.title||"",description:item.description||"",sourceType:item.sourceType==="URL"?"URL":"UPLOAD",mediaUrl:item.mediaUrl||"",status:item.status||"DRAFT",sortOrder:String(item.sortOrder??0)});setSelectedFile(null);setShowInlineForm(true);
    if(isAddPage)window.scrollTo({top:0,behavior:"smooth"});
