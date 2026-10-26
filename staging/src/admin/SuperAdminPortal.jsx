@@ -40,7 +40,7 @@ export default function SuperAdminPortal() {
     enquiries: "Enquiries", owners: "Owners", "rooms/add": "Add Rooms", "rooms/listings": "Room Listings",
     "rooms/types": "Room Types", "rooms/filters": "Room Filters", "rooms/featured": "Featured Rooms",
     "rooms/listing-display": "Listing Display Settings", "cms-pages": "CMS Pages", destinations: "Destinations",
-    "nearby-locations": "Nearby Locations", testimonials: "Testimonials",
+    "nearby-locations": "Famous Places Nearby", testimonials: "Testimonials",
     "gallery/add": "Add Gallery", "gallery/list": "Gallery List", reviews: "Guest Reviews", reports: "Reports", "drivers/add": "Add Driver", "drivers/bookings": "Booking List"
   };
   const adminPageKey = currentPath.startsWith(routePrefix + "/") ? currentPath.slice(routePrefix.length + 1) : "";
@@ -216,7 +216,7 @@ export default function SuperAdminPortal() {
     { id: "drivers", label: "Driver", icon: "🚐", children: [["Add Driver", routePrefix + "/drivers/add"], ["Booking List", routePrefix + "/drivers/bookings"]] },
     { id: "cms-pages", label: "CMS Pages", icon: "▤", href: routePrefix + "/cms-pages" },
     { id: "destinations", label: "Destinations", icon: "⌖", href: routePrefix + "/destinations" },
-    { id: "nearby-places", label: "Nearby Locations", icon: "⌁", href: routePrefix + "/nearby-locations" },
+    { id: "nearby-places", label: "Famous Places Nearby", icon: "⌁", href: routePrefix + "/nearby-locations" },
     { id: "testimonials", label: "Testimonials", icon: "❝", href: routePrefix + "/testimonials" },
     { id: "reviews", label: "Guest Reviews", icon: "★", href: routePrefix + "/reviews" },
     { id: "gallery", label: "Gallery", icon: "▧", children: [["Add Gallery", routePrefix + "/gallery/add"], ["Gallery List", routePrefix + "/gallery/list"]] },
