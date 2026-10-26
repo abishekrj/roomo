@@ -114,7 +114,11 @@ app.post("/api/reservations", reservationWriteLimiter, (_req, _res, next) => nex
 app.post("/api/homepage/destination-suggestions", destinationSuggestionLimiter, (_req, _res, next) => next());
 
 app.use("/api/auth", ownerAuthLimiter, authRoutes);
-app.use("/api/guest-auth", guestAuthLimiter, guestAuthRoutes);
+// Only actual sign-in attempts consume the guest auth limit. Config, session checks,
+// email verification and other auth endpoints must not lock visitors out.
+app.post("/api/guest-auth/login", guestAuthLimiter);
+app.post("/api/guest-auth/google", guestAuthLimiter);
+app.use("/api/guest-auth", guestAuthRoutes);
 
 app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
   try {

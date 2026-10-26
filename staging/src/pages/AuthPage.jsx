@@ -56,7 +56,7 @@ export default function AuthPage({ mode = "login" }) {
 
   useEffect(() => {
     let cancelled = false;
-    let script = null;
+
     const renderGoogleButton = clientId => {
       if (cancelled || !clientId || !window.google?.accounts?.id) return;
       const container = document.getElementById("roomo-google-signin");
@@ -100,38 +100,58 @@ export default function AuthPage({ mode = "login" }) {
         width: Math.min(360, Math.max(240, Math.floor(container.getBoundingClientRect().width || 320)))
       });
       setGoogleReady(true);
+      setGoogleConfigMessage("");
     };
+
+    const loadGoogleIdentity = () => new Promise((resolve, reject) => {
+      if (window.google?.accounts?.id) {
+        resolve();
+        return;
+      }
+      let script = document.querySelector('script[data-roomo-google-identity]');
+      if (script?.dataset.roomoLoadFailed === "true") {
+        script.remove();
+        script = null;
+      }
+      if (!script) {
+        script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.dataset.roomoGoogleIdentity = "true";
+        script.addEventListener("load", () => resolve(), { once: true });
+        script.addEventListener("error", () => {
+          script.dataset.roomoLoadFailed = "true";
+          reject(new Error("Google sign-in could not load. Check your internet connection and try again."));
+        }, { once: true });
+        document.head.appendChild(script);
+        return;
+      }
+      script.addEventListener("load", () => resolve(), { once: true });
+      script.addEventListener("error", () => reject(new Error("Google sign-in could not load. Check your internet connection and try again.")), { once: true });
+      window.setTimeout(() => {
+        if (window.google?.accounts?.id) resolve();
+      }, 0);
+    });
 
     fetch(`${API_BASE}/guest-auth/config`, { cache: "no-store", credentials: "include" })
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Unable to load Google sign-in configuration.");
-        if (!data.googleClientId) throw new Error("Google sign-in is not configured yet. Add GOOGLE_CLIENT_ID to the backend .env file.");
-        if (window.google?.accounts?.id) {
-          renderGoogleButton(data.googleClientId);
-          return;
-        }
-        script = document.querySelector('script[data-roomo-google-identity]');
-        if (!script) {
-          script = document.createElement("script");
-          script.src = "https://accounts.google.com/gsi/client";
-          script.async = true;
-          script.defer = true;
-          script.dataset.roomoGoogleIdentity = "true";
-          document.head.appendChild(script);
-        }
-        script.addEventListener("load", () => renderGoogleButton(data.googleClientId), { once: true });
-        script.addEventListener("error", () => {
-          if (!cancelled) notify("Google sign-in could not load. Check your internet connection and try again.");
-        }, { once: true });
-        if (window.google?.accounts?.id) renderGoogleButton(data.googleClientId);
+        if (!data.googleClientId) throw new Error("Google sign-in is not configured. Add GOOGLE_CLIENT_ID to staging/backend/.env and restart the backend.");
+        await loadGoogleIdentity();
+        if (!cancelled) renderGoogleButton(data.googleClientId);
       })
       .catch(error => {
-        if (!cancelled) setGoogleConfigMessage(error.message || "Google sign-in is unavailable.");
+        if (!cancelled) {
+          setGoogleReady(false);
+          setGoogleConfigMessage(error.message || "Google sign-in is unavailable.");
+        }
       });
 
     return () => { cancelled = true; };
   }, [isSignup]);
+
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
