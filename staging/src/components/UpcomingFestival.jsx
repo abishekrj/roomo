@@ -48,9 +48,10 @@ export default function UpcomingFestival() {
   }).format(new Date(festivalDate));
 
   return (
-    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#2563a6] py-8 sm:py-10 lg:py-12">
+    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#f4f7fb] py-8 sm:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-7xl rounded-lg bg-[#2563a6] px-4 py-7 text-center text-white sm:px-8 sm:py-9 lg:px-12 lg:py-11">
+          <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/80 sm:text-sm">
             {content?.festivalEyebrow || "Upcoming Festival"}
           </p>
@@ -73,6 +74,7 @@ export default function UpcomingFestival() {
           ) : (
             <p className="text-center text-sm text-white/85">Festival date will be announced soon.</p>
           )}
+          </div>
         </div>
       </div>
     </section>
