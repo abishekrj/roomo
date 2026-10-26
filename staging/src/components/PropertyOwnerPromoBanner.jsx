@@ -22,7 +22,7 @@ export default function PropertyOwnerPromoBanner() {
   }, []);
   if (section.enabled === false) return null;
   return (
-    <section aria-labelledby="property-owner-promo-title" className="w-full bg-[#fff4cc] py-8 sm:py-10 lg:py-12">
+    <section aria-labelledby="property-owner-promo-title" className="w-full bg-[#f4f7fb] py-8 sm:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="grid items-center gap-6 overflow-hidden rounded-lg bg-[#2563a6] px-5 py-7 text-white sm:px-8 sm:py-9 md:grid-cols-[1.2fr_.8fr] md:gap-10 lg:px-12 lg:py-11">
           <div className="min-w-0">
