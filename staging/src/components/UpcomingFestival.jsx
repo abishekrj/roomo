@@ -76,4 +76,5 @@ export default function UpcomingFestival() {
         </div>
       </div>
     </section>
+  );
 }
