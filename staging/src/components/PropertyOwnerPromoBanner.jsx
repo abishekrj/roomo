@@ -27,11 +27,11 @@ export default function PropertyOwnerPromoBanner() {
         <div className="relative isolate grid items-center gap-6 overflow-hidden rounded-lg bg-[#2563a6] px-5 py-7 text-white sm:px-8 sm:py-9 md:grid-cols-[1.2fr_.8fr] md:gap-10 lg:px-12 lg:py-11">
           
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <svg viewBox="0 0 180 180" className="absolute -right-5 -top-8 h-40 w-40 text-white/[0.11] animate-pulse sm:h-52 sm:w-52" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 180 180" className="absolute -right-5 -top-8 h-40 w-40 text-white opacity-25 animate-pulse sm:h-52 sm:w-52" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M18 82 90 24l72 58M34 75v76h112V75M67 151v-44h46v44M52 91h15m46 0h15M52 108h7m62 0h7"/>
             <rect x="48" y="82" width="84" height="69" rx="3"/><path d="M75 82V63h30v19M85 63V49h10v14"/>
           </svg>
-          <svg viewBox="0 0 160 160" className="absolute -bottom-10 left-[38%] h-32 w-32 text-white/[0.09] animate-[spin_32s_linear_infinite] sm:h-40 sm:w-40" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 160 160" className="absolute -bottom-10 left-[38%] h-32 w-32 text-white opacity-20 animate-[spin_32s_linear_infinite] sm:h-40 sm:w-40" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="80" cy="80" r="58" strokeDasharray="5 7"/><path d="M42 105V64l38-21 38 21v41M53 105V73h54v32M70 105V84h20v21M34 118h92"/>
             <path d="M58 57V44h44v13"/>
           </svg>
