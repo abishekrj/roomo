@@ -1,6 +1,7 @@
 const homepageDefaults = {
   searchSuggestionLimit: 5,
   transportPromo: { enabled:true, eyebrow:"ROOMO Travel", title:"Your sacred journey, from door to destination.", description:"Book a car or van for temple visits, Girivalam, station pickups and day trips around Tiruvannamalai. Start with your destination and send a ride request in a few simple steps.", buttonLabel:"Plan your journey", helperText:"Driver confirmation follows your request.", imageLabel:"Comfortable rides" },
+  propertyOwnerPromo: { enabled:true, eyebrow:"PARTNER WITH ROOMO", title:"Your property. More meaningful stays.", description:"Welcome pilgrims and travellers to your property with ROOMO. Reach guests planning their sacred visit to Tiruvannamalai and manage enquiries through your owner dashboard.", buttonLabel:"List your property", helperText:"Join ROOMO and share your stay with more guests." },
   nearbyLocations: {
     enabled: true,
     eyebrow: "Explore Tiruvannamalai",
