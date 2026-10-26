@@ -69,7 +69,7 @@ export default function HeroBanner() {
               {slide.titleLine}
               <span className="mt-1 block">{slide.titleAccent}</span>
             </h1>
-            {index === 0 && <p className="mt-5 max-w-xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">{slide.description}</p>}
+            <p className="mt-5 max-w-xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">{slide.description}</p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a href={slide.buttonHref} tabIndex={activeSlide === index ? 0 : -1} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#2563a6] bg-[#2563a6] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#2563a6] sm:text-base">
                 {slide.buttonLabel}
