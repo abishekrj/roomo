@@ -9,12 +9,13 @@ import NearbyLocations from "../components/NearbyLocations.jsx";
 import Gallery from "../components/Gallery.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import TransportPromoBanner from "../components/TransportPromoBanner.jsx";
+import PropertyOwnerPromoBanner from "../components/PropertyOwnerPromoBanner.jsx";
 
 export default function HomePage() {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink">
     <Header />
     <main className="flex-1">
-      <HeroBanner /><SearchSection /><FeaturedStays /><UpcomingFestival /><PilgrimGuide /><NearbyLocations /><TransportPromoBanner /><Gallery /><Testimonials />
+      <HeroBanner /><SearchSection /><FeaturedStays /><UpcomingFestival /><PilgrimGuide /><NearbyLocations /><TransportPromoBanner /><Gallery /><PropertyOwnerPromoBanner /><Testimonials />
     </main>
     <Footer />
   </div>;
