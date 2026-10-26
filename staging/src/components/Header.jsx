@@ -12,6 +12,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const languageRef = useRef(null);
   const notificationsRef = useRef(null);
@@ -30,6 +31,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     const closeOnEscape = event => {
       if (event.key === "Escape") {
         setMenuOpen(false);
+        setMobileMenuOpen(false);
         setLanguageOpen(false);
         setNotificationsOpen(false);
       }
@@ -109,9 +111,10 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   return (
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className={`mx-auto flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "max-w-7xl"}`}>
+        {!ownerPortal && <button type="button" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-700 hover:bg-blue-50 hover:text-[#2563a6] lg:hidden" aria-label={mobileMenuOpen ? "Close main menu" : "Open main menu"} aria-expanded={mobileMenuOpen} onClick={() => { setMobileMenuOpen(!mobileMenuOpen); setMenuOpen(false); setLanguageOpen(false); }}><i className={`bi ${mobileMenuOpen ? "bi-x-lg" : "bi-list"} text-2xl`} aria-hidden="true" /></button>}
         <a className="roomo-logo-link shrink-0 focus:outline-none" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
 
-        {!ownerPortal && <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+        {!ownerPortal && <nav aria-label="Main navigation" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
           <a href="/staging/" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname === "/staging/" || window.location.pathname === "/staging" ? "text-[#2563a6]" : "text-slate-700"}`}>Home</a>
           <a href="/staging/properties" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/properties") || window.location.pathname.startsWith("/staging/property-details") ? "text-[#2563a6]" : "text-slate-700"}`}>Stays</a>
           <a href="/staging/transport-booking" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/transport-booking") ? "text-[#2563a6]" : "text-slate-700"}`}>Travels</a>
@@ -149,6 +152,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
           </div>
         </div>
       </div>
+      {!ownerPortal && mobileMenuOpen && <nav aria-label="Mobile main navigation" className="border-t border-slate-200 bg-white px-4 py-3 shadow-md lg:hidden"><div className="mx-auto flex max-w-7xl flex-col gap-1"><a onClick={() => setMobileMenuOpen(false)} href="/staging/" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Home</a><a onClick={() => setMobileMenuOpen(false)} href="/staging/properties" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Stays</a><a onClick={() => setMobileMenuOpen(false)} href="/staging/transport-booking" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Travels</a></div></nav>}
     </header>
   );
 }
