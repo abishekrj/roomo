@@ -19,7 +19,7 @@ export default function SuperAdminPortal() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [stats, setStats] = useState({ properties: 0, users: 0, owners: 0, drivers: 0 });
+  const [stats, setStats] = useState({ properties: 0, users: 0, owners: 0, drivers: 0, roomsBookedToday: 0, roomsBookedLast7Days: 0, travelsBookedToday: 0, travelsBookedLast7Days: 0 });
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [heroDraft, setHeroDraft] = useState({});
@@ -71,8 +71,9 @@ export default function SuperAdminPortal() {
       fetch(API + "/admin/properties", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load properties."); return d; }),
       fetch(API + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered users."); return d; }),
       fetch(API + "/admin/owners", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load property owners."); return d; }),
-      fetch(API + "/transport/admin/drivers", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered drivers."); return d; })
-    ]).then(([p, u, o, d]) => {
+      fetch(API + "/transport/admin/drivers", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load registered drivers."); return d; }),
+      fetch(API + "/admin/dashboard-stats", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Could not load booking statistics."); return d; })
+    ]).then(([p, u, o, d, bookingStats]) => {
       if (cancelled) return;
       setProperties(p.properties || []);
       setUsers(u.users || []);
@@ -80,7 +81,11 @@ export default function SuperAdminPortal() {
         properties: (p.properties || []).length,
         users: (u.users || []).length,
         owners: (o.owners || []).length,
-        drivers: (d.drivers || []).length
+        drivers: (d.drivers || []).length,
+        roomsBookedToday: bookingStats.roomsBookedToday || 0,
+        roomsBookedLast7Days: bookingStats.roomsBookedLast7Days || 0,
+        travelsBookedToday: bookingStats.travelsBookedToday || 0,
+        travelsBookedLast7Days: bookingStats.travelsBookedLast7Days || 0
       });
     }).catch(e => { if (!cancelled) setNotice(e.message || "Unable to load dashboard data."); });
     return () => { cancelled = true; };
@@ -315,6 +320,10 @@ export default function SuperAdminPortal() {
               <a href={routePrefix + "/owners"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Property owners</span><strong className="mt-3 block text-3xl font-semibold">{stats.owners}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage owners →</span></a>
               <a href={routePrefix + "/drivers/add"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered drivers</span><strong className="mt-3 block text-3xl font-semibold">{stats.drivers}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">Manage drivers →</span></a>
               <a href={routePrefix + "/users"} className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-300"><span className="text-sm text-slate-500">Registered guests</span><strong className="mt-3 block text-3xl font-semibold">{stats.users}</strong><span className="mt-3 block text-sm font-semibold text-roomo-blue">View accounts →</span></a>
+              <div className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><span className="text-sm text-slate-500">Rooms booked today</span><strong className="mt-3 block text-3xl font-semibold">{stats.roomsBookedToday}</strong><span className="mt-3 block text-sm text-slate-500">Requested or confirmed</span></div>
+              <div className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><span className="text-sm text-slate-500">Rooms booked · last 7 days</span><strong className="mt-3 block text-3xl font-semibold">{stats.roomsBookedLast7Days}</strong><span className="mt-3 block text-sm text-slate-500">Requested or confirmed</span></div>
+              <div className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><span className="text-sm text-slate-500">Travels booked today</span><strong className="mt-3 block text-3xl font-semibold">{stats.travelsBookedToday}</strong><span className="mt-3 block text-sm text-slate-500">Trip bookings, excluding cancelled</span></div>
+              <div className="rounded-roomo border border-slate-200 bg-white p-6 shadow-sm"><span className="text-sm text-slate-500">Travels booked · last 7 days</span><strong className="mt-3 block text-3xl font-semibold">{stats.travelsBookedLast7Days}</strong><span className="mt-3 block text-sm text-slate-500">Trip bookings, excluding cancelled</span></div>
             </div>}
             {activePage === "properties" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Property listings</h2><p className="mt-1 text-sm text-slate-500">Properties returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Property</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{properties.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.title || item.name || "Untitled property"}</td><td className="px-5 py-4">{[item.city, item.address].filter(Boolean).join(", ") || "—"}</td><td className="px-5 py-4">{item.status || "—"}</td></tr>)}{!properties.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No property listings found.</td></tr>}</tbody></table></div></section>}
             {activePage === "users" && <section className="overflow-hidden rounded-roomo border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="font-semibold">Registered users</h2><p className="mt-1 text-sm text-slate-500">Guest accounts returned by the admin API.</p></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Registered</th></tr></thead><tbody className="divide-y divide-slate-100">{users.map((item, i) => <tr key={item.id || i}><td className="px-5 py-4 font-medium">{item.fullName || item.name || "Guest"}</td><td className="px-5 py-4">{item.email || "—"}</td><td className="px-5 py-4">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td></tr>)}{!users.length && <tr><td colSpan="3" className="px-5 py-8 text-center text-slate-500">No registered users found.</td></tr>}</tbody></table></div></section>}
