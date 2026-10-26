@@ -12,6 +12,7 @@ const guestAuthRoutes = require("./routes/guestAuth");
 const adminRoutes = require("./routes/admin");
 const adminHomepageRoutes = require("./routes/adminHomepage");
 const adminTestimonialsRoutes = require("./routes/adminTestimonials");
+const adminReviewRoutes = require("./routes/adminReviews");
 const propertyRoutes = require("./routes/properties");
 const reservationRoutes = require("./routes/reservations");
 const enquiryRoutes = require("./routes/enquiries");
@@ -167,6 +168,7 @@ app.use("/api/admin/commissions", adminCommissionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/homepage", adminHomepageRoutes);
 app.use("/api/admin/testimonials", adminTestimonialsRoutes);
+app.use("/api/admin/reviews", adminReviewRoutes);
 app.use("/api/transport", transportRoutes);
 
 app.use((error, req, res, next) => {
