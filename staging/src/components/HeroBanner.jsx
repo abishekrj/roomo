@@ -28,6 +28,8 @@ export default function HeroBanner() {
       imageAlt: "Arunachala hill and the sacred temple in Tiruvannamalai",
       buttonLabel: "Browse Rooms",
       buttonHref: "/staging/properties",
+      secondaryButtonLabel: "Bring Your Property",
+      secondaryButtonHref: "/staging/owner/signup",
     },
     {
       badge: content?.heroSecondBadge || "ROOMO TRAVEL · OUTSTATION CAB BOOKING",
@@ -38,6 +40,8 @@ export default function HeroBanner() {
       imageAlt: "Comfortable car ready for an outstation journey",
       buttonLabel: "Book a Cab",
       buttonHref: "/staging/transport-booking",
+      secondaryButtonLabel: "Offer a Ride",
+      secondaryButtonHref: "/staging/driver",
     },
   ];
 
@@ -67,10 +71,15 @@ export default function HeroBanner() {
               <span className="mt-1 block">{slide.titleAccent}</span>
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">{slide.description}</p>
-            <a href={slide.buttonHref} tabIndex={activeSlide === index ? 0 : -1} className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#2563a6] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#2563a6] sm:text-base">
-              {slide.buttonLabel}
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
-            </a>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <a href={slide.buttonHref} tabIndex={activeSlide === index ? 0 : -1} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#2563a6] bg-[#2563a6] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#1e4f85] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#2563a6] sm:text-base">
+                {slide.buttonLabel}
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+              </a>
+              <a href={slide.secondaryButtonHref} tabIndex={activeSlide === index ? 0 : -1} className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-white hover:text-[#2563a6] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 sm:text-base">
+                {slide.secondaryButtonLabel}
+              </a>
+            </div>
           </div>
         ))}
         <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between sm:bottom-7 sm:left-8 sm:right-8 lg:left-10 lg:right-10">
