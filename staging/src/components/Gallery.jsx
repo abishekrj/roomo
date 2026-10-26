@@ -84,12 +84,12 @@ export default function Gallery() {
             Gallery photos will appear here soon.
           </div>
         ) : (
-          <div ref={carouselRef} className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Gallery photo carousel">
+          <div ref={carouselRef} className="flex items-stretch snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Gallery photo carousel">
             {photos.map((item, index) => (
               <button key={item.id || item.title || index} data-gallery-card type="button" onClick={() => setSelectedIndex(index)}
-                className="group w-[calc(100%-0.25rem)] shrink-0 snap-start overflow-hidden rounded-lg border border-[#E3E8EF] bg-white text-left shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)]"
+                className="group flex h-full w-[calc(100%-1rem)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-[#E3E8EF] bg-white text-left shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)]"
                 aria-label={`Open photo: ${item.title || "Gallery photo"}`}>
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#EAF0F7]">
+                <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#EAF0F7]">
                   <img src={item.thumbnailUrl || item.mediaUrl} alt={item.title || "ROOMO gallery photo"} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
                   <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/10">
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#2563A6] opacity-0 shadow transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true">
@@ -97,9 +97,9 @@ export default function Gallery() {
                     </span>
                   </span>
                 </div>
-                <div className="p-4">
-                  <h3 className="line-clamp-1 text-sm font-semibold text-[#212529] sm:text-base">{item.title || "Visual story"}</h3>
-                  {item.description && <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-[#5F6670]">{item.description}</p>}
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="line-clamp-1 min-h-5 text-sm font-semibold text-[#212529] sm:text-base">{item.title || "Visual story"}</h3>
+                  {item.description && <p className="mt-1.5 line-clamp-2 min-h-10 text-sm leading-5 text-[#5F6670]">{item.description}</p>}
                 </div>
               </button>
             ))}
