@@ -138,7 +138,7 @@ export default function AuthPage({ mode = "login" }) {
       .then(async response => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || "Unable to load Google sign-in configuration.");
-        if (!data.googleClientId) throw new Error("Google sign-in is not configured. Add GOOGLE_CLIENT_ID to staging/backend/.env and restart the backend.");
+        if (!data.googleClientId) throw new Error("Google sign-in is not configured. Add GOOGLE_CLIENT_ID to backend/.env and restart the backend.");
         await loadGoogleIdentity();
         if (!cancelled) renderGoogleButton(data.googleClientId);
       })
