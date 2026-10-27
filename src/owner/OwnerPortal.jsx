@@ -33,7 +33,7 @@ export default function OwnerPortal() {
   const [properties, setProperties] = useState([]);
   const [reservations, setReservations] = useState([]);
   const currentPath = window.location.pathname.replace(/\/+$/, "") || "/owner";
-  const routePrefix = currentPath.startsWith("/staging/owner") ? "/staging/owner" : "/owner";
+  const routePrefix = "/owner";
   const routePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
   const [active, setActive] = useState(routePage);
   const [busy, setBusy] = useState(false);
