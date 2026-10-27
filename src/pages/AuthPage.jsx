@@ -4,15 +4,15 @@ import roomoLogo from "../../../Roomo/roomo-frontend/assets/roomo-logo.png";
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
 function safePostLoginUrl(returnTo) {
-  if (!returnTo) return "/staging";
+  if (!returnTo) return "";
   try {
     const target = new URL(returnTo, window.location.origin);
     const path = target.pathname.replace(/\/+$/, "") || "/";
-    const isAuthPage = ["/staging/login", "/staging/signup", "/login", "/signup"].includes(path);
-    if (target.origin !== window.location.origin || isAuthPage) return "/staging";
+    const isAuthPage = ["/login", "/signup", "/login", "/signup"].includes(path);
+    if (target.origin !== window.location.origin || isAuthPage) return "";
     return target.pathname + target.search + target.hash;
   } catch {
-    return "/staging";
+    return "";
   }
 }
 
@@ -237,9 +237,9 @@ export default function AuthPage({ mode = "login" }) {
             <div id="roomo-google-signin" className="flex w-full justify-center"></div>
           </div>
           {googleBusy && <p role="status" className="mt-3 text-center text-sm text-slate-500">Connecting your Google account…</p>}
-          <p className="mt-6 text-center text-sm text-slate-600">{isSignup ? "Already have an account?" : "New to ROOMO Sacred?"} <a href={`/staging/${isSignup ? "login" : "signup"}${window.location.search}`} className="font-semibold text-[#2563a6] hover:underline">{isSignup ? "Sign in" : "Create an account"}</a></p>
+          <p className="mt-6 text-center text-sm text-slate-600">{isSignup ? "Already have an account?" : "New to ROOMO Sacred?"} <a href={`/${isSignup ? "login" : "signup"}${window.location.search}`} className="font-semibold text-[#2563a6] hover:underline">{isSignup ? "Sign in" : "Create an account"}</a></p>
           {!isSignup && <p className="mt-5 text-center text-sm text-slate-600">Property owner? <a href="/owner/login" className="font-semibold text-[#2563a6] hover:underline">Open Owner Dashboard</a></p>}
-          <p className="mt-8 text-center text-xs leading-5 text-slate-500">By continuing, you agree to our <a href="/staging/terms" className="underline">Terms of Service</a> and <a href="/staging/privacy" className="underline">Privacy Policy</a>.</p>
+          <p className="mt-8 text-center text-xs leading-5 text-slate-500">By continuing, you agree to our <a href="/terms" className="underline">Terms of Service</a> and <a href="/privacy" className="underline">Privacy Policy</a>.</p>
           <p className="mt-4 text-center text-xs text-slate-400">♧ Secure sign-in powered by ROOMO</p>
         </div>
       </section>
