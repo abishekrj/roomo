@@ -100,7 +100,7 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
   }
 
   if (isAdd) return <div className="space-y-6">
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver management</p><h2 className="mt-2 text-xl font-semibold">Add a driver</h2><p className="mt-1 text-sm leading-6 text-slate-500">Create the driver's login, vehicle profile and service area. A driver can sign in at <span className="font-medium text-slate-700">/staging/driver</span>.</p></div>
+    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver management</p><h2 className="mt-2 text-xl font-semibold">Add a driver</h2><p className="mt-1 text-sm leading-6 text-slate-500">Create the driver's login, vehicle profile and service area. A driver can sign in at <span className="font-medium text-slate-700">/driver</span>.</p></div>
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <form onSubmit={addDriver} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <label className="text-sm font-medium">Full name *<input className={inputClass} name="fullName" value={form.fullName} onChange={change} required minLength="2" maxLength="120" /></label>
