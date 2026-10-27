@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { font-family: "Poppins", sans-serif; color: #212529; background: #fff; font-synthesis: none; text-rendering: optimizeLegibility; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+
+/* Testimonials carousel — hide the scrollbar while preserving touch and button scrolling. */
+.roomo-testimonials-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.roomo-testimonials-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+
+
+/* Featured stays carousel — horizontal navigation without a visible scrollbar. */
+.roomo-featured-stays-track {
+  padding: 2px 1px 8px;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.roomo-featured-stays-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+
+/* Keep Google Translate's controls hidden; language is selected from ROOMO's own header. */
+#google_translate_element { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; }
+.goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe.goog-te-banner-frame, .goog-te-balloon-frame,
+#goog-gt-tt, .goog-te-balloon-frame, .goog-tooltip, .goog-tooltip:hover { display: none !important; visibility: hidden !important; }
+html, body { top: 0 !important; }
+body > .skiptranslate { display: none !important; }
+
+
+/* Avoid persistent mouse-click focus rings while retaining keyboard focus visibility. */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.roomo-logo-link:focus:not(:focus-visible),
+.roomo-logo-link img {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
