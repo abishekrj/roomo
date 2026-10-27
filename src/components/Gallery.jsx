@@ -1,6 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const API = "http://localhost:5001/api/gallery";
+const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
+const API = `${API_BASE}/gallery`;
+const API_ORIGIN = new URL(API_BASE).origin;
+function resolveImageUrl(value) {
+  if (!value || typeof value !== "string") return "";
+  const raw = value.trim().replace(/\\\\/g, "/");
+  if (!raw) return "";
+  if (/^(data:|blob:)/i.test(raw)) return raw;
+  try {
+    const url = new URL(raw, API_ORIGIN);
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port !== "5001" && url.pathname.startsWith("/uploads/")) {
+      url.protocol = "http:";
+      url.hostname = "localhost";
+      url.port = "5001";
+    }
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
 
 export default function Gallery() {
   const [items, setItems] = useState([]);
@@ -28,7 +47,7 @@ export default function Gallery() {
   }, []);
 
   // Visual Stories is a photo gallery. YouTube and other video entries are not displayed here.
-  const photos = useMemo(() => items.filter((item) => item.type === "IMAGE" && item.mediaUrl), [items]);
+  const photos = useMemo(() => items.filter((item) => item.type === "IMAGE" && resolveImageUrl(item.mediaUrl)), [items]);
   const selected = selectedIndex === null ? null : photos[selectedIndex];
 
   const showPrevious = () => setSelectedIndex((current) => current === null ? null : (current - 1 + photos.length) % photos.length);
@@ -90,7 +109,7 @@ export default function Gallery() {
                 className="group flex h-full w-[calc(100%-1rem)] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-[#E3E8EF] bg-white text-left shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6] focus-visible:ring-offset-2 sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-3rem)/4)]"
                 aria-label={`Open photo: ${item.title || "Gallery photo"}`}>
                 <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#EAF0F7]">
-                  <img src={item.thumbnailUrl || item.mediaUrl} alt={item.title || "ROOMO gallery photo"} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+                  <img src={resolveImageUrl(item.thumbnailUrl) || resolveImageUrl(item.mediaUrl)} alt={item.title || "ROOMO gallery photo"} loading="lazy" onError={(event) => { const image = event.currentTarget; const media = resolveImageUrl(item.mediaUrl); if (media && image.src !== media) { image.src = media; return; } image.style.display = "none"; }} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
                   <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/10">
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#2563A6] opacity-0 shadow transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true">
                       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /><path d="M11 8v6M8 11h6" /></svg>
@@ -120,7 +139,7 @@ export default function Gallery() {
               <button type="button" onClick={() => setSelectedIndex(null)} aria-label="Close gallery viewer" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D9E0E8] text-xl text-[#354252] hover:bg-slate-50">×</button>
             </div>
             <div className="relative flex min-h-[240px] max-h-[72vh] items-center justify-center bg-black">
-              <img src={selected.mediaUrl} alt={selected.title || "ROOMO gallery photo"} className="max-h-[72vh] w-full object-contain" />
+              <img src={resolveImageUrl(selected.mediaUrl)} alt={selected.title || "ROOMO gallery photo"} onError={(event) => { event.currentTarget.style.display = "none"; }} className="max-h-[72vh] w-full object-contain" />
               {photos.length > 1 && (
                 <>
                   <button type="button" onClick={showPrevious} aria-label="Previous photo" className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-black/55 text-white shadow-lg transition hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
