@@ -63,7 +63,7 @@ export default function DriverPortal() {
     setError(""); setNotice("");
     try {
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) throw new Error("This browser does not support web push notifications. Try an up-to-date mobile browser.");
-      if (!vapidKey) throw new Error("Push notifications are not configured yet. Add VITE_ROOMO_VAPID_PUBLIC_KEY to the staging environment.");
+      if (!vapidKey) throw new Error("Push notifications are not configured yet. Add VITE_ROOMO_VAPID_PUBLIC_KEY to the deployment environment.");
       const permission = await Notification.requestPermission();
       if (permission !== "granted") throw new Error("Notifications are blocked. Allow notifications for ROOMO in your browser settings.");
       const registration = await navigator.serviceWorker.register("/driver-sw.js", { scope: "/" });
