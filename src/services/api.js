@@ -1,4 +1,4 @@
-/** Shared API configuration for the ROOMO React staging app. */
+/** Shared API configuration for the ROOMO React app. */
 export const API_BASE_URL = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
 function readCookie(name) {
