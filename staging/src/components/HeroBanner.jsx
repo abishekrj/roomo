@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import templeHeroImage from "../../../roomo-frontend/assets/roomo-hero-banner.jpg";
+const templeHeroImage = "/assets/roomo-hero-banner.jpg";
 
 const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
 const SLIDE_INTERVAL = 6500;
@@ -26,21 +26,21 @@ export default function HeroBanner() {
       image: content?.heroImageUrl || templeHeroImage,
       imageAlt: "Arunachala hill and the sacred temple in Tiruvannamalai",
       buttonLabel: "Browse Rooms",
-      buttonHref: "/staging/properties",
+      buttonHref: "/properties",
       secondaryButtonLabel: "Bring Your Property",
-      secondaryButtonHref: "/staging/owner/signup",
+      secondaryButtonHref: "/owner/signup",
     },
     {
       badge: content?.heroSecondBadge || "ROOMO TRAVEL · OUTSTATION CAB BOOKING",
       titleLine: content?.heroSecondTitleLine || "Your Journey Beyond",
       titleAccent: content?.heroSecondTitleAccent || "Tiruvannamalai",
       description: content?.heroSecondDescription || "Arrange a comfortable outstation journey with ROOMO. Plan your pickup, destination and travel time in a few simple steps.",
-      image: content?.heroSecondImageUrl || "/staging/assets/roomo-travel-hero.png",
+      image: content?.heroSecondImageUrl || "/assets/roomo-travel-hero.png",
       imageAlt: "Comfortable car ready for an outstation journey",
       buttonLabel: "Book a Cab",
-      buttonHref: "/staging/transport-booking",
+      buttonHref: "/transport-booking",
       secondaryButtonLabel: "Offer a Ride",
-      secondaryButtonHref: "/staging/driver",
+      secondaryButtonHref: "/driver",
     },
   ];
 
@@ -67,7 +67,7 @@ export default function HeroBanner() {
             </div>
             <h1 className="max-w-3xl text-3xl font-semibold leading-[1.1] tracking-tight text-white drop-shadow-sm sm:text-4xl lg:text-5xl">
               {slide.titleLine}
-              <span className="mt-1 block">{slide.titleAccent}</span>
+              <span className="mt-1 block text-[#ffd54a]">{slide.titleAccent}</span>
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">{slide.description}</p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
