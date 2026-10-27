@@ -112,7 +112,7 @@ async function dispatchBooking(booking) {
   await Promise.all(eligible.map(driver => sendDriverPush(driver.id, {
     title: "ROOMO · New trip request",
     body: booking.pickupLocation + " → " + booking.dropoffLocation,
-    url: "/staging/driver/dashboard",
+    url: "/driver/dashboard",
     bookingCode: booking.bookingCode
   })));
 }
@@ -316,7 +316,7 @@ adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
       return true;
     });
     if (!result) return res.status(409).json({ message: "This booking can no longer be assigned." });
-    await sendDriverPush(driver.id, { title: "ROOMO · Trip assigned", body: booking.pickupLocation + " → " + booking.dropoffLocation, url: "/staging/driver/dashboard", bookingCode: booking.bookingCode });
+    await sendDriverPush(driver.id, { title: "ROOMO · Trip assigned", body: booking.pickupLocation + " → " + booking.dropoffLocation, url: "/driver/dashboard", bookingCode: booking.bookingCode });
     res.json({ message: "Driver assigned successfully." });
   } catch (error) { next(error); }
 });
