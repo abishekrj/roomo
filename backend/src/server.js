@@ -51,12 +51,12 @@ app.use(cors({
 
 app.use(express.json({ limit: "20kb" }));
 app.use(csrfProtection);
-// Serve both the staging backend uploads and the legacy ROOMO uploads. Existing database URLs may reference files in either directory.
-const stagingUploadsRoot = path.resolve(path.join(__dirname, "../uploads"));
+// Serve uploads from the current backend and, when configured, the shared legacy upload directory.
+const uploadsRoot = path.resolve(path.join(__dirname, "../uploads"));
 const sharedUploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../roomo-backend/uploads"));
 const uploadStaticOptions = { dotfiles: "deny", index: false, maxAge: "1d" };
-app.use("/uploads", express.static(stagingUploadsRoot, uploadStaticOptions));
-if (sharedUploadsRoot !== stagingUploadsRoot) app.use("/uploads", express.static(sharedUploadsRoot, uploadStaticOptions));
+app.use("/uploads", express.static(uploadsRoot, uploadStaticOptions));
+if (sharedUploadsRoot !== uploadsRoot) app.use("/uploads", express.static(sharedUploadsRoot, uploadStaticOptions));
 
 // Keep owner/admin and guest sign-in limits independent. Count failed responses only,
  // so a successful login or normal auth response does not consume the attempt budget.
