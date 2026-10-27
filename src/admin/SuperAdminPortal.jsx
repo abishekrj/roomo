@@ -31,8 +31,8 @@ export default function SuperAdminPortal() {
   const [token, setToken] = useState(() => sessionStorage.getItem("roomo_admin_token") || "");
   const [authReady, setAuthReady] = useState(false);
   const currentPath = path.replace(/\/+$/, "") || "/";
-  const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/staging/admin";
-  const routePrefix = currentPath.startsWith("/staging/admin") ? "/staging/admin" : "/admin";
+  const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/admin";
+  const routePrefix = "/admin";
   const isHomePageEditor = currentPath.includes("/homepage/");
   const homePageSection = isHomePageEditor ? currentPath.split("/homepage/")[1] : "";
   const isHeroEditor = homePageSection === "hero-banner";
@@ -55,12 +55,12 @@ export default function SuperAdminPortal() {
   }, [currentPath, routePrefix, loginPage]);
 
   useEffect(() => {
-    if (loginPage) { if (token) window.location.replace("/staging/admin/dashboard"); else setAuthReady(true); return; }
+    if (loginPage) { if (token) window.location.replace("/admin/dashboard"); else setAuthReady(true); return; }
     let cancelled = false;
     fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
-      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken(token); else if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/staging/admin/login"); } })
-      .catch(() => { if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/staging/admin/login"); } })
+      .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken(token); else if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/admin/login"); } })
+      .catch(() => { if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/admin/login"); } })
       .finally(() => { if (!cancelled) setAuthReady(true); });
     return () => { cancelled = true; };
   }, [loginPage]);
@@ -129,7 +129,7 @@ export default function SuperAdminPortal() {
       if (data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
       sessionStorage.setItem("roomo_admin_token", data.token);
       setToken(data.token);
-      window.location.href = "/staging/admin/dashboard";
+      window.location.href = "/admin/dashboard";
     } catch (e) {
       setError(e.message || "Unable to sign in.");
     } finally {
@@ -137,7 +137,7 @@ export default function SuperAdminPortal() {
     }
   }
 
-  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.href = "/staging/admin/login"; } }
+  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.href = "/admin/login"; } }
 
   function updateHeroField(event) {
     setHeroDraft(current => ({ ...current, [event.target.name]: event.target.value }));
@@ -310,7 +310,7 @@ export default function SuperAdminPortal() {
                     {heroDraft.heroSecondImageUrl && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2"><img src={heroDraft.heroSecondImageUrl} alt="Cab booking slider preview" className="max-h-64 w-full rounded-md object-contain" onError={e => { e.currentTarget.style.display = "none"; }} /><p className="mt-2 break-all text-xs text-slate-500">{heroDraft.heroSecondImageUrl}</p></div>}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5"><button type="submit" disabled={heroBusy || heroLoading} className="rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2563a6] disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Saving…" : "Save Draft"}</button><button type="button" onClick={publishHeroDraft} disabled={heroBusy || heroLoading} className="rounded-lg bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Please wait…" : "Publish Homepage"}</button><button type="button" onClick={() => window.open("/staging/", "_blank", "noopener,noreferrer")} className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Preview homepage ↗</button></div>
+                <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-5"><button type="submit" disabled={heroBusy || heroLoading} className="rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2563a6] disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Saving…" : "Save Draft"}</button><button type="button" onClick={publishHeroDraft} disabled={heroBusy || heroLoading} className="rounded-lg bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60">{heroBusy ? "Please wait…" : "Publish Homepage"}</button><button type="button" onClick={() => window.open("/", "_blank", "noopener,noreferrer")} className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Preview homepage ↗</button></div>
                 <p className="text-xs leading-5 text-slate-500">Publishing uses the existing homepage publishing workflow and can publish other sections currently saved in the homepage draft too.</p>
               </form>}
             </section>}
