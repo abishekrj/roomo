@@ -121,8 +121,8 @@ function PropertyCard({ property, view, isFavourite, onToggleFavourite }) {
   const badgeLabel = isVerified ? "ROOMO verified" : (property.badgeLabel || (property.isGuestFavourite || property.guestFavourite ? "Guest favourite" : property.isFeatured ? "Popular choice" : property.isGreatLocation ? "Great location" : ""));
   const configuredHref = property.url || property.href;
   const href = configuredHref
-    ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/staging/") ? configuredHref : configuredHref.startsWith("/") ? "/staging" + configuredHref : "/staging/" + configuredHref)
-    : "/staging/property-details?id=" + encodeURIComponent(property.id);
+    ? ((configuredHref.startsWith("http://") || configuredHref.startsWith("https://")) || configuredHref.startsWith("/") ? configuredHref : configuredHref.startsWith("/") ? "" + configuredHref : "/" + configuredHref)
+    : "/property-details?id=" + encodeURIComponent(property.id);
   return <article className={"group relative min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md " + (view === "list" ? "grid sm:grid-cols-[240px_minmax(0,1fr)]" : "flex flex-col")}>
     <div className={"relative min-w-0 overflow-hidden bg-slate-100 " + (view === "list" ? "aspect-square w-full sm:aspect-square sm:min-h-0" : "aspect-[4/3]")}>
       <a href={href} className="absolute inset-0 block overflow-hidden">
@@ -229,7 +229,7 @@ export default function PropertyListingPage() {
     if (!token || !user) {
       const returnUrl = new URL(window.location.href);
       returnUrl.searchParams.set("favorite", String(property.id));
-      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+      window.location.assign("/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
       return;
     }
     const id = String(property.id);
