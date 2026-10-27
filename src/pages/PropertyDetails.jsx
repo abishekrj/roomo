@@ -253,7 +253,7 @@ export default function PropertyDetails() {
     if (!token || !guest) {
       const returnUrl = new URL(window.location.href);
       returnUrl.searchParams.set("favorite", String(property.id));
-      window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
+      window.location.assign("/login?returnTo=" + encodeURIComponent(returnUrl.pathname + returnUrl.search + returnUrl.hash));
       return;
     }
     const key = "roomoFavourites:" + String(guest.id || guest.guestId || guest.email || "guest");
@@ -274,7 +274,7 @@ export default function PropertyDetails() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.user) {
         const returnTo = window.location.pathname + window.location.search + "#reviews";
-        window.location.assign("/staging/login?returnTo=" + encodeURIComponent(returnTo));
+        window.location.assign("/login?returnTo=" + encodeURIComponent(returnTo));
         return;
       }
       setReviewRating(5);
@@ -300,7 +300,7 @@ export default function PropertyDetails() {
       });
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
-        window.location.assign("/staging/login?returnTo=" + encodeURIComponent(window.location.pathname + window.location.search + "#reviews"));
+        window.location.assign("/login?returnTo=" + encodeURIComponent(window.location.pathname + window.location.search + "#reviews"));
         return;
       }
       if (!response.ok) throw new Error(data.message || "Unable to submit your review.");
@@ -375,9 +375,9 @@ export default function PropertyDetails() {
     <Header />
     <main className="flex-1">
       <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-5 sm:px-6 lg:pb-12">
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500"><a href="/staging/" className="hover:text-[#2563a6]">Home</a><span className="mx-2">/</span><a href="/staging/properties" className="hover:text-[#2563a6]">Stays</a><span className="mx-2">/</span><span className="text-slate-700">{title}</span></nav>
+        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500"><a href="/" className="hover:text-[#2563a6]">Home</a><span className="mx-2">/</span><a href="/properties" className="hover:text-[#2563a6]">Stays</a><span className="mx-2">/</span><span className="text-slate-700">{title}</span></nav>
         {loading ? <div className="space-y-5" aria-label="Loading property details"><div className="h-8 w-2/3 animate-pulse rounded-lg bg-slate-100"/><div className="h-72 animate-pulse rounded-lg bg-slate-100"/><div className="h-32 animate-pulse rounded-lg bg-slate-100"/></div>
-        : error ? <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-6"><h1 className="text-lg font-semibold">Property details unavailable</h1><p className="mt-2 text-sm text-slate-600">{error}</p><a href="/staging/properties" className="mt-4 inline-flex rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Browse stays</a></div>
+        : error ? <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-6"><h1 className="text-lg font-semibold">Property details unavailable</h1><p className="mt-2 text-sm text-slate-600">{error}</p><a href="/properties" className="mt-4 inline-flex rounded-lg bg-[#2563a6] px-4 py-2.5 text-sm font-semibold text-white">Browse stays</a></div>
         : property && <>
           <header className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div className="min-w-0">
@@ -398,7 +398,7 @@ export default function PropertyDetails() {
             </div>
           </header>
 
-          {favouriteNotice && <p role="status" className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">{favouriteNotice} <a href="/staging/my-bookings" className="ml-1 font-semibold underline">View favourites</a></p>}
+          {favouriteNotice && <p role="status" className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">{favouriteNotice} <a href="/my-bookings" className="ml-1 font-semibold underline">View favourites</a></p>}
           <section aria-label="Property photos and videos" className="mb-6">
             {media.length ? <div className="relative overflow-hidden rounded-lg">
               <div className="grid grid-cols-1 gap-2 md:aspect-[2.78/1] md:grid-cols-[1.78fr_1fr] md:gap-2">
@@ -544,7 +544,7 @@ export default function PropertyDetails() {
                 {property.updatedAt && <p className="mt-3 text-xs text-slate-500">Listing information last updated {new Date(property.updatedAt).toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric"})}.</p>}
               </section>
 
-              {similarStays.length > 0 && <section id="similar-stays" className="scroll-mt-20 border-t border-slate-200 pt-7"><div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">Similar stays nearby</h2><p className="mt-1 text-sm text-slate-500">Explore other published ROOMO properties{property.city ? " in " + property.city : ""}.</p></div><a href="/staging/properties" className="text-sm font-semibold text-[#2563a6] hover:underline">View all stays ↗</a></div><div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{similarStays.map((stay,index) => { const stayImage = mediaSource(normalizeList(stay.images)[0] || normalizeList(stay.media)[0] || { url: "" }); const stayName = stay.title || stay.name || "ROOMO stay"; return <a key={stay.id || index} href={"/staging/property-details?id=" + encodeURIComponent(stay.id)} className="overflow-hidden rounded-lg border border-slate-200 transition hover:border-slate-300 hover:shadow-sm">{stayImage ? <img src={stayImage} alt={stayName} loading="lazy" className="aspect-[4/3] w-full object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center bg-slate-100 text-sm text-slate-500">Photo coming soon</div>}<div className="p-3"><p className="font-semibold text-slate-800">{stayName}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{[stay.locality, stay.city].filter(Boolean).join(", ") || "Tiruvannamalai"}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">{money(stay.nightlyPrice ?? stay.startingPrice ?? stay.price)} <span className="font-normal text-slate-500">/ night</span></p></div></a>; })}</div></section>}
+              {similarStays.length > 0 && <section id="similar-stays" className="scroll-mt-20 border-t border-slate-200 pt-7"><div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-xl font-semibold">Similar stays nearby</h2><p className="mt-1 text-sm text-slate-500">Explore other published ROOMO properties{property.city ? " in " + property.city : ""}.</p></div><a href="/properties" className="text-sm font-semibold text-[#2563a6] hover:underline">View all stays ↗</a></div><div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{similarStays.map((stay,index) => { const stayImage = mediaSource(normalizeList(stay.images)[0] || normalizeList(stay.media)[0] || { url: "" }); const stayName = stay.title || stay.name || "ROOMO stay"; return <a key={stay.id || index} href={"/property-details?id=" + encodeURIComponent(stay.id)} className="overflow-hidden rounded-lg border border-slate-200 transition hover:border-slate-300 hover:shadow-sm">{stayImage ? <img src={stayImage} alt={stayName} loading="lazy" className="aspect-[4/3] w-full object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center bg-slate-100 text-sm text-slate-500">Photo coming soon</div>}<div className="p-3"><p className="font-semibold text-slate-800">{stayName}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{[stay.locality, stay.city].filter(Boolean).join(", ") || "Tiruvannamalai"}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">{money(stay.nightlyPrice ?? stay.startingPrice ?? stay.price)} <span className="font-normal text-slate-500">/ night</span></p></div></a>; })}</div></section>}
 
               {property.showPolicies !== false && <section id="policies" className="scroll-mt-20 border-t border-slate-200 pt-7">
                 <h2 className="text-xl font-semibold">Property policies</h2>
