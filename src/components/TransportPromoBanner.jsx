@@ -34,7 +34,7 @@ export default function TransportPromoBanner() {
             <h2 id="roomo-transport-promo-title" className="mt-4 max-w-2xl text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">{section.title || "Your sacred journey, from door to destination."}</h2>
             {section.description && <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-100 sm:text-base sm:leading-7">{section.description}</p>}
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <a href="/staging/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white bg-white px-5 py-3 text-sm font-semibold text-[#2563a6] transition-colors hover:bg-blue-50">{section.buttonLabel || "Plan your journey"} <span aria-hidden="true">→</span></a>
+              <a href="/transport-booking" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white bg-white px-5 py-3 text-sm font-semibold text-[#2563a6] transition-colors hover:bg-blue-50">{section.buttonLabel || "Plan your journey"} <span aria-hidden="true">→</span></a>
               {section.helperText && <span className="text-xs text-blue-100/85">{section.helperText}</span>}
             </div>
           </div>
