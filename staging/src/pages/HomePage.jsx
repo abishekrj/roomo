@@ -8,14 +8,14 @@ import PilgrimGuide from "../components/PilgrimGuide.jsx";
 import NearbyLocations from "../components/NearbyLocations.jsx";
 import Gallery from "../components/Gallery.jsx";
 import Testimonials from "../components/Testimonials.jsx";
-import TravelOutstationsSection from "../components/TravelOutstationsSection.jsx";
+import TransportPromoBanner from "../components/TransportPromoBanner.jsx";
 import PropertyOwnerPromoBanner from "../components/PropertyOwnerPromoBanner.jsx";
 
 export default function HomePage() {
   return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink">
     <Header />
     <main className="flex-1">
-      <HeroBanner /><SearchSection /><FeaturedStays /><PropertyOwnerPromoBanner /><NearbyLocations /><TravelOutstationsSection /><Gallery /><PilgrimGuide /><UpcomingFestival /><Testimonials />
+      <HeroBanner /><SearchSection /><FeaturedStays /><PropertyOwnerPromoBanner /><NearbyLocations /><TransportPromoBanner /><Gallery /><PilgrimGuide /><UpcomingFestival /><Testimonials />
     </main>
     <Footer />
   </div>;
