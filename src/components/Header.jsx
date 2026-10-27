@@ -82,8 +82,8 @@ export default function Header({ ownerPortal = false, adminNotifications = false
       fetch(API_BASE + "/admin/registered-users", { headers, credentials: "include", cache: "no-store" }).then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || "Unable to load guest activity."); return d; })
     ]);
     const items = [];
-    if (results[0].status === "fulfilled") (results[0].value.properties || []).forEach(p => items.push({ title: "Property listing", detail: (p.title || "Property") + " · " + (p.status || "DRAFT"), date: p.createdAt, href: "/staging/admin/dashboard" }));
-    if (results[1].status === "fulfilled") (results[1].value.users || []).forEach(u => items.push({ title: "Guest registration", detail: (u.fullName || "Guest") + (u.email ? " · " + u.email : ""), date: u.createdAt, href: "/staging/admin/dashboard" }));
+    if (results[0].status === "fulfilled") (results[0].value.properties || []).forEach(p => items.push({ title: "Property listing", detail: (p.title || "Property") + " · " + (p.status || "DRAFT"), date: p.createdAt, href: "/admin/dashboard" }));
+    if (results[1].status === "fulfilled") (results[1].value.users || []).forEach(u => items.push({ title: "Guest registration", detail: (u.fullName || "Guest") + (u.email ? " · " + u.email : ""), date: u.createdAt, href: "/admin/dashboard" }));
     items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
     setNotifications(items.slice(0, 15));
     setNotificationsMessage(items.length ? "" : results.every(r => r.status === "rejected") ? "Could not load notifications. Check the backend connection." : "No notifications yet.");
@@ -112,12 +112,12 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className={`mx-auto flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "max-w-7xl"}`}>
         {!ownerPortal && <button type="button" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-700 hover:bg-blue-50 hover:text-[#2563a6] lg:hidden" aria-label={mobileMenuOpen ? "Close main menu" : "Open main menu"} aria-expanded={mobileMenuOpen} onClick={() => { setMobileMenuOpen(!mobileMenuOpen); setMenuOpen(false); setLanguageOpen(false); }}><svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{mobileMenuOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M3 6h18M3 12h18M3 18h18" />}</svg></button>}
-        <a className="roomo-logo-link shrink-0 focus:outline-none" href="/staging/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
+        <a className="roomo-logo-link shrink-0 focus:outline-none" href="/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
 
         {!ownerPortal && <nav aria-label="Main navigation" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
-          <a href="/staging/" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname === "/staging/" || window.location.pathname === "/staging" ? "text-[#2563a6]" : "text-slate-700"}`}>Home</a>
-          <a href="/staging/properties" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/properties") || window.location.pathname.startsWith("/staging/property-details") ? "text-[#2563a6]" : "text-slate-700"}`}>Stays</a>
-          <a href="/staging/transport-booking" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/staging/transport-booking") ? "text-[#2563a6]" : "text-slate-700"}`}>Travels</a>
+          <a href="/" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname === "/" || window.location.pathname === "" ? "text-[#2563a6]" : "text-slate-700"}`}>Home</a>
+          <a href="/properties" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/properties") || window.location.pathname.startsWith("/property-details") ? "text-[#2563a6]" : "text-slate-700"}`}>Stays</a>
+          <a href="/transport-booking" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname.startsWith("/transport-booking") ? "text-[#2563a6]" : "text-slate-700"}`}>Travels</a>
         </nav>}
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -136,10 +136,10 @@ export default function Header({ ownerPortal = false, adminNotifications = false
             </button>
             {menuOpen && <nav className="absolute right-0 z-[100] mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
               {!authChecked ? <p className="px-3 py-2 text-sm text-slate-500" role="status">Checking your account…</p> : <>
-                {!user && <><a className={linkClass} href={authHref("/staging/login")}>Sign In</a><a className={linkClass} href={authHref("/staging/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/staging/owner/signup">Bring Your Property</a><hr className="my-1 border-slate-100" /></>}
-                <a className={linkClass} href="/staging/my-bookings">My Travel</a>
-                <a className={linkClass} href={user ? "/staging/my-profile" : authHref("/staging/login")}>My Profile</a>
-                {user && <><a className={linkClass} href="/staging/owner/signup">Bring Your Property</a><button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button></>}
+                {!user && <><a className={linkClass} href={authHref("/login")}>Sign In</a><a className={linkClass} href={authHref("/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/owner/signup">Bring Your Property</a><hr className="my-1 border-slate-100" /></>}
+                <a className={linkClass} href="/my-bookings">My Travel</a>
+                <a className={linkClass} href={user ? "/my-profile" : authHref("/login")}>My Profile</a>
+                {user && <><a className={linkClass} href="/owner/signup">Bring Your Property</a><button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button></>}
               </>}
             </nav>}
           </div>}
@@ -152,7 +152,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
           </div>
         </div>
       </div>
-      {!ownerPortal && mobileMenuOpen && <nav aria-label="Mobile main navigation" className="border-t border-slate-200 bg-white px-4 py-3 shadow-md lg:hidden"><div className="mx-auto flex max-w-7xl flex-col gap-1"><a onClick={() => setMobileMenuOpen(false)} href="/staging/" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Home</a><a onClick={() => setMobileMenuOpen(false)} href="/staging/properties" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Stays</a><a onClick={() => setMobileMenuOpen(false)} href="/staging/transport-booking" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Travels</a></div></nav>}
+      {!ownerPortal && mobileMenuOpen && <nav aria-label="Mobile main navigation" className="border-t border-slate-200 bg-white px-4 py-3 shadow-md lg:hidden"><div className="mx-auto flex max-w-7xl flex-col gap-1"><a onClick={() => setMobileMenuOpen(false)} href="/" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Home</a><a onClick={() => setMobileMenuOpen(false)} href="/properties" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Stays</a><a onClick={() => setMobileMenuOpen(false)} href="/transport-booking" className="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-[#2563a6]">Travels</a></div></nav>}
     </header>
   );
 }
