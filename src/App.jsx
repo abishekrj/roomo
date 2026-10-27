@@ -81,7 +81,7 @@ const legacyRoutes = {
 
 export default function App() {
   const rawPath = window.location.pathname.replace(/\/+$/, "") || "/";
-  const legacyPath = rawPath.replace(/^\/staging(?=\/frontend\/)/, "");
+  const legacyPath = rawPath;
   const legacyDestination = legacyRoutes[legacyPath] || legacyRoutes[rawPath];
   if (legacyDestination) {
     const destination = legacyDestination + (window.location.search || "");
