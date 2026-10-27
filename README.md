@@ -1,18 +1,18 @@
-# ROOMO React staging
+# ROOMO React application
 
-This directory is an isolated React + Vite application. It does not replace or modify the existing `roomo-frontend` application.
+This directory is an React + Vite application. It does not replace or modify the existing `roomo-frontend` application.
 
 ## Run locally
 
 From the repository root:
 
 ```bash
-cd staging
+cd .
 npm install
 npm run dev
 ```
 
-Vite prints the local staging URL. The current shared header and footer are the first migration slice. The legacy frontend remains the production/reference version while pages are migrated and tested individually.
+Vite prints the local development URL. The current shared header and footer are the first migration slice. The legacy frontend remains the production/reference version while pages are migrated and tested individually.
 
 ## Build check
 
