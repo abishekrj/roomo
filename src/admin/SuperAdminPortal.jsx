@@ -172,7 +172,7 @@ export default function SuperAdminPortal() {
       const response = await fetch(API + "/admin/homepage/publish", {
         method: "POST",
         credentials: "include",
-        headers: csrfHeaders()
+        headers: { Authorization: "Bearer " + token, ...csrfHeaders() }
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to publish homepage.");
