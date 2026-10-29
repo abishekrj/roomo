@@ -17,7 +17,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   const languageRef = useRef(null);
   const notificationsRef = useRef(null);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [hidden, setHidden] = useState(() => window.scrollY > 80);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsMessage, setNotificationsMessage] = useState("");
@@ -47,13 +47,13 @@ export default function Header({ ownerPortal = false, adminNotifications = false
       if (frame) return;
       frame = requestAnimationFrame(() => {
         const y = Math.max(0, window.scrollY);
-        setHidden(y > 80 && y > lastY + 4 ? true : y < lastY - 4 || y <= 80 ? false : hidden);
+        setHidden(current => y > 80 && y > lastY + 4 ? true : y < lastY - 4 || y <= 80 ? false : current);
         lastY = y; frame = 0;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => { window.removeEventListener("scroll", onScroll); if (frame) cancelAnimationFrame(frame); };
-  }, [hidden]);
+  }, []);
 
   useEffect(() => {
     // Remove legacy client-side guest profiles/tokens and locally cached favourites.
@@ -144,7 +144,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
           {!ownerPortal && <div className="relative" ref={menuRef}>
             <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-roomo border border-[#2563a6] bg-[#2563a6] px-2.5 py-2 text-xs font-semibold text-white transition hover:bg-[#1e4f85] sm:px-3 sm:text-sm" type="button" aria-label={user?.fullName || "Login / Signup"} title={user?.fullName || (authChecked ? "Login / Signup" : "Account")} aria-expanded={menuOpen} aria-haspopup="true" onClick={() => {setMenuOpen(!menuOpen);setLanguageOpen(false);}}>
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg>
-              <span className="hidden max-w-32 truncate sm:inline">{user?.fullName || (authChecked ? "Login / Signup" : "Account")}</span>
+              <span className="hidden max-w-32 truncate sm:inline">{user?.fullName || "Login / Signup"}</span>
               <svg className="hidden h-3 w-3 sm:inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </button>
             {menuOpen && <nav className="absolute right-0 z-[100] mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
