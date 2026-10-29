@@ -48,7 +48,7 @@ export default function UpcomingFestival() {
   }).format(new Date(festivalDate));
 
   return (
-    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#f4f7fb] py-8 sm:py-10 lg:py-12">
+    <section aria-labelledby="upcoming-festival-title" className="w-full bg-[#f4f7fb] py-8">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mx-auto max-w-7xl rounded-lg bg-[#2563a6] px-4 py-7 text-center text-white sm:px-8 sm:py-9 lg:px-12 lg:py-11">
           <div className="mx-auto max-w-4xl">
