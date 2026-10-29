@@ -89,7 +89,7 @@ export default function App() {
     return null;
   }
   const path = rawPath;
-  if (path === "/driver" || path === "/driver/" || path === "/driver/dashboard" || path === "/driver" || path === "/driver/dashboard") return <DriverPortal />;
+  if (path === "/driver" || path === "/driver/" || path === "/driver/login" || path === "/driver/signup" || path === "/driver/dashboard") return <DriverPortal />;
   if (path === "/transport-booking" || path === "/transport-booking") return <TransportBookingPage />;
   if (path === "/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
   if (path === "/post-property" || path === "/post-property") return <PostPropertyPage />;
