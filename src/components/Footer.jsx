@@ -108,7 +108,7 @@ export default function Footer() {
             {visitor.visible && <div className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-500 px-4 py-2 text-sm"><i className="bi bi-people-fill" aria-hidden="true"></i> Visitors: {visitor.count.toLocaleString("en-IN")}</div>}
           </div>
         </div>
-        <div className="flex flex-col gap-4 border-t border-gray-700 mt-8 pt-5 text-xs text-slate-400 md:flex-row md:items-center md:justify-between">
+        <div className="mt-8 flex flex-col gap-4 pt-5 text-xs text-slate-400 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} ROOMO Sacred. All rights reserved.</p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal links">{links.legal.map((item, i) => <SafeLink item={item} key={item.label || i} />)}</nav>
         </div>
