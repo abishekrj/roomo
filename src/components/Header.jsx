@@ -91,20 +91,33 @@ export default function Header({ ownerPortal = false, adminNotifications = false
   const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
   const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { localStorage.removeItem("roomoGuest"); setUser(null); window.history.pushState({}, "", "/"); window.dispatchEvent(new PopStateEvent("popstate")); } };
   const chooseLanguage = item => {
-    setLanguage(item); setLanguageOpen(false);
+    setLanguage(item);
+    setLanguageOpen(false);
     try { localStorage.setItem("roomoLanguage", item.code); } catch {}
+
+    // Google Translate can finish initializing after the user opens the menu.
+    // Retry until its language selector is ready, rather than stopping just
+    // because the hidden widget container exists.
+    let attempts = 0;
     const applyLanguage = () => {
       const combo = document.querySelector("#google_translate_element select.goog-te-combo");
-      if (!combo) return false;
-      combo.value = item.code;
-      combo.dispatchEvent(new Event("change", { bubbles: true }));
+      const translateReady = Boolean(window.google?.translate?.TranslateElement && combo);
+      if (!translateReady) return false;
+
+      if (combo.value !== item.code) {
+        combo.value = item.code;
+        combo.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        // Re-apply the selected language when the user chooses it again.
+        combo.dispatchEvent(new Event("change", { bubbles: true }));
+      }
       return true;
     };
+
     if (applyLanguage()) return;
-    let attempts = 0;
     const retry = window.setInterval(() => {
       attempts += 1;
-      if (applyLanguage() || attempts >= 24) window.clearInterval(retry);
+      if (applyLanguage() || attempts >= 40) window.clearInterval(retry);
     }, 250);
   };
 
