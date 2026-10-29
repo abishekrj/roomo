@@ -12,7 +12,7 @@ import TransportPromoBanner from "../components/TransportPromoBanner.jsx";
 import PropertyOwnerPromoBanner from "../components/PropertyOwnerPromoBanner.jsx";
 
 export default function HomePage() {
-  return <div className="flex min-h-screen flex-col bg-white font-sans text-roomo-ink">
+  return <div className="home-page flex min-h-screen flex-col bg-[#f4f7fb] font-sans text-roomo-ink">
     <Header />
     <main className="flex-1">
       <HeroBanner /><SearchSection /><FeaturedStays /><PropertyOwnerPromoBanner /><NearbyLocations /><TransportPromoBanner /><Gallery /><PilgrimGuide /><UpcomingFestival /><Testimonials />
