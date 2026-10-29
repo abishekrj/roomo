@@ -32,10 +32,29 @@ export default function OwnerPortal() {
   const [enquiries, setEnquiries] = useState([]);
   const [properties, setProperties] = useState([]);
   const [reservations, setReservations] = useState([]);
-  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/owner";
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname.replace(/\/+$/, "") || "/owner");
+  useEffect(() => {
+    const onPopState = () => setCurrentPath(window.location.pathname.replace(/\/+$/, "") || "/owner");
+    const onDocumentClick = event => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target.closest("a[href]");
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const url = new URL(link.href, window.location.origin);
+      if (url.origin !== window.location.origin || !url.pathname.startsWith("/owner")) return;
+      if (url.pathname.endsWith("/signup") || url.pathname.endsWith("/register") || url.pathname.endsWith("/login")) return;
+      event.preventDefault();
+      if (url.pathname + url.search !== window.location.pathname + window.location.search) {
+        window.history.pushState({}, "", url.pathname + url.search + url.hash);
+        setCurrentPath(url.pathname);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    document.addEventListener("click", onDocumentClick);
+    return () => { window.removeEventListener("popstate", onPopState); document.removeEventListener("click", onDocumentClick); };
+  }, []);
   const routePrefix = "/owner";
   const routePage = currentPath.endsWith("/properties") ? "properties" : currentPath.endsWith("/enquiries") ? "enquiries" : currentPath.endsWith("/reports") ? "reports" : "dashboard";
-  const [active, setActive] = useState(routePage);
+  const active = routePage;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [query, setQuery] = useState("");
@@ -108,14 +127,14 @@ export default function OwnerPortal() {
       if (data.owner?.role !== "OWNER") throw new Error("This login is for property owner accounts.");
       setToken("cookie-session"); setOwner(data.owner);
       await loadDashboard("cookie-session");
-      window.location.href = routePrefix + "/dashboard";
+      window.history.pushState({}, "", routePrefix + "/dashboard"); setCurrentPath(routePrefix + "/dashboard");
     } catch (error) { setMessage(error.message || "Unable to sign in."); }
     finally { setBusy(false); }
   }
 
   async function signOut() {
     try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); }
-    finally { setToken(""); setOwner(null); setEnquiries([]); setProperties([]); setReservations([]); setPassword(""); setMessage(""); window.location.href = routePrefix + "/login"; }
+    finally { setToken(""); setOwner(null); setEnquiries([]); setProperties([]); setReservations([]); setPassword(""); setMessage(""); window.history.pushState({}, "", routePrefix + "/login"); setCurrentPath(routePrefix + "/login"); }
   }
 
   const filteredEnquiries = useMemo(() => enquiries.filter((item) =>
