@@ -76,14 +76,14 @@ export default function Gallery() {
   return (
     <section aria-labelledby="roomo-gallery-title" className="w-full bg-[#F7F9FC] py-12 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-7 flex flex-col gap-5 sm:mb-9 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-7 flex items-end justify-between gap-3 sm:mb-9 sm:gap-5">
           <div className="max-w-3xl">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#2563A6] sm:text-sm">Visual stories</p>
             <h2 id="roomo-gallery-title" className="text-2xl font-semibold leading-tight tracking-tight text-[#212529] sm:text-3xl lg:text-4xl">Gallery</h2>
             <p className="mt-3 text-sm leading-6 text-[#5F6670] sm:text-base sm:leading-7">Explore sacred places and memorable moments from Tiruvannamalai.</p>
           </div>
           {!loading && photos.length > 1 && (
-            <div className="flex shrink-0 items-center gap-2 self-end">
+            <div className="flex shrink-0 items-center gap-2">
               <button type="button" onClick={() => moveCarousel(-1)} aria-label="Previous gallery photos" className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#D9E0E8] bg-white text-[#2563A6] transition hover:border-[#2563A6] hover:bg-[#2563A6] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563A6]">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
               </button>
