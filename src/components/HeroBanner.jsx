@@ -90,8 +90,8 @@ export default function HeroBanner() {
               <span>{slide.badge}</span>
             </div>
             <h1 className="max-w-3xl text-3xl font-semibold leading-[1.1] tracking-tight text-white drop-shadow-sm sm:text-4xl lg:text-5xl">
-              {slide.titleLine}
-              <span className="mt-1 block">{slide.titleAccent}</span>
+              <span>{slide.titleLine}</span>
+              <span className="mt-1 block text-[#facc15]">{slide.titleAccent}</span>
             </h1>
             <p className="mt-5 max-w-xl text-sm leading-6 text-white/90 sm:text-base sm:leading-7">{slide.description}</p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
