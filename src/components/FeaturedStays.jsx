@@ -248,7 +248,7 @@ export default function FeaturedStays() {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex items-end justify-between gap-3 sm:mb-8 md:items-end">
           <div className="max-w-3xl">
-            <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9a7132]">
+            <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2563a6]">
               {content?.featuredSectionEyebrow || "FIND YOUR SACRED STAY"}
             </span>
             <h2 id="featured-stays-title" className="text-2xl font-semibold tracking-tight text-[#212529] sm:text-3xl">
