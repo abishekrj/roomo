@@ -74,7 +74,7 @@ export default function Gallery() {
   };
 
   return (
-    <section aria-labelledby="roomo-gallery-title" className="w-full bg-transparent py-8">
+    <section aria-labelledby="roomo-gallery-title" className="w-full bg-transparent pt-0 pb-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-7 flex items-end justify-between gap-3 sm:mb-9 sm:gap-5">
           <div className="max-w-3xl">
