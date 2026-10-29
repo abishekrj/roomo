@@ -246,7 +246,7 @@ export default function FeaturedStays() {
   return (
     <section aria-labelledby="featured-stays-title" className="w-full bg-[#f4f7fb] py-10 sm:py-14 lg:py-16">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 md:flex-row md:items-end">
+        <div className="mb-6 flex items-start justify-between gap-3 sm:mb-8 md:items-end">
           <div className="max-w-3xl">
             <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9a7132]">
               {content?.featuredSectionEyebrow || "FIND YOUR SACRED STAY"}
@@ -258,7 +258,7 @@ export default function FeaturedStays() {
               <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{content.featuredSectionDescription}</p>
             )}
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-start">
+          <div className="flex shrink-0 flex-col items-end gap-3 sm:flex-row sm:items-center">
             {content?.featuredSectionViewAllEnabled !== false && content?.featuredSectionViewAllUrl && stays.length >= 4 && (
               <a href={content.featuredSectionViewAllUrl} className="inline-flex items-center gap-2 rounded-lg border border-[#2563a6] px-4 py-2.5 text-sm font-semibold text-[#2563a6] transition-colors hover:bg-[#2563a6] hover:text-white">
                 {content?.featuredSectionViewAllLabel || "View all stays"}<span aria-hidden="true">→</span>
