@@ -13,7 +13,7 @@ const homeSections = [
 ];
 
 export default function SuperAdminPortal() {
-  const [path] = useState(window.location.pathname);
+  const [path, setPath] = useState(window.location.pathname);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,6 +31,24 @@ export default function SuperAdminPortal() {
   const [token, setToken] = useState(() => sessionStorage.getItem("roomo_admin_token") || "");
   const [authReady, setAuthReady] = useState(false);
   const currentPath = path.replace(/\/+$/, "") || "/";
+  useEffect(() => {
+    const onPopState = () => setPath(window.location.pathname);
+    const onDocumentClick = event => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target.closest("a[href]");
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const url = new URL(link.href, window.location.origin);
+      if (url.origin !== window.location.origin || !url.pathname.startsWith("/admin")) return;
+      event.preventDefault();
+      if (url.pathname + url.search !== window.location.pathname + window.location.search) {
+        window.history.pushState({}, "", url.pathname + url.search + url.hash);
+        setPath(url.pathname);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    document.addEventListener("click", onDocumentClick);
+    return () => { window.removeEventListener("popstate", onPopState); document.removeEventListener("click", onDocumentClick); };
+  }, []);
   const loginPage = /\/login$/.test(currentPath) || currentPath === "/admin" || currentPath === "/admin";
   const routePrefix = "/admin";
   const isHomePageEditor = currentPath.includes("/homepage/");
@@ -129,7 +147,7 @@ export default function SuperAdminPortal() {
       if (data.owner?.role !== "ADMIN") throw new Error("This account does not have Super Admin access.");
       sessionStorage.setItem("roomo_admin_token", data.token);
       setToken(data.token);
-      window.location.href = "/admin/dashboard";
+      window.history.pushState({}, "", "/admin/dashboard"); setPath("/admin/dashboard");
     } catch (e) {
       setError(e.message || "Unable to sign in.");
     } finally {
@@ -137,7 +155,7 @@ export default function SuperAdminPortal() {
     }
   }
 
-  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.href = "/admin/login"; } }
+  async function signOut() { try { await fetch(API + "/auth/logout", { method: "POST", credentials: "include", headers: { Authorization: "Bearer " + token, ...csrfHeaders() } }); } finally { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.history.pushState({}, "", "/admin/login"); setPath("/admin/login"); } }
 
   function updateHeroField(event) {
     setHeroDraft(current => ({ ...current, [event.target.name]: event.target.value }));
