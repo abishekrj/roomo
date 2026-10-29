@@ -15,7 +15,7 @@ export default function TransportPromoBanner() {
   if (!section || section.enabled === false) return null;
 
   return (
-    <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#f4f7fb] py-8">
+    <section aria-labelledby="roomo-transport-promo-title" className="w-full bg-[#f4f7fb] pt-0 pb-8">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="relative isolate grid items-center gap-6 overflow-hidden rounded-lg bg-[#2563a6] px-5 py-7 text-white sm:px-8 sm:py-9 md:grid-cols-[1.2fr_.8fr] md:gap-10 lg:px-12 lg:py-11">
 
