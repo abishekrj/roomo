@@ -51,7 +51,7 @@ export default function HeroBanner() {
       imageAlt: "Arunachala hill and the sacred temple in Tiruvannamalai",
       buttonLabel: "Browse Rooms",
       buttonHref: "/properties",
-      secondaryButtonLabel: "Bring Your Property",
+      secondaryButtonLabel: "List Property",
       secondaryButtonHref: "/owner/signup",
     },
     {
