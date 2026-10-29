@@ -78,7 +78,7 @@ export default function SuperAdminPortal() {
     fetch(API + "/auth/me", { credentials: "include", headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || "Sign in required."); return data; })
       .then(data => { if (!cancelled && data.owner?.role === "ADMIN") setToken(token); else if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.history.replaceState({}, "", "/admin/login"); setPath("/admin/login"); } })
-      .catch(() => { if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.location.replace("/admin/login"); } })
+      .catch(() => { if (!cancelled) { sessionStorage.removeItem("roomo_admin_token"); setToken(""); window.history.replaceState({}, "", "/admin/login"); setPath("/admin/login"); } })
       .finally(() => { if (!cancelled) setAuthReady(true); });
     return () => { cancelled = true; };
   }, [loginPage]);
