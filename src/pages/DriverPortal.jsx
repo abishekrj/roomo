@@ -20,7 +20,12 @@ export default function DriverPortal() {
   const [driver, setDriver] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/driver/login";
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname.replace(/\/+$/, "") || "/driver/login");
+  useEffect(() => {
+    const onPopState = () => setCurrentPath(window.location.pathname.replace(/\/+$/, "") || "/driver/login");
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
   const signupMode = currentPath === "/driver/signup";
   const dashboardPath = "/driver/dashboard";
   const driverPagePaths = [dashboardPath, "/driver/new-trip-requests", "/driver/completed-trips", "/driver/current-trip"];
@@ -48,7 +53,11 @@ export default function DriverPortal() {
   const activePage = pageByPath[currentPath] || "dashboard";
   function navigateToPage(pageId) {
     const pagePaths = { dashboard: "/driver/dashboard", "new-requests": "/driver/new-trip-requests", "completed-trips": "/driver/completed-trips", "current-trip": "/driver/current-trip" };
-    window.location.href = pagePaths[pageId] || "/driver/dashboard";
+    const nextPath = pagePaths[pageId] || "/driver/dashboard";
+    if (nextPath !== currentPath) {
+      window.history.pushState({}, "", nextPath);
+      setCurrentPath(nextPath);
+    }
   }
   const vapidKey = import.meta.env.VITE_ROOMO_VAPID_PUBLIC_KEY || "";
 
@@ -151,7 +160,7 @@ export default function DriverPortal() {
           {activePage === "dashboard" && <>
             <section className="rounded-lg bg-[#102747] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-7"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Your trips at a glance</p><h2 className="mt-2 text-2xl font-semibold">Ready for your next journey?</h2><p className="mt-2 max-w-xl text-sm leading-6 text-blue-100">Keep this portal available and enable push notifications so you can respond to new trip requests promptly.</p></div><button onClick={enablePush} className="mt-5 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#102747] transition hover:bg-blue-50 sm:mt-0">{pushEnabled ? "✓ Notifications enabled" : "♧ Enable notifications"}</button></section>
             <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><button onClick={() => navigateToPage("new-requests")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">New trip requests</p><p className="mt-2 text-3xl font-semibold">{requests.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">Review requests →</p></button><button onClick={() => navigateToPage("current-trip")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Current trips</p><p className="mt-2 text-3xl font-semibold">{currentTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View current trips →</p></button><button onClick={() => navigateToPage("completed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Completed trips</p><p className="mt-2 text-3xl font-semibold">{completedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View history →</p></button><div className="rounded-lg border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">Notification status</p><p className="mt-2 text-lg font-semibold">{pushEnabled ? "Enabled" : "Not enabled"}</p><p className="mt-2 text-sm text-slate-500">For this device</p></div></div>
-            <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">New trip requests</h2><p className="mt-1 text-sm text-slate-500">Requests expire after the response window closes.</p></div><button onClick={() => setActivePage("new-requests")} className="text-sm font-semibold text-[#2563a6]">View all →</button></div>{requests.length ? <div className="grid gap-4 xl:grid-cols-2">{requests.slice(0, 2).map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">No new requests right now.</p>}</section>
+            <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">New trip requests</h2><p className="mt-1 text-sm text-slate-500">Requests expire after the response window closes.</p></div><button onClick={() => navigateToPage("new-requests")} className="text-sm font-semibold text-[#2563a6]">View all →</button></div>{requests.length ? <div className="grid gap-4 xl:grid-cols-2">{requests.slice(0, 2).map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">No new requests right now.</p>}</section>
           </>}
           {activePage === "new-requests" && <section>{requests.length ? <div className="grid gap-4 xl:grid-cols-2">{requests.map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No new requests right now</h2><p className="mt-1 text-sm text-slate-500">We’ll show matching trips here when they become available.</p></div>}</section>}
           {activePage === "current-trip" && <section>{currentTrips.length ? <div className="grid gap-4 xl:grid-cols-2">{currentTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No current trips</h2><p className="mt-1 text-sm text-slate-500">Accepted and in-progress trips assigned to you will appear here.</p></div>}</section>}
