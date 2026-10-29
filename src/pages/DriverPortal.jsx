@@ -20,7 +20,7 @@ export default function DriverPortal() {
   const [driver, setDriver] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const currentPath = window.location.pathname.replace(/\\/+$/, "") || "/driver/login";
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/driver/login";
   const signupMode = currentPath === "/driver/signup";
   const [requests, setRequests] = useState([]);
   const [assigned, setAssigned] = useState([]);
