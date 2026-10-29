@@ -112,7 +112,7 @@ export default function DriverPortal() {
     catch (e) { setError(e.message); await refresh().catch(() => {}); }
     finally { setBusy(false); }
   }
-  function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); setActivePage("dashboard"); window.location.replace("/driver/login"); }
+  function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.location.replace("/driver/login"); }
 
   const currentTrips = useMemo(() => assigned.filter(item => ["CONFIRMED", "IN_PROGRESS"].includes(item.status)), [assigned]);
   const completedTrips = useMemo(() => assigned.filter(item => item.status === "COMPLETED"), [assigned]);
