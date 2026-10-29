@@ -6,7 +6,6 @@ const defaults = {
   eyebrow: "Heartfelt Devotee Words",
   title: "Words from Fellow Pilgrims",
   description: "Authentic experiences shared by devotees who sought blessed shelter through ROOMO.",
-  ratingSummary: "4.9 / 5 (1,840+ Pilgrims)",
   items: [
     { id: "senthil", quote: "Our Pournami Girivalam stay was profoundly peaceful. The room was immaculate, 3 minutes from Sri Ramanasramam, and our host welcomed us with sacred vibhuti and temple prasadam.", name: "Senthil Ramanathan", location: "Chennai, Tamil Nadu", rating: 5 },
     { id: "ananya", quote: "During Karthigai Deepam festival when everywhere else was charging inflated prices, ROOMO honored our confirmed heritage booking without surprise costs. Utterly safe for solo women travelers.", name: "Ananya Sharma", location: "Bengaluru, Karnataka", rating: 5 },
@@ -72,12 +71,7 @@ export default function Testimonials() {
               {content.description || defaults.description}
             </p>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-3 sm:flex-row sm:items-center">
-            <div className="inline-flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <span className="text-sm tracking-wide text-amber-500" aria-label="5 stars">★★★★★</span>
-              <span className="text-sm font-semibold text-slate-700">{content.ratingSummary || defaults.ratingSummary}</span>
-            </div>
-            <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
               <button type="button" onClick={() => scroll(-1)} aria-label="Previous testimonial" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b7d]">
                 <span aria-hidden="true">←</span>
               </button>
