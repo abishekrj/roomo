@@ -84,7 +84,7 @@ export default function HeroBanner() {
       ))}
       <div className="relative mx-auto flex min-h-[430px] w-full max-w-7xl items-center px-5 pb-16 pt-12 sm:min-h-[470px] sm:px-8 sm:pb-20 lg:min-h-[520px] lg:px-10">
         {contentReady && slides.map((slide, index) => (
-          <div key={slide.buttonLabel} aria-hidden={activeSlide !== index} className={`w-full max-w-3xl ${activeSlide === index ? "translate-y-0 opacity-100" : "pointer-events-none absolute translate-y-2 opacity-0"} ${activeSlide === index ? "" : "transition-all duration-500"}`}>
+          <div key={slide.buttonLabel} aria-hidden={activeSlide !== index} className={`w-full max-w-3xl ${activeSlide === index ? "relative z-10 translate-y-0 opacity-100" : "pointer-events-none absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 translate-y-2 opacity-0"} transition-[opacity,transform] duration-300 ease-in-out`}>
             <div className="mb-4 inline-flex max-w-full items-center gap-2 rounded-full border border-white/30 bg-slate-950/25 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[.14em] text-white backdrop-blur-sm sm:text-xs">
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12l-7.1 2.4L12 21.5l-2.4-7.1L2.5 12l7.1-2.4L12 2.5Z" /></svg>
               <span>{slide.badge}</span>
