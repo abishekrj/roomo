@@ -33,7 +33,7 @@ export default function DriverPortal() {
       window.location.replace("/driver/login");
       return;
     }
-    if (token && currentPath !== dashboardPath && currentPath !== "/driver/signup") {
+    if (token && currentPath !== dashboardPath) {
       window.location.replace(dashboardPath);
     }
   }, [currentPath, token]);
