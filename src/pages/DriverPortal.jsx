@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
 
 const API = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/transport";
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100";
@@ -18,6 +20,8 @@ export default function DriverPortal() {
   const [driver, setDriver] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const currentPath = window.location.pathname.replace(/\\/+$/, "") || "/driver/login";
+  const signupMode = currentPath === "/driver/signup";
   const [requests, setRequests] = useState([]);
   const [assigned, setAssigned] = useState([]);
   const [notice, setNotice] = useState("");
@@ -91,7 +95,7 @@ export default function DriverPortal() {
     ] }
   ];
 
-  if (!token || !driver) return <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 font-sans text-roomo-ink"><section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><a href="/" className="text-sm font-semibold tracking-wide text-[#2563a6]">ROOMO</a><p className="mt-6 text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver portal</p><h1 className="mt-2 text-2xl font-semibold">Welcome back, driver</h1><p className="mt-2 text-sm leading-6 text-slate-500">Sign in to receive trip requests and manage your assigned journeys.</p>{error && <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}<form onSubmit={signIn} className="mt-6 space-y-4"><label className="block text-sm font-medium">Email address<input className={inputClass} type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} /></label><label className="block text-sm font-medium">Password<input className={inputClass} type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></label><button className={buttonClass + " w-full"} disabled={busy}>{busy ? "Signing in…" : "Sign in to Driver Portal"}</button></form><p className="mt-5 text-xs leading-5 text-slate-500">Driver accounts are created by the ROOMO Super Admin.</p></section></main>;
+  if (!token || !driver) return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink"><Header /><main className="flex flex-1 items-center justify-center px-4 py-10"><section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver portal</p><h1 className="mt-2 text-2xl font-semibold">{signupMode ? "Driver registration" : "Welcome back, driver"}</h1><p className="mt-2 text-sm leading-6 text-slate-500">{signupMode ? "Driver accounts are created by the ROOMO Super Admin. Contact the administrator to register and receive your login details." : "Sign in to receive trip requests and manage your assigned journeys."}</p>{error && <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}{!signupMode && <form onSubmit={signIn} className="mt-6 space-y-4"><label className="block text-sm font-medium">Email address<input className={inputClass} type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} /></label><label className="block text-sm font-medium">Password<input className={inputClass} type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></label><button className={buttonClass + " w-full"} disabled={busy}>{busy ? "Signing in…" : "Sign in to Driver Portal"}</button></form>}<p className="mt-5 text-center text-sm text-slate-600">{signupMode ? "Already registered as a driver?" : "New driver joining ROOMO?"} <a href={signupMode ? "/driver/login" : "/driver/signup"} className="font-semibold text-[#2563a6] hover:underline">{signupMode ? "Sign in" : "Driver signup information"}</a></p></section></main><Footer /></div>;
 
   function TripCard({ item, requestCard = false }) {
     const booking = requestCard ? item.booking : item;
