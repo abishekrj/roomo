@@ -8,6 +8,7 @@ import OwnerPortal from "./owner/OwnerPortal.jsx";
 import SuperAdminPortal from "./admin/SuperAdminPortal.jsx";
 import { CmsGuidePage, MyBookingsPage, MyProfilePage, PostPropertyPage, VerifyEmailPage } from "./pages/LegacyPages.jsx";
 import CommissionManagementPage from "./pages/CommissionManagementPage.jsx";
+import { useEffect, useState } from "react";
 import DriverPortal from "./pages/DriverPortal.jsx";
 import TransportBookingPage from "./pages/TransportBookingPage.jsx";
 
@@ -80,13 +81,21 @@ const legacyRoutes = {
 };
 
 export default function App() {
-  const rawPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  useEffect(() => {
+    const syncPath = () => setCurrentPath(window.location.pathname);
+    window.addEventListener("popstate", syncPath);
+    return () => window.removeEventListener("popstate", syncPath);
+  }, []);
+  const rawPath = currentPath.replace(/\/+$/, "") || "/";
   const legacyPath = rawPath;
   const legacyDestination = legacyRoutes[legacyPath] || legacyRoutes[rawPath];
   if (legacyDestination) {
     const destination = legacyDestination + (window.location.search || "");
-    window.location.replace(destination);
-    return null;
+    window.history.replaceState({}, "", destination);
+    if (currentPath !== destination) {
+      queueMicrotask(() => setCurrentPath(destination));
+    }
   }
   const path = rawPath;
   if (["/driver", "/driver/", "/driver/login", "/driver/signup", "/driver/dashboard", "/driver/new-trip-requests", "/driver/completed-trips", "/driver/current-trip"].includes(path)) return <DriverPortal />;
