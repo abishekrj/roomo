@@ -61,8 +61,8 @@ export default function Testimonials() {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mb-7 flex items-end justify-between gap-3 md:mb-9 md:gap-5">
           <div className="max-w-3xl">
-            <span className="mb-3 inline-flex items-center rounded-full border border-[#d8e4ed] bg-white px-3 py-1.5 text-xs font-medium text-[#285b7d]">
-              <span className="mr-2" aria-hidden="true">♡</span>{content.eyebrow || defaults.eyebrow}
+            <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2563a6]">
+              {content.eyebrow || defaults.eyebrow}
             </span>
             <h2 id="testimonials-title" className="text-2xl font-semibold tracking-tight text-[#212529] sm:text-3xl lg:text-4xl">
               {content.title || defaults.title}
