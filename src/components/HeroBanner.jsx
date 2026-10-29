@@ -12,7 +12,24 @@ export default function HeroBanner() {
     let cancelled = false;
     fetch(API_URL, { cache: "no-store" })
       .then(response => response.ok ? response.json() : null)
-      .then(data => { if (!cancelled) setContent(data?.content || null); })
+      .then(async data => {
+        const nextContent = data?.content || null;
+        // Load the CMS-selected hero image before swapping it into the visible banner.
+        const imageUrl = nextContent?.heroImageUrl;
+        if (imageUrl) {
+          const image = new Image();
+          image.src = imageUrl;
+          if (typeof image.decode === "function") {
+            try { await image.decode(); } catch {}
+          } else if (!image.complete) {
+            await new Promise(resolve => {
+              image.onload = resolve;
+              image.onerror = resolve;
+            });
+          }
+        }
+        if (!cancelled) setContent(nextContent);
+      })
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
