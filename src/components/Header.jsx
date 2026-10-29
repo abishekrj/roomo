@@ -89,7 +89,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     setNotificationsMessage(items.length ? "" : results.every(r => r.status === "rejected") ? "Could not load notifications. Check the backend connection." : "No notifications yet.");
   };
   const authHref = page => { const returnTo = window.location.pathname + window.location.search + window.location.hash; return page + "?returnTo=" + encodeURIComponent(returnTo); };
-  const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { localStorage.removeItem("roomoGuest"); setUser(null); window.location.reload(); } };
+  const logout = async () => { try { await fetch(API_BASE + "/guest-auth/logout", { method: "POST", credentials: "include", headers: csrfHeaders() }); } finally { localStorage.removeItem("roomoGuest"); setUser(null); window.history.pushState({}, "", "/"); window.dispatchEvent(new PopStateEvent("popstate")); } };
   const chooseLanguage = item => {
     setLanguage(item); setLanguageOpen(false);
     try { localStorage.setItem("roomoLanguage", item.code); } catch {}
