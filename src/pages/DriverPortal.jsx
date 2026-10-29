@@ -90,7 +90,7 @@ export default function DriverPortal() {
       const response = await fetch(API + "/driver/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to sign in.");
-      sessionStorage.setItem("roomo_driver_token", data.token); setToken(data.token); setDriver(data.driver); setPassword(""); window.location.replace("/driver/dashboard");
+      sessionStorage.setItem("roomo_driver_token", data.token); setToken(data.token); setDriver(data.driver); setPassword(""); window.history.pushState({}, "", "/driver/dashboard"); setCurrentPath("/driver/dashboard");
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
   async function enablePush() {
@@ -112,7 +112,7 @@ export default function DriverPortal() {
     catch (e) { setError(e.message); await refresh().catch(() => {}); }
     finally { setBusy(false); }
   }
-  function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.location.replace("/driver/login"); }
+  function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.history.pushState({}, "", "/driver/login"); setCurrentPath("/driver/login"); }
 
   const currentTrips = useMemo(() => assigned.filter(item => ["CONFIRMED", "IN_PROGRESS"].includes(item.status)), [assigned]);
   const completedTrips = useMemo(() => assigned.filter(item => item.status === "COMPLETED"), [assigned]);
