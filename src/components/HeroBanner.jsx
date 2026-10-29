@@ -3,6 +3,7 @@ import templeHeroImage from "/assets/roomo-hero-banner.jpg";
 
 const API_URL = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
 const SLIDE_INTERVAL = 6500;
+const TRAVEL_HERO_IMAGE = "/assets/roomo-travel-hero.png";
 
 export default function HeroBanner() {
   const [content, setContent] = useState(null);
@@ -14,20 +15,20 @@ export default function HeroBanner() {
       .then(response => response.ok ? response.json() : null)
       .then(async data => {
         const nextContent = data?.content || null;
-        // Load the CMS-selected hero image before swapping it into the visible banner.
-        const imageUrl = nextContent?.heroImageUrl;
-        if (imageUrl) {
+        // Decode all slide images before allowing the CMS content to replace the
+        // immediately available local fallback image.
+        const imageUrls = [
+          nextContent?.heroImageUrl || templeHeroImage,
+          nextContent?.heroSecondImageUrl || TRAVEL_HERO_IMAGE,
+        ];
+        await Promise.all(imageUrls.map(url => new Promise(resolve => {
           const image = new Image();
-          image.src = imageUrl;
-          if (typeof image.decode === "function") {
-            try { await image.decode(); } catch {}
-          } else if (!image.complete) {
-            await new Promise(resolve => {
-              image.onload = resolve;
-              image.onerror = resolve;
-            });
-          }
-        }
+          image.onload = resolve;
+          image.onerror = resolve;
+          image.src = url;
+          if (image.complete) resolve();
+          else if (typeof image.decode === "function") image.decode().then(resolve).catch(() => {});
+        })));
         if (!cancelled) setContent(nextContent);
       })
       .catch(() => {});
@@ -52,7 +53,7 @@ export default function HeroBanner() {
       titleLine: content?.heroSecondTitleLine || "Your Journey Beyond",
       titleAccent: content?.heroSecondTitleAccent || "Tiruvannamalai",
       description: content?.heroSecondDescription || "Arrange a comfortable outstation journey with ROOMO. Plan your pickup, destination and travel time in a few simple steps.",
-      image: content?.heroSecondImageUrl || "/assets/roomo-travel-hero.png",
+      image: content?.heroSecondImageUrl || TRAVEL_HERO_IMAGE,
       imageAlt: "Comfortable car ready for an outstation journey",
       buttonLabel: "Book a Cab",
       buttonHref: "/transport-booking",
@@ -70,7 +71,7 @@ export default function HeroBanner() {
     <section aria-label="ROOMO stays and travel" className="relative isolate overflow-hidden bg-slate-900">
       {slides.map((slide, index) => (
         <div key={slide.buttonLabel} aria-hidden={activeSlide !== index} className={`absolute inset-0 ${activeSlide === index ? "opacity-100" : "pointer-events-none opacity-0"}`}>
-          <img src={slide.image} alt="" className="h-full w-full object-cover" fetchPriority={index === 0 ? "high" : "auto"} decoding="async" />
+          <img src={slide.image} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority={index === 0 ? "high" : "auto"} decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/45 to-slate-950/10" />
           <div className="absolute inset-0 bg-slate-950/10" />
         </div>
