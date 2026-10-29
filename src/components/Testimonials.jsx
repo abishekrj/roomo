@@ -60,7 +60,7 @@ export default function Testimonials() {
   return (
     <section id="testimonials" aria-labelledby="testimonials-title" className="w-full bg-[#f8fafc] py-12 sm:py-16 md:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="mb-7 flex flex-col justify-between gap-5 md:mb-9 md:flex-row md:items-end">
+        <div className="mb-7 flex items-end justify-between gap-3 md:mb-9 md:gap-5">
           <div className="max-w-3xl">
             <span className="mb-3 inline-flex items-center rounded-full border border-[#d8e4ed] bg-white px-3 py-1.5 text-xs font-medium text-[#285b7d]">
               <span className="mr-2" aria-hidden="true">♡</span>{content.eyebrow || defaults.eyebrow}
@@ -72,7 +72,7 @@ export default function Testimonials() {
               {content.description || defaults.description}
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-start">
+          <div className="flex shrink-0 flex-col items-end gap-3 sm:flex-row sm:items-center">
             <div className="inline-flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
               <span className="text-sm tracking-wide text-amber-500" aria-label="5 stars">★★★★★</span>
               <span className="text-sm font-semibold text-slate-700">{content.ratingSummary || defaults.ratingSummary}</span>
