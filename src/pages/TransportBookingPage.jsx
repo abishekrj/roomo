@@ -17,6 +17,9 @@ export default function TransportBookingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [routeBusy, setRouteBusy] = useState(false);
+  const [routeError, setRouteError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -51,9 +54,51 @@ export default function TransportBookingPage() {
       if (!response.ok) throw new Error(data.message || "Unable to submit your transport request.");
       setSuccess(data.booking);
       setForm(current => ({ ...current, pickupLocation: "", dropoffLocation: "", travelAt: "", notes: "" }));
+      setRoute(null); setRouteError("");
     } catch (e) { setError(e.message || "Unable to submit your request. Please try again."); }
     finally { setBusy(false); }
   }
+
+
+  function encodePolyline(coordinates) {
+    let lastLat = 0, lastLng = 0;
+    const parts = [];
+    const encodeValue = value => {
+      let encoded = "";
+      let current = value < 0 ? ~(value << 1) : value << 1;
+      while (current >= 0x20) { encoded += String.fromCharCode((0x20 | (current & 0x1f)) + 63); current >>= 5; }
+      return encoded + String.fromCharCode(current + 63);
+    };
+    for (const [lng, lat] of coordinates) {
+      const nextLat = Math.round(lat * 1e5), nextLng = Math.round(lng * 1e5);
+      parts.push(encodeValue(nextLat - lastLat), encodeValue(nextLng - lastLng));
+      lastLat = nextLat; lastLng = nextLng;
+    }
+    return parts.join("");
+  }
+
+  async function calculateRoute() {
+    if (form.pickupLocation.trim().length < 3 || form.dropoffLocation.trim().length < 3) {
+      setRouteError("Enter both pickup and destination to calculate the route.");
+      return;
+    }
+    setRouteBusy(true); setRouteError(""); setRoute(null);
+    try {
+      const response = await fetch(API + "/route-distance", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin: form.pickupLocation.trim(), destination: form.dropoffLocation.trim() })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "Unable to calculate this route.");
+      setRoute(data);
+    } catch (e) { setRouteError(e.message || "Unable to calculate the route. Please try again."); }
+    finally { setRouteBusy(false); }
+  }
+
+  const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  const routeMapUrl = route && mapToken && route.geometry?.coordinates?.length
+    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-5+2563a6-0.85(${encodeURIComponent(encodePolyline(route.geometry.coordinates))})/pin-s-a+2563a6(${route.origin.coordinates[0]},${route.origin.coordinates[1]}),pin-l-b+facc15(${route.destination.coordinates[0]},${route.destination.coordinates[1]})/auto/900x420@2x?access_token=${encodeURIComponent(mapToken)}&padding=48`
+    : null;
 
   const bookingReturnPath = window.location.pathname + window.location.search;
   const loginHref = "/login?returnTo=" + encodeURIComponent(bookingReturnPath);
@@ -72,6 +117,19 @@ export default function TransportBookingPage() {
         <label className="text-sm font-medium sm:col-span-2">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
         <label className="text-sm font-medium sm:col-span-2">Pickup location<input className={inputClass} name="pickupLocation" required minLength={3} maxLength={500} placeholder="Hotel, ashram, railway station or address" value={form.pickupLocation} onChange={change} /></label>
         <label className="text-sm font-medium sm:col-span-2">Destination<input className={inputClass} name="dropoffLocation" required minLength={3} maxLength={500} placeholder="Where would you like to go?" value={form.dropoffLocation} onChange={change} /><span className="mt-1 block text-xs font-normal text-slate-500">You can change this destination or add extra stop details in Trip notes.</span></label>
+        <div className="sm:col-span-2 -mt-1">
+          <button type="button" onClick={calculateRoute} disabled={routeBusy || form.pickupLocation.trim().length < 3 || form.dropoffLocation.trim().length < 3} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#2563a6] px-4 py-2 text-sm font-semibold text-[#2563a6] transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">{routeBusy ? "Calculating route…" : "Calculate distance & time"}</button>
+          {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
+          {route && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+            <div className="grid grid-cols-2 gap-3 p-4">
+              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Driving distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.distanceKm} km</p></div>
+              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated drive time</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.durationText}</p></div>
+            </div>
+            <div className="border-t border-slate-200 px-4 py-3 text-xs leading-5 text-slate-600"><span className="font-semibold text-slate-800">Route:</span> {route.origin.name} → {route.destination.name}</div>
+            {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block h-auto w-full bg-slate-100" loading="lazy" /> : <div className="px-4 pb-4 text-xs text-slate-500">Add VITE_MAPBOX_ACCESS_TOKEN to the frontend .env.local file to display the route map. The distance and duration are available above.</div>}
+            <p className="px-4 py-3 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
+          </div>}
+        </div>
         <label className="text-sm font-medium">Pickup date & time<input className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
         <label className="text-sm font-medium">Vehicle type<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
         <label className="text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
