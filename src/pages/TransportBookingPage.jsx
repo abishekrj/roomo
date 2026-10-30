@@ -31,10 +31,10 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }, [value]);
 
   function choose(place) {
-    onChange({ target: { name, value: place.placeName } });
+    onChange({ target: { name, value: place.name } });
     setSuggestions([]);
     setOpen(false);
-    onSelect?.(place.placeName);
+    onSelect?.(place);
   }
 
   return <label className="relative block min-w-0 text-sm font-medium">{label}
@@ -64,6 +64,8 @@ export default function TransportBookingPage() {
   const [routeBusy, setRouteBusy] = useState(false);
   const [routeError, setRouteError] = useState("");
   const destinationInputRef = useRef(null);
+  const travelDateInputRef = useRef(null);
+  const selectedFromRef = useRef("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -161,7 +163,7 @@ export default function TransportBookingPage() {
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <label className="text-sm font-medium">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={() => destinationInputRef.current?.focus()} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => calculateRoute(form.pickupLocation, place)} placeholder="Destination" /></div>
+        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place.placeName; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { calculateRoute(selectedFromRef.current || form.pickupLocation, place.placeName); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
         <div className="lg:col-span-3 -mt-1">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
@@ -175,7 +177,7 @@ export default function TransportBookingPage() {
             <p className="px-4 py-3 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
           </div>}
         </div>
-        <label className="text-sm font-medium">Pickup date & time<input className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
+        <label className="text-sm font-medium">Pickup date & time<input ref={travelDateInputRef} className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
         <label className="text-sm font-medium">Vehicle type<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
         <label className="text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
         <label className="text-sm font-medium lg:col-span-3">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
