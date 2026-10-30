@@ -120,7 +120,11 @@ async function dispatchBooking(booking) {
 // Public route estimate endpoint. The Mapbox secret token stays on the server.
 const routeEstimateSchema = z.object({
   origin: z.string().trim().min(2).max(300),
-  destination: z.string().trim().min(2).max(300)
+  destination: z.string().trim().min(2).max(300),
+  originCoordinates: z.tuple([z.number(), z.number()]).optional(),
+  destinationCoordinates: z.tuple([z.number(), z.number()]).optional(),
+  originPlaceName: z.string().trim().max(500).optional(),
+  destinationPlaceName: z.string().trim().max(500).optional()
 });
 
 async function geocodeMapboxLocation(query, token) {
@@ -174,8 +178,12 @@ router.post("/route-distance", async (req, res) => {
 
   try {
     const [origin, destination] = await Promise.all([
-      geocodeMapboxLocation(parsed.data.origin, token),
-      geocodeMapboxLocation(parsed.data.destination, token)
+      parsed.data.originCoordinates
+        ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: parsed.data.originPlaceName || parsed.data.origin })
+        : geocodeMapboxLocation(parsed.data.origin, token),
+      parsed.data.destinationCoordinates
+        ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: parsed.data.destinationPlaceName || parsed.data.destination })
+        : geocodeMapboxLocation(parsed.data.destination, token)
     ]);
     if (!origin) return res.status(422).json({ message: "We couldn't find the pickup location. Please enter a more specific place." });
     if (!destination) return res.status(422).json({ message: "We couldn't find the destination. Please enter a more specific place." });
