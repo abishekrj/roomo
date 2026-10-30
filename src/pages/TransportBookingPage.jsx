@@ -33,8 +33,8 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }, [value]);
 
   function choose(place) {
-    selectedPlaceNameRef.current = place.name;
-    onChange({ target: { name, value: place.name } });
+    selectedPlaceNameRef.current = place.placeName;
+    onChange({ target: { name, value: place.placeName } });
     setSuggestions([]);
     setOpen(false);
     onSelect?.(place);
@@ -171,7 +171,7 @@ export default function TransportBookingPage() {
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-5">
         <label className="text-sm font-medium lg:col-span-5">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5 lg:contents"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.name || form.pickupLocation, place.name, selectedFromRef.current, place); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
+        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5 lg:contents"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
         <div className="lg:col-span-5 -mt-1">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
