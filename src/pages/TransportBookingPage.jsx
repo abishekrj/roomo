@@ -59,7 +59,7 @@ function csrfHeaders() {
 export default function TransportBookingPage() {
   const [user, setUser] = useState(null);
   const [authState, setAuthState] = useState("checking");
-  const [form, setForm] = useState(() => { const params=new URLSearchParams(window.location.search); return {guestPhone:"",pickupLocation:params.get("pickup")||"",dropoffLocation:"",travelAt:"",passengerCount:"2",vehicleType:"CAR",notes:""}; });
+  const [form, setForm] = useState(() => { const params=new URLSearchParams(window.location.search); return {pickupLocation:params.get("pickup")||"",dropoffLocation:"",travelAt:"",passengerCount:"2",vehicleType:"CAR",notes:""}; });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
@@ -79,7 +79,7 @@ export default function TransportBookingPage() {
         if (response.status === 401) { setAuthState("signed-out"); return; }
         if (!response.ok || !data.user) throw new Error(data.message || "Unable to verify your ROOMO account.");
         setUser(data.user);
-        setForm(current => ({ ...current, guestPhone: data.user.phoneNumber || current.guestPhone, pickupLocation: current.pickupLocation || data.user.defaultPickupLocation || "" }));
+        setForm(current => ({ ...current, pickupLocation: current.pickupLocation || data.user.defaultPickupLocation || "" }));
         setAuthState("signed-in");
       })
       .catch(e => { if (e.name !== "AbortError") { setError(e.message || "Unable to verify your session."); setAuthState("error"); } });
@@ -179,7 +179,6 @@ export default function TransportBookingPage() {
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid w-full grid-cols-1 items-start gap-5">
-        <label className="block w-full text-sm font-medium">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
         <div className="col-span-full grid w-full grid-cols-1 items-stretch gap-3">
           <PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; }} placeholder="Choose pickup location" />
           <button type="button" onClick={swapLocations} aria-label="Swap pickup and destination" title="Swap locations" className="mb-0 inline-flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-slate-200 bg-white text-[#2563a6] shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3"/></svg></button>
