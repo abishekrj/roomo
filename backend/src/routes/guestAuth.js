@@ -148,7 +148,7 @@ router.post("/register", async (req, res, next) => {
       data: {
         fullName: parsed.data.fullName,
         email,
-        phoneNumber: parsed.data.phoneNumber || null,
+        phoneNumber: parsed.data.phoneNumber,
         phoneVerified: false,
         passwordHash: await bcrypt.hash(parsed.data.password, 12),
         authProvider: "EMAIL",
