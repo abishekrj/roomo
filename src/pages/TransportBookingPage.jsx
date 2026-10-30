@@ -9,9 +9,11 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const selectedPlaceNameRef = useRef("");
 
   useEffect(() => {
     const query = value.trim();
+    if (query === selectedPlaceNameRef.current) { setSuggestions([]); setOpen(false); return; }
     if (query.length < 3) { setSuggestions([]); setOpen(false); return; }
     const controller = new AbortController();
     const timer = setTimeout(async () => {
@@ -31,6 +33,7 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }, [value]);
 
   function choose(place) {
+    selectedPlaceNameRef.current = place.name;
     onChange({ target: { name, value: place.name } });
     setSuggestions([]);
     setOpen(false);
@@ -38,7 +41,7 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }
 
   return <label className="relative block min-w-0 text-sm font-medium">{label}
-    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { selectedPlaceNameRef.current = ""; onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
     {loading && <span className="absolute right-3 top-10 text-xs font-normal text-slate-400">Searching…</span>}
     {open && suggestions.length > 0 && <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
       {suggestions.map(place => <button key={place.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(place)} className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-blue-50">
@@ -161,10 +164,10 @@ export default function TransportBookingPage() {
       {authState === "signed-in" && <><div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Requesting as</p><p className="mt-1 font-semibold text-slate-900">{user.fullName}</p><p className="mt-1 text-sm text-slate-600">{user.email}</p><a href="/my-bookings" className="mt-2 inline-block text-sm font-semibold text-[#2563a6] hover:underline">View My Travel →</a></div>
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
-      <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="text-sm font-medium">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place.placeName; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { calculateRoute(selectedFromRef.current || form.pickupLocation, place.placeName); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
-        <div className="lg:col-span-3 -mt-1">
+      <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        <label className="text-sm font-medium lg:col-span-5">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
+        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5 lg:contents"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place.placeName; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { calculateRoute(selectedFromRef.current || form.pickupLocation, place.placeName); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
+        <div className="lg:col-span-5 -mt-1">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
           {route && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
@@ -180,8 +183,8 @@ export default function TransportBookingPage() {
         <label className="text-sm font-medium">Pickup date & time<input ref={travelDateInputRef} className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
         <label className="text-sm font-medium">Vehicle type<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
         <label className="text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
-        <label className="text-sm font-medium lg:col-span-3">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
-        <div className="lg:col-span-3"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver →"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
+        <label className="text-sm font-medium lg:col-span-5">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
+        <div className="lg:col-span-5"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver →"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
       </form></>}
     </section></div></main><Footer /></div>;
 }
