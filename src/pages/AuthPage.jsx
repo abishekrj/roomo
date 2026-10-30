@@ -156,6 +156,7 @@ export default function AuthPage({ mode = "login" }) {
     event.preventDefault();
     if (busy) return;
     if (isSignup && fullName.trim().length < 2) return notify("Please enter your full name.");
+    if (isSignup && !/^\\+[1-9]\\d{7,14}$/.test(phoneNumber.trim())) return notify("Please enter a valid mobile number with country code, such as +919876543210.");
     if (isSignup && password.length < 12) return notify("Please use a password with at least 12 characters.");
     setBusy(true);
     setMessage("");
@@ -167,7 +168,7 @@ export default function AuthPage({ mode = "login" }) {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(isSignup
-            ? { fullName: fullName.trim(), email: email.trim().toLowerCase(), password, ...(phoneNumber.trim() ? { phoneNumber: phoneNumber.trim() } : {}) }
+            ? { fullName: fullName.trim(), email: email.trim().toLowerCase(), phoneNumber: phoneNumber.trim(), password }
             : { email: email.trim().toLowerCase(), password })
         });
       } catch {
@@ -224,7 +225,7 @@ export default function AuthPage({ mode = "login" }) {
           <form onSubmit={submit} className="space-y-4">
             {isSignup && <label className="block text-sm font-medium text-slate-700">Full name<input autoComplete="name" value={fullName} onChange={e => setFullName(e.target.value)} required minLength={2} placeholder="Your full name" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /></label>}
             <label className="block text-sm font-medium text-slate-700">Email address<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /></label>
-            {isSignup && <label className="block text-sm font-medium text-slate-700">Mobile number <span className="font-normal text-slate-400">(optional)</span><input type="tel" autoComplete="tel" inputMode="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+919876543210" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /></label>}
+            {isSignup && <label className="block text-sm font-medium text-slate-700">Mobile number <span className="font-normal text-red-500">*</span><input type="tel" autoComplete="tel" inputMode="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required pattern="\\+[1-9][0-9]{7,14}" title="Enter a valid mobile number with country code, e.g. +919876543210" placeholder="+919876543210" className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-normal outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100" /><span className="mt-1 block text-xs font-normal text-slate-500">Include your country code so ROOMO can contact you about bookings.</span></label>}
             <label className="block text-sm font-medium text-slate-700">Password<div className="mt-2 flex rounded-lg border border-slate-300 focus-within:border-[#2563a6] focus-within:ring-2 focus-within:ring-blue-100"><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={isSignup ? 12 : 1} value={password} onChange={e => setPassword(e.target.value)} required placeholder={isSignup ? "At least 12 characters" : "Enter your password"} className="min-w-0 flex-1 rounded-l-lg px-4 py-3 text-sm font-normal outline-none" /><button type="button" onClick={() => setShowPassword(v => !v)} className="rounded-r-lg px-4 text-xs font-semibold text-[#2563a6] hover:bg-slate-50">{showPassword ? "Hide" : "Show"}</button></div></label>
             {!isSignup && <div className="flex items-center justify-between gap-3"><span className="text-xs text-slate-500">Your session expires automatically after 1 hour.</span><button type="button" onClick={() => notify("Password reset is not available yet. Please contact the ROOMO team for assistance.")} className="text-sm font-medium text-[#2563a6] hover:underline">Forgot password?</button></div>}
             <button type="submit" disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60">{busy ? "PLEASE WAIT…" : isSignup ? "CREATE ACCOUNT" : "SIGN IN"}</button>
