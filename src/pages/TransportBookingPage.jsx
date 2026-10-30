@@ -4,7 +4,7 @@ import Footer from "../components/Footer.jsx";
 
 const API = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/transport";
 const AUTH_API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
-const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100";
+const inputClass = "mt-1.5 w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3.5 text-sm font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-[#2563a6] focus:bg-white focus:ring-4 focus:ring-blue-100";
 function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef, onSelect }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -85,6 +85,15 @@ export default function TransportBookingPage() {
       .catch(e => { if (e.name !== "AbortError") { setError(e.message || "Unable to verify your session."); setAuthState("error"); } });
     return () => controller.abort();
   }, []);
+
+  function swapLocations() {
+    setForm(current => ({ ...current, pickupLocation: current.dropoffLocation, dropoffLocation: current.pickupLocation }));
+    const from = selectedFromRef.current;
+    selectedFromRef.current = selectedToRef.current;
+    selectedToRef.current = from;
+    setRoute(null);
+    setRouteError("");
+  }
 
   function change(event) {
     const { name, value } = event.target;
@@ -171,7 +180,11 @@ export default function TransportBookingPage() {
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-5">
         <label className="text-sm font-medium lg:col-span-5">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5 lg:contents"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; destinationInputRef.current?.focus(); }} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Destination" /></div>
+        <div className="col-span-full grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 lg:col-span-2">
+          <PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; destinationInputRef.current?.focus(); }} placeholder="Choose pickup location" />
+          <button type="button" onClick={swapLocations} aria-label="Swap pickup and destination" title="Swap locations" className="mb-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-[#2563a6] shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3"/></svg></button>
+          <PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Choose destination" />
+        </div>
         <div className="lg:col-span-5 -mt-1">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
@@ -189,7 +202,7 @@ export default function TransportBookingPage() {
         <label className="text-sm font-medium">Vehicle type<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
         <label className="text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
         <label className="text-sm font-medium lg:col-span-5">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
-        <div className="lg:col-span-5"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e4f85] disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver →"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
+        <div className="lg:col-span-5"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
       </form></>}
     </section></div></main><Footer /></div>;
 }
