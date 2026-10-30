@@ -5,6 +5,48 @@ import Footer from "../components/Footer.jsx";
 const API = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/transport";
 const AUTH_API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100";
+function PlaceAutocomplete({ label, name, value, onChange, placeholder }) {
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const query = value.trim();
+    if (query.length < 3) { setSuggestions([]); setOpen(false); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API}/place-suggestions?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) { setSuggestions(data.suggestions || []); setOpen(true); }
+        else setSuggestions([]);
+      } catch (error) {
+        if (error.name !== "AbortError") setSuggestions([]);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }, 300);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [value]);
+
+  function choose(place) {
+    onChange({ target: { name, value: place.placeName } });
+    setSuggestions([]);
+    setOpen(false);
+  }
+
+  return <label className="relative block text-sm font-medium sm:col-span-2">{label}
+    <input className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+    {loading && <span className="absolute right-3 top-10 text-xs font-normal text-slate-400">Searching…</span>}
+    {open && suggestions.length > 0 && <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
+      {suggestions.map(place => <button key={place.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(place)} className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-blue-50">
+        <span className="mt-0.5 text-[#2563a6]">⌖</span><span className="min-w-0"><span className="block text-sm font-medium text-slate-800">{place.name}</span><span className="mt-0.5 block text-xs font-normal text-slate-500">{place.placeName}</span></span>
+      </button>)}
+    </div>}
+  </label>;
+}
+
 function csrfHeaders() {
   const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf="));
   return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {};
@@ -115,8 +157,8 @@ export default function TransportBookingPage() {
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <label className="text-sm font-medium sm:col-span-2">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <label className="text-sm font-medium sm:col-span-2">Pickup location<input className={inputClass} name="pickupLocation" required minLength={3} maxLength={500} placeholder="Hotel, ashram, railway station or address" value={form.pickupLocation} onChange={change} /></label>
-        <label className="text-sm font-medium sm:col-span-2">Destination<input className={inputClass} name="dropoffLocation" required minLength={3} maxLength={500} placeholder="Where would you like to go?" value={form.dropoffLocation} onChange={change} /><span className="mt-1 block text-xs font-normal text-slate-500">You can change this destination or add extra stop details in Trip notes.</span></label>
+        <PlaceAutocomplete label="Pickup location" name="pickupLocation" value={form.pickupLocation} onChange={change} placeholder="Start typing a hotel, address, station or place" />
+        <div className="sm:col-span-2"><PlaceAutocomplete label="Destination" name="dropoffLocation" value={form.dropoffLocation} onChange={change} placeholder="Start typing your destination" /><span className="mt-1 block text-xs font-normal text-slate-500">You can change this destination or add extra stop details in Trip notes.</span></div>
         <div className="sm:col-span-2 -mt-1">
           <button type="button" onClick={calculateRoute} disabled={routeBusy || form.pickupLocation.trim().length < 3 || form.dropoffLocation.trim().length < 3} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#2563a6] px-4 py-2 text-sm font-semibold text-[#2563a6] transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">{routeBusy ? "Calculating route…" : "Calculate distance & time"}</button>
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
