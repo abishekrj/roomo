@@ -117,6 +117,73 @@ async function dispatchBooking(booking) {
   })));
 }
 
+// Public route estimate endpoint. The Mapbox secret token stays on the server.
+const routeEstimateSchema = z.object({
+  origin: z.string().trim().min(2).max(300),
+  destination: z.string().trim().min(2).max(300)
+});
+
+async function geocodeMapboxLocation(query, token) {
+  const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
+  url.searchParams.set("access_token", token);
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("country", "in");
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Mapbox location search failed (${response.status}).`);
+  const data = await response.json();
+  const feature = data.features?.[0];
+  if (!feature?.center || feature.center.length < 2) return null;
+  return { coordinates: feature.center, placeName: feature.place_name || query };
+}
+
+router.post("/route-distance", async (req, res) => {
+  const parsed = routeEstimateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Enter a valid pickup location and destination.", errors: parsed.error.flatten().fieldErrors });
+  }
+
+  const token = process.env.MAPBOX_SECRET_TOKEN;
+  if (!token) return res.status(503).json({ message: "Route calculation is not configured. Please contact ROOMO support." });
+
+  try {
+    const [origin, destination] = await Promise.all([
+      geocodeMapboxLocation(parsed.data.origin, token),
+      geocodeMapboxLocation(parsed.data.destination, token)
+    ]);
+    if (!origin) return res.status(422).json({ message: "We couldn't find the pickup location. Please enter a more specific place." });
+    if (!destination) return res.status(422).json({ message: "We couldn't find the destination. Please enter a more specific place." });
+
+    const [originLng, originLat] = origin.coordinates;
+    const [destinationLng, destinationLat] = destination.coordinates;
+    const coordinates = `${originLng},${originLat};${destinationLng},${destinationLat}`;
+    const routeUrl = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}`);
+    routeUrl.searchParams.set("access_token", token);
+    routeUrl.searchParams.set("overview", "full");
+    routeUrl.searchParams.set("geometries", "geojson");
+    routeUrl.searchParams.set("steps", "false");
+
+    const routeResponse = await fetch(routeUrl);
+    if (!routeResponse.ok) throw new Error(`Mapbox route calculation failed (${routeResponse.status}).`);
+    const routeData = await routeResponse.json();
+    const route = routeData.routes?.[0];
+    if (!route) return res.status(422).json({ message: "No driving route was found between these locations." });
+
+    return res.json({
+      origin: { name: origin.placeName, coordinates: origin.coordinates },
+      destination: { name: destination.placeName, coordinates: destination.coordinates },
+      distanceMeters: route.distance,
+      distanceKm: Math.round((route.distance / 1000) * 10) / 10,
+      durationSeconds: Math.round(route.duration),
+      durationMinutes: Math.round(route.duration / 60),
+      durationText: `${Math.floor(route.duration / 3600)} hr ${Math.round((route.duration % 3600) / 60)} min`,
+      geometry: route.geometry
+    });
+  } catch (error) {
+    console.error("Mapbox route estimate failed:", error.message);
+    return res.status(502).json({ message: "Unable to calculate the route right now. Please try again." });
+  }
+});
+
 router.post("/bookings", guestAuth, async (req, res, next) => {
   try {
     const parsed = bookingSchema.safeParse({
