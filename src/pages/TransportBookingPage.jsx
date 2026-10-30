@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 
 const API = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/transport";
 const AUTH_API = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#2563a6] focus:ring-2 focus:ring-blue-100";
-function PlaceAutocomplete({ label, name, value, onChange, placeholder }) {
+function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef, onSelect }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -34,10 +34,11 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder }) {
     onChange({ target: { name, value: place.placeName } });
     setSuggestions([]);
     setOpen(false);
+    onSelect?.(place.placeName);
   }
 
-  return <label className="relative block text-sm font-medium sm:col-span-2">{label}
-    <input className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+  return <label className="relative block min-w-0 text-sm font-medium">{label}
+    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
     {loading && <span className="absolute right-3 top-10 text-xs font-normal text-slate-400">Searching…</span>}
     {open && suggestions.length > 0 && <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
       {suggestions.map(place => <button key={place.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(place)} className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-blue-50">
@@ -62,6 +63,7 @@ export default function TransportBookingPage() {
   const [route, setRoute] = useState(null);
   const [routeBusy, setRouteBusy] = useState(false);
   const [routeError, setRouteError] = useState("");
+  const destinationInputRef = useRef(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -78,7 +80,11 @@ export default function TransportBookingPage() {
     return () => controller.abort();
   }, []);
 
-  function change(event) { setForm(current => ({ ...current, [event.target.name]: event.target.value })); }
+  function change(event) {
+    const { name, value } = event.target;
+    setForm(current => ({ ...current, [name]: value }));
+    if (name === "pickupLocation" || name === "dropoffLocation") { setRoute(null); setRouteError(""); }
+  }
 
   async function submit(event) {
     event.preventDefault();
@@ -119,8 +125,8 @@ export default function TransportBookingPage() {
     return parts.join("");
   }
 
-  async function calculateRoute() {
-    if (form.pickupLocation.trim().length < 3 || form.dropoffLocation.trim().length < 3) {
+  async function calculateRoute(originValue = form.pickupLocation, destinationValue = form.dropoffLocation) {
+    if (originValue.trim().length < 3 || destinationValue.trim().length < 3) {
       setRouteError("Enter both pickup and destination to calculate the route.");
       return;
     }
@@ -128,7 +134,7 @@ export default function TransportBookingPage() {
     try {
       const response = await fetch(API + "/route-distance", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: form.pickupLocation.trim(), destination: form.dropoffLocation.trim() })
+        body: JSON.stringify({ origin: originValue.trim(), destination: destinationValue.trim() })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to calculate this route.");
@@ -155,10 +161,9 @@ export default function TransportBookingPage() {
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <label className="text-sm font-medium">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} placeholder="Enter pickup city or place" />
-        <div><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} placeholder="Enter destination" /><span className="mt-1 block text-xs font-normal text-slate-500">Add extra stops in trip notes.</span></div>
+        <div className="col-span-full grid grid-cols-2 items-start gap-3 sm:gap-5"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={() => destinationInputRef.current?.focus()} placeholder="Pickup place" /><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => calculateRoute(form.pickupLocation, place)} placeholder="Destination" /></div>
         <div className="lg:col-span-3 -mt-1">
-          <button type="button" onClick={calculateRoute} disabled={routeBusy || form.pickupLocation.trim().length < 3 || form.dropoffLocation.trim().length < 3} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#2563a6] px-4 py-2 text-sm font-semibold text-[#2563a6] transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">{routeBusy ? "Calculating route…" : "Calculate distance & time"}</button>
+          {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
           {route && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
             <div className="grid grid-cols-2 gap-3 p-4">
