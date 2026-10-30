@@ -33,8 +33,8 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }, [value]);
 
   function choose(place) {
-    selectedPlaceNameRef.current = place.placeName;
-    onChange({ target: { name, value: place.placeName } });
+    selectedPlaceNameRef.current = place.name;
+    onChange({ target: { name, value: place.name } });
     setSuggestions([]);
     setOpen(false);
     onSelect?.(place);
