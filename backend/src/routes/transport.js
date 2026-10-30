@@ -136,6 +136,33 @@ async function geocodeMapboxLocation(query, token) {
   return { coordinates: feature.center, placeName: feature.place_name || query };
 }
 
+router.get("/place-suggestions", async (req, res) => {
+  const query = String(req.query.q || "").trim();
+  if (query.length < 3) return res.json({ suggestions: [] });
+  const token = process.env.MAPBOX_SECRET_TOKEN;
+  if (!token) return res.status(503).json({ message: "Place search is not configured." });
+  try {
+    const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
+    url.searchParams.set("access_token", token);
+    url.searchParams.set("autocomplete", "true");
+    url.searchParams.set("limit", "6");
+    url.searchParams.set("country", "in");
+    url.searchParams.set("types", "address,poi,place,locality,neighborhood,postcode");
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Mapbox place search failed (${response.status}).`);
+    const data = await response.json();
+    return res.json({ suggestions: (data.features || []).map(feature => ({
+      id: feature.id,
+      name: feature.text || feature.place_name,
+      placeName: feature.place_name,
+      coordinates: feature.center
+    })) });
+  } catch (error) {
+    console.error("Mapbox place suggestions failed:", error.message);
+    return res.status(502).json({ message: "Unable to search places right now." });
+  }
+});
+
 router.post("/route-distance", async (req, res) => {
   const parsed = routeEstimateSchema.safeParse(req.body);
   if (!parsed.success) {
