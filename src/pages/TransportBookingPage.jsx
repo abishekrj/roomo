@@ -21,7 +21,7 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
       try {
         const response = await fetch(`${API}/place-suggestions?q=${encodeURIComponent(query)}`, { signal: controller.signal });
         const data = await response.json().catch(() => ({}));
-        if (response.ok) { setSuggestions(data.suggestions || []); setOpen(true); }
+        if (response.ok) { const results = data.suggestions || []; setSuggestions(results); setOpen(results.length > 0); }
         else setSuggestions([]);
       } catch (error) {
         if (error.name !== "AbortError") setSuggestions([]);
@@ -41,7 +41,7 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }
 
   return <label className="relative block min-w-0 text-sm font-medium">{label}
-    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { selectedPlaceNameRef.current = ""; onChange(event); setOpen(true); }} onFocus={() => suggestions.length && setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="new-password" placeholder={placeholder} value={value} onChange={event => { selectedPlaceNameRef.current = ""; setSuggestions([]); setOpen(false); onChange(event); }} onFocus={() => setOpen(false)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
     {loading && <span className="absolute right-3 top-10 text-xs font-normal text-slate-400">Searching…</span>}
     {open && suggestions.length > 0 && <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
       {suggestions.map(place => <button key={place.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(place)} className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-blue-50">
@@ -178,14 +178,14 @@ export default function TransportBookingPage() {
       {authState === "signed-in" && <><div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Requesting as</p><p className="mt-1 font-semibold text-slate-900">{user.fullName}</p><p className="mt-1 text-sm text-slate-600">{user.email}</p><a href="/my-bookings" className="mt-2 inline-block text-sm font-semibold text-[#2563a6] hover:underline">View My Travel →</a></div>
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
-      <form onSubmit={submit} className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-5">
-        <label className="text-sm font-medium lg:col-span-5">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
-        <div className="col-span-full grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 lg:col-span-2">
+      <form onSubmit={submit} className="grid w-full grid-cols-1 items-start gap-5">
+        <label className="block w-full text-sm font-medium">Mobile number<input className={inputClass} name="guestPhone" autoComplete="tel" type="tel" required minLength={7} maxLength={32} value={form.guestPhone} onChange={change} placeholder="Enter a contact number for this trip" /></label>
+        <div className="col-span-full grid w-full grid-cols-1 items-stretch gap-3">
           <PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; destinationInputRef.current?.focus(); }} placeholder="Choose pickup location" />
-          <button type="button" onClick={swapLocations} aria-label="Swap pickup and destination" title="Swap locations" className="mb-1 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-[#2563a6] shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3"/></svg></button>
+          <button type="button" onClick={swapLocations} aria-label="Swap pickup and destination" title="Swap locations" className="mb-0 inline-flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-slate-200 bg-white text-[#2563a6] shadow-sm transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h13m0 0-3-3m3 3-3 3M17 17H4m0 0 3 3m-3-3 3-3"/></svg></button>
           <PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); window.setTimeout(() => { const dateInput = travelDateInputRef.current; dateInput?.focus(); if (typeof dateInput?.showPicker === "function") dateInput.showPicker(); }, 100); }} placeholder="Choose destination" />
         </div>
-        <div className="lg:col-span-5 -mt-1">
+        <div className="col-span-full -mt-1 w-full">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
           {route && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
@@ -202,7 +202,7 @@ export default function TransportBookingPage() {
         <label className="text-sm font-medium">Vehicle type<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
         <label className="text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
         <label className="text-sm font-medium lg:col-span-5">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
-        <div className="lg:col-span-5"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
+        <div className="col-span-full w-full"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
       </form></>}
     </section></div></main><Footer /></div>;
 }
