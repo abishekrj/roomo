@@ -189,14 +189,20 @@ export default function TransportBookingPage() {
         <div className="col-span-full w-full">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
-          {route && <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.distanceKm} km</p></div>
-              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.durationText}</p></div>
+          {route && <div className="space-y-3">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.distanceKm} km</p></div>
+                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.durationText}</p></div>
+              </div>
+              <div className="border-t border-slate-200 px-4 py-3 text-xs leading-5 text-slate-600"><span className="font-semibold text-slate-800">Route:</span> {route.origin.name} → {route.destination.name}</div>
+              <p className="px-4 pb-4 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
             </div>
-            <div className="border-t border-slate-200 px-4 py-3 text-xs leading-5 text-slate-600"><span className="font-semibold text-slate-800">Route:</span> {route.origin.name} → {route.destination.name}</div>
-            {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block h-auto w-full bg-slate-100" loading="lazy" /> : <div className="px-4 pb-4 text-xs text-slate-500">Add VITE_MAPBOX_ACCESS_TOKEN to the frontend .env.local file to display the route map. The distance and duration are available above.</div>}
-            <p className="px-4 py-3 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">Driving route from {route.origin.name} to {route.destination.name}</p></div>
+              {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block min-h-48 w-full bg-slate-100 object-cover" loading="lazy" onError={event => { event.currentTarget.style.display = "none"; event.currentTarget.nextElementSibling?.classList.remove("hidden"); }} /> : null}
+              <div className={routeMapUrl ? "hidden px-4 py-5 text-sm text-slate-600" : "px-4 py-5 text-sm text-slate-600"}>The route map is unavailable. Check that <code>VITE_MAPBOX_ACCESS_TOKEN</code> is set correctly in the frontend <code>.env.local</code> file and restart the Vite server.</div>
+            </div>
           </div>}
         </div>
         <label className="text-sm font-medium">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
