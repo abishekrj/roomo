@@ -212,46 +212,58 @@ export default function TransportBookingPage() {
       {authState === "signed-in" && <><div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Requesting as</p><p className="mt-1 font-semibold text-slate-900">{user.fullName}</p><p className="mt-1 text-sm text-slate-600">{user.email}</p><a href="/my-bookings" className="mt-2 inline-block text-sm font-semibold text-[#2563a6] hover:underline">View My Travel →</a></div>
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
-      <form onSubmit={submit} className="grid w-full grid-cols-1 items-start gap-5">
-        <div className="grid w-full grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1.35fr)_minmax(0,1.15fr)_minmax(0,0.8fr)_minmax(0,0.75fr)]">
-          <div className="min-w-0"><PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; }} placeholder="Choose pickup location" /></div>
-          <div className="min-w-0"><PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); }} placeholder="Choose destination" /></div>
-          <label className="min-w-0 text-sm font-medium">Date & time<input ref={travelDateInputRef} className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
-          <label className="min-w-0 text-sm font-medium">Vehicle<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
-          <label className="min-w-0 text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
+      <form onSubmit={submit} className="grid w-full grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="min-w-0 space-y-5">
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Journey details</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <PlaceAutocomplete label="From" name="pickupLocation" value={form.pickupLocation} onChange={change} inputRef={null} onSelect={place => { selectedFromRef.current = place; selectedToRef.current = null; }} placeholder="Choose pickup location" />
+              <PlaceAutocomplete label="To" name="dropoffLocation" value={form.dropoffLocation} onChange={change} inputRef={destinationInputRef} onSelect={place => { selectedToRef.current = place; calculateRoute(selectedFromRef.current?.placeName || form.pickupLocation, place.placeName, selectedFromRef.current, place); }} placeholder="Choose destination" />
+            </div>
+          </div>
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Travel preferences</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <label className="min-w-0 text-sm font-medium">Date &amp; time<input ref={travelDateInputRef} className={inputClass} name="travelAt" type="datetime-local" required min={new Date(Date.now() + 60000).toISOString().slice(0,16)} value={form.travelAt} onChange={change} /></label>
+              <label className="min-w-0 text-sm font-medium">Vehicle<select className={inputClass} name="vehicleType" value={form.vehicleType} onChange={change}><option value="CAR">Car</option><option value="SUV">SUV</option><option value="VAN">Van</option><option value="TEMPO_TRAVELLER">Tempo traveller</option></select></label>
+              <label className="min-w-0 text-sm font-medium">Passengers<input className={inputClass} name="passengerCount" type="number" min="1" max="30" required value={form.passengerCount} onChange={change} /></label>
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-semibold text-slate-800">Journey estimate</h3>
+            {routeBusy ? <p className="mt-3 text-sm font-medium text-[#2563a6]">Calculating distance and estimated time…</p> : route ? <div className="mt-3 grid grid-cols-2 gap-4">
+              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-2xl font-semibold text-slate-900">{activeRoute.distanceKm} km</p></div>
+              <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-2xl font-semibold text-slate-900">{activeRoute.durationText}</p></div>
+            </div> : <p className="mt-2 text-sm text-slate-500">Choose your From and To locations to see the distance and estimated travel time.</p>}
+            {routeError && <p role="alert" className="mt-3 text-sm text-red-600">{routeError}</p>}
+            {route && <p className="mt-3 text-xs leading-5 text-slate-500">Estimate based on the selected driving route. Actual travel time may vary with traffic and road conditions.</p>}
+          </div>
+          <label className="block text-sm font-medium">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
+          <div>
+            <button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60">{busy ? "Sending request…" : "Request a driver"}</button>
+            <p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p>
+          </div>
         </div>
-        <div className="col-span-full w-full">
-          {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
-          {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
-          {route && <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-slate-900">Choose your route</h3><p className="text-xs text-slate-500">Select the route that works best for you</p></div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => { setSelectedRouteIndex(index); setMapError(""); }} aria-pressed={selectedRouteIndex === index} className={`rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-                  <span className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{option.label || (index === 0 ? "Google driving route" : `Alternative route ${index}`)}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
-                  <span className="mt-3 block text-lg font-semibold text-slate-900">{option.distanceKm} km</span>
-                  <span className="mt-1 block text-sm text-slate-600">{option.durationText}</span>
-                  <span className={`mt-3 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "View this route on map"}</span>
-                </button>)}
-              </div>
-              {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">ROOMO is showing the configured driving corridor for this journey.</p>}
-            </div>
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{activeRoute.distanceKm} km</p></div>
-                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-xl font-semibold text-slate-900">{activeRoute.durationText}</p></div>
-              </div>
-              <div className="border-t border-slate-200 px-4 py-3 text-xs leading-5 text-slate-600"><span className="font-semibold text-slate-800">Route:</span> {route.origin.name} → {route.destination.name}</div>
-              <p className="px-4 pb-4 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
-            </div>
+        <div className="min-w-0 space-y-4">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">Choose your route</h3>
+            <p className="mt-1 text-sm text-slate-500">Your route options and driving map will appear here after you select a destination.</p>
+          </div>
+          {route ? <div className="space-y-3">
+            {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => setSelectedRouteIndex(index)} aria-pressed={selectedRouteIndex === index} className={`w-full rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+              <span className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{option.label || "Google driving route"}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
+              <span className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1"><span className="text-lg font-semibold text-slate-900">{option.distanceKm} km</span><span className="text-sm text-slate-600">{option.durationText}</span></span>
+              <span className={`mt-2 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "Show on map"}</span>
+            </button>)}
+            {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Showing the configured driving corridor for this journey.</p>}
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">{activeRoute.label || "Google driving route"} · {route.origin.name} to {route.destination.name}</p></div>
+              <div className="border-b border-slate-200 px-4 py-3"><h4 className="text-sm font-semibold text-slate-900">Route map</h4><p className="mt-1 text-xs text-slate-500">{activeRoute.label || "Google driving route"} · {route.origin.name} to {route.destination.name}</p></div>
               {mapBuildError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapBuildError}</div> : <GoogleRouteMap route={activeRoute} origin={route.origin.name} destination={route.destination.name} />}
             </div>
+          </div> : <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <div><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-xl text-[#2563a6]">⌖</span><p className="mt-4 text-sm font-semibold text-slate-700">{routeBusy ? "Finding your route…" : "Your route map will appear here"}</p><p className="mt-2 max-w-xs text-xs leading-5 text-slate-500">Select a pickup and destination to calculate the distance, estimated time and map.</p></div>
           </div>}
         </div>
-        <label className="text-sm font-medium">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
-        <div className="col-span-full w-full"><button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60 sm:w-auto">{busy ? "Sending request…" : "Request a driver"}</button><p className="mt-3 text-xs leading-5 text-slate-500">Submitting this form requests a ride; it does not guarantee a driver until the trip is confirmed.</p></div>
       </form></>}
     </section></div></main><Footer /></div>;
 }
