@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 
@@ -49,6 +49,28 @@ export default function DriverPortal() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [newRequestAlert, setNewRequestAlert] = useState(null);
+  const knownOfferIds = useRef(new Set());
+  const audioReady = useRef(false);
+  function playRequestAlert() {
+    if (!soundEnabled || !audioReady.current) return;
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine"; oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.45);
+      oscillator.connect(gain); gain.connect(context.destination);
+      oscillator.start(); oscillator.stop(context.currentTime + 0.46);
+      oscillator.onended = () => context.close();
+    } catch {}
+  }
+  useEffect(() => { const unlock = () => { audioReady.current = true; }; window.addEventListener("pointerdown", unlock, { once: true }); window.addEventListener("keydown", unlock, { once: true }); return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); }; }, []);
   const pageByPath = { "/driver/dashboard": "dashboard", "/driver/new-trip-requests": "new-requests", "/driver/current-trip": "current-trip", "/driver/confirmed-trips": "confirmed-trips", "/driver/completed-trips": "completed-trips" };
   const activePage = pageByPath[currentPath] || "dashboard";
   function navigateToPage(pageId) {
@@ -101,7 +123,8 @@ export default function DriverPortal() {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") throw new Error("Notifications are blocked. Allow notifications for ROOMO in your browser settings.");
       const registration = await navigator.serviceWorker.register("/driver-sw.js", { scope: "/" });
-      const subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(vapidKey) });
+      const existingSubscription = await registration.pushManager.getSubscription();
+      const subscription = existingSubscription || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(vapidKey) });
       const data = await api("/driver/push-subscriptions", { method: "POST", body: JSON.stringify({ subscription: subscription.toJSON() }) });
       setPushEnabled(true); setNotice(data.message || "Push notifications are enabled.");
     } catch (e) { setError(e.message || "Unable to enable notifications."); }
@@ -122,7 +145,7 @@ export default function DriverPortal() {
     catch (e) { setError(e.message); await refresh().catch(() => {}); }
     finally { setBusy(false); }
   }
-  function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.history.pushState({}, "", "/driver/login"); setCurrentPath("/driver/login"); }
+  function signOut() { knownOfferIds.current = new Set(); sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.history.pushState({}, "", "/driver/login"); setCurrentPath("/driver/login"); }
 
   const currentTrips = useMemo(() => assigned.filter(item => item.status === "IN_PROGRESS"), [assigned]);
   const confirmedTrips = useMemo(() => assigned.filter(item => item.status === "CONFIRMED"), [assigned]);
@@ -165,10 +188,10 @@ export default function DriverPortal() {
         </aside>
         <div className="min-w-0">
           <div className="mb-6 flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver workspace</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{pageHeading}</h1><p className="mt-2 text-sm text-slate-500">{activePage === "dashboard" ? "Your trips, requests and notifications in one place." : activePage === "new-requests" ? "Review and respond to new trip requests." : activePage === "completed-trips" ? "A record of the trips you have completed." : activePage === "confirmed-trips" ? "Trips accepted and confirmed for your upcoming journeys." : "Trips currently in progress."}</p></div><button onClick={() => refresh().catch(e => setError(e.message))} className={secondaryButton}>↻ Refresh</button></div>
-          {notice && <p role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
+          {newRequestAlert && <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950"><div><p className="font-semibold">New trip request received</p><p className="mt-1 text-sm">{newRequestAlert.booking.pickupLocation} → {newRequestAlert.booking.dropoffLocation} · {newRequestAlert.booking.bookingCode}</p></div><button className="rounded-lg bg-[#2563a6] px-3 py-2 text-sm font-semibold text-white" onClick={() => { navigateToPage("new-requests"); setNewRequestAlert(null); }}>Review request</button><button className="text-sm font-semibold" onClick={() => setNewRequestAlert(null)}>Dismiss</button></div>}{notice && <p role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
           {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           {activePage === "dashboard" && <>
-            <section className="rounded-lg bg-[#102747] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-7"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Your trips at a glance</p><h2 className="mt-2 text-2xl font-semibold">Ready for your next journey?</h2><p className="mt-2 max-w-xl text-sm leading-6 text-blue-100">Keep this portal available and enable push notifications so you can respond to new trip requests promptly.</p></div><button onClick={enablePush} className="mt-5 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#102747] transition hover:bg-blue-50 sm:mt-0">{pushEnabled ? "✓ Notifications enabled" : "♧ Enable notifications"}</button></section>
+            <section className="rounded-lg bg-[#102747] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-7"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Your trips at a glance</p><h2 className="mt-2 text-2xl font-semibold">Ready for your next journey?</h2><p className="mt-2 max-w-xl text-sm leading-6 text-blue-100">Keep this portal available and enable push notifications so you can respond to new trip requests promptly.</p></div><div className="mt-5 flex shrink-0 flex-col gap-2 sm:mt-0"><button onClick={enablePush} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#102747] transition hover:bg-blue-50">{pushEnabled ? "✓ Notifications enabled" : "♧ Enable push alerts"}</button><button onClick={() => setSoundEnabled(value => !value)} className="rounded-lg border border-white/30 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10">{soundEnabled ? "Sound alerts: On" : "Sound alerts: Off"}</button></div></section>
             <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><button onClick={() => navigateToPage("new-requests")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">New trip requests</p><p className="mt-2 text-3xl font-semibold">{requests.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">Review requests →</p></button><button onClick={() => navigateToPage("current-trip")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Current trips</p><p className="mt-2 text-3xl font-semibold">{currentTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View current trips →</p></button><button onClick={() => navigateToPage("confirmed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Confirmed trips</p><p className="mt-2 text-3xl font-semibold">{confirmedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View confirmed trips →</p></button><button onClick={() => navigateToPage("completed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Completed trips</p><p className="mt-2 text-3xl font-semibold">{completedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View history →</p></button><div className="rounded-lg border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">Notification status</p><p className="mt-2 text-lg font-semibold">{pushEnabled ? "Enabled" : "Not enabled"}</p><p className="mt-2 text-sm text-slate-500">For this device</p></div></div>
             <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">New trip requests</h2><p className="mt-1 text-sm text-slate-500">Requests expire after the response window closes.</p></div><button onClick={() => navigateToPage("new-requests")} className="text-sm font-semibold text-[#2563a6]">View all →</button></div>{requests.length ? <div className="grid grid-cols-1 gap-4">{requests.slice(0, 2).map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">No new requests right now.</p>}</section>
           </>}
