@@ -144,16 +144,15 @@ async function googleGeocode(query, apiKey) {
   return { coordinates: [result.geometry.location.lng, result.geometry.location.lat], placeName: result.formatted_address };
 }
 
-async function googleRoute(origin, destination, apiKey, viaNames = []) {
-  // Let Routes API resolve these named waypoints directly. Geocoding can return
-  // ZERO_RESULTS for valid towns when queried without a sufficiently specific address.
+async function googleRoute(origin, destination, apiKey, viaNames = [], alternatives = false) {
+  // Google does not return alternative routes when intermediate waypoints are supplied.
   const intermediates = viaNames.map(name => ({ address: `${name}, Tamil Nadu, India` }));
   const body = {
     origin,
     destination,
     travelMode: "DRIVE",
     routingPreference: "TRAFFIC_UNAWARE",
-    computeAlternativeRoutes: false,
+    computeAlternativeRoutes: alternatives && intermediates.length === 0,
     ...(intermediates.length ? { intermediates } : {})
   };
   const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
@@ -170,7 +169,7 @@ async function googleRoute(origin, destination, apiKey, viaNames = []) {
     throw new Error(`Google Routes failed (${response.status}): ${detail.slice(0, 400)}`);
   }
   const data = await response.json();
-  return data.routes?.[0] || null;
+  return data.routes || [];
 }
 
 function decodeGooglePolyline(encoded) {
@@ -226,23 +225,43 @@ router.post("/route-distance", async (req, res) => {
     if (routeText.includes("tambaram") && routeText.includes("villupuram")) viaNames = ["Melmaruvathur", "Tindivanam"];
     else if (routeText.includes("tambaram") && routeText.includes("tiruvannamalai")) viaNames = ["Melmaruvathur", "Tindivanam", "Gingee"];
 
-    const result = await googleRoute(origin, destination, apiKey, viaNames);
-    if (!result) return res.status(422).json({ message: "Google Maps could not find a driving route between these locations." });
-    const distanceMeters = result.distanceMeters;
-    const durationSeconds = Math.round(Number(String(result.duration || "0s").replace("s", "")));
-    const coordinates = decodeGooglePolyline(result.polyline?.encodedPolyline || "");
-    if (coordinates.length < 2) return res.status(502).json({ message: "Google Maps returned a route without usable map geometry." });
-    const route = {
-      id: 0,
-      label: viaNames.length ? `Via ${viaNames.join(" · ")}` : "Google driving route",
-      via: viaNames,
-      distanceMeters,
-      distanceKm: Math.round(distanceMeters / 100) / 10,
-      durationSeconds,
-      durationMinutes: Math.round(durationSeconds / 60),
-      durationText: `${Math.floor(durationSeconds / 3600)} hr ${Math.round((durationSeconds % 3600) / 60)} min`,
-      geometry: { type: "LineString", coordinates }
-    };
+    let googleRoutes;
+    if (viaNames.length) {
+      const [recommendedRoutes, alternateRoutes] = await Promise.all([
+        googleRoute(origin, destination, apiKey, viaNames),
+        googleRoute(origin, destination, apiKey)
+      ]);
+      googleRoutes = [
+        ...(recommendedRoutes.slice(0, 1).map((item, index) => ({ item, label: "Recommended Route", via: viaNames, id: index }))),
+        ...(alternateRoutes.slice(0, 1).map((item, index) => ({ item, label: "Alternate Route", via: [], id: 1 })))
+      ];
+    } else {
+      const results = await googleRoute(origin, destination, apiKey, [], true);
+      googleRoutes = results.slice(0, 2).map((item, index) => ({
+        item,
+        label: index === 0 ? "Recommended Route" : "Alternate Route",
+        via: [],
+        id: index
+      }));
+    }
+    const routes = googleRoutes.map(({ item, label, via, id }) => {
+      const distanceMeters = item.distanceMeters;
+      const durationSeconds = Math.round(Number(String(item.duration || "0s").replace("s", "")));
+      const coordinates = decodeGooglePolyline(item.polyline?.encodedPolyline || "");
+      return {
+        id,
+        label,
+        via,
+        distanceMeters,
+        distanceKm: Math.round(distanceMeters / 100) / 10,
+        durationSeconds,
+        durationMinutes: Math.round(durationSeconds / 60),
+        durationText: `${Math.floor(durationSeconds / 3600)} hr ${Math.round((durationSeconds % 3600) / 60)} min`,
+        geometry: { type: "LineString", coordinates }
+      };
+    }).filter(item => item.geometry.coordinates.length >= 2);
+    if (!routes.length) return res.status(422).json({ message: "Google Maps could not find driving routes between these locations." });
+    const route = routes[0];
     const [originPoint, destinationPoint] = await Promise.all([
       parsed.data.originCoordinates ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: originName }) : googleGeocode(originName, apiKey),
       parsed.data.destinationCoordinates ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: destinationName }) : googleGeocode(destinationName, apiKey)
@@ -251,7 +270,7 @@ router.post("/route-distance", async (req, res) => {
       origin: { name: originPoint?.placeName || originName, coordinates: originPoint?.coordinates || coordinates[0] },
       destination: { name: destinationPoint?.placeName || destinationName, coordinates: destinationPoint?.coordinates || coordinates[coordinates.length - 1] },
       ...route,
-      routes: [route]
+      routes
     });
   } catch (error) {
     console.error("Google route estimate failed:", error.message);
