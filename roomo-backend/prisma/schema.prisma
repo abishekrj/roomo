@@ -365,6 +365,9 @@ model Driver {
   bookings       TransportBooking[]  @relation("AssignedDriver")
   offers         DriverOffer[]
   pushSubscriptions DriverPushSubscription[]
+  wallet         DriverWallet?
+  walletTransactions WalletTransaction[]
+  walletRecharges WalletRecharge[]
 
   @@index([isActive, isAvailable, vehicleType])
   @@map("drivers")
@@ -390,6 +393,7 @@ model TransportBooking {
   updatedAt       DateTime     @updatedAt @map("updated_at")
   assignedDriver  Driver?      @relation("AssignedDriver", fields: [assignedDriverId], references: [id], onDelete: SetNull)
   offers          DriverOffer[]
+  walletTransactions WalletTransaction[]
 
   @@index([status, travelAt])
   @@index([assignedDriverId, travelAt, status])
@@ -425,4 +429,125 @@ model DriverPushSubscription {
 
   @@index([driverId])
   @@map("driver_push_subscriptions")
+}
+
+
+enum WalletStatus {
+  ACTIVE
+  LOW_BALANCE
+  RESTRICTED
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTransactionCategory {
+  RECHARGE
+  COMMISSION
+  REFUND
+  ADJUSTMENT
+}
+
+enum WalletRechargeMethod {
+  ONLINE
+  MANUAL
+}
+
+enum WalletRechargeStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REJECTED
+}
+
+enum WalletCommissionModel {
+  PERCENTAGE
+  FIXED
+}
+
+enum WalletRechargeMode {
+  ONLINE
+  MANUAL
+  BOTH
+}
+
+model DriverWallet {
+  id              String       @id @default(uuid()) @db.Uuid
+  driverId        String       @unique @db.Uuid @map("driver_id")
+  balance         Decimal      @default(0.00) @db.Decimal(12, 2)
+  totalRecharged  Decimal      @default(0.00) @db.Decimal(12, 2) @map("total_recharged")
+  totalCommission Decimal      @default(0.00) @db.Decimal(12, 2) @map("total_commission")
+  status          WalletStatus @default(LOW_BALANCE)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  transactions    WalletTransaction[]
+  recharges       WalletRecharge[]
+
+  @@index([status, balance])
+  @@map("driver_wallets")
+}
+
+model WalletTransaction {
+  id                     String                   @id @default(uuid()) @db.Uuid
+  walletId               String                   @db.Uuid @map("wallet_id")
+  driverId               String                   @db.Uuid @map("driver_id")
+  type                   WalletTransactionType
+  category               WalletTransactionCategory
+  amount                 Decimal                  @db.Decimal(12, 2)
+  balanceBefore          Decimal                  @db.Decimal(12, 2) @map("balance_before")
+  balanceAfter           Decimal                  @db.Decimal(12, 2) @map("balance_after")
+  bookingId              String?                  @db.Uuid @map("booking_id")
+  commissionBaseAmount   Decimal?                 @db.Decimal(12, 2) @map("commission_base_amount")
+  commissionRateSnapshot Decimal?                 @db.Decimal(5, 2) @map("commission_rate_snapshot")
+  referenceId            String?                  @unique @map("reference_id") @db.VarChar(180)
+  idempotencyKey         String?                  @unique @map("idempotency_key") @db.VarChar(180)
+  description            String?                  @db.VarChar(500)
+  metadata               Json?
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  wallet                 DriverWallet             @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  driver                 Driver                   @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  booking                TransportBooking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([driverId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([bookingId, category])
+  @@index([category, createdAt])
+  @@map("wallet_transactions")
+}
+
+model WalletRecharge {
+  id               String               @id @default(uuid()) @db.Uuid
+  walletId         String               @db.Uuid @map("wallet_id")
+  driverId         String               @db.Uuid @map("driver_id")
+  amount           Decimal              @db.Decimal(12, 2)
+  method           WalletRechargeMethod
+  status           WalletRechargeStatus @default(PENDING)
+  paymentProvider  String?              @map("payment_provider") @db.VarChar(80)
+  paymentReference String?              @unique @map("payment_reference") @db.VarChar(180)
+  idempotencyKey   String?              @unique @map("idempotency_key") @db.VarChar(180)
+  approvedBy       String?              @map("approved_by") @db.VarChar(180)
+  remarks          String?              @db.VarChar(1000)
+  createdAt        DateTime             @default(now()) @map("created_at")
+  completedAt     DateTime?            @map("completed_at")
+  wallet           DriverWallet         @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  driver           Driver               @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  @@index([driverId, status, createdAt])
+  @@index([status, createdAt])
+  @@map("wallet_recharges")
+}
+
+model WalletSettings {
+  id              String                 @id @default("default")
+  commissionModel WalletCommissionModel @default(PERCENTAGE) @map("commission_model")
+  commissionValue Decimal                @default(10.00) @db.Decimal(5, 2) @map("commission_value")
+  minimumBalance  Decimal                @default(500.00) @db.Decimal(12, 2) @map("minimum_balance")
+  rechargeMethod  WalletRechargeMode     @default(BOTH) @map("recharge_method")
+  isEnabled       Boolean                @default(true) @map("is_enabled")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  @@map("wallet_settings")
 }
