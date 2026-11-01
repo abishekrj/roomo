@@ -22,7 +22,6 @@ CREATE TABLE "driver_wallets" (
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "driver_wallets_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "driver_wallets_balance_nonnegative" CHECK ("balance" >= 0),
   CONSTRAINT "driver_wallets_total_recharged_nonnegative" CHECK ("total_recharged" >= 0),
   CONSTRAINT "driver_wallets_total_commission_nonnegative" CHECK ("total_commission" >= 0)
 );
