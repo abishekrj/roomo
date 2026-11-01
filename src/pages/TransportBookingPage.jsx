@@ -189,30 +189,38 @@ export default function TransportBookingPage() {
   }
 
   const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  const mapBuildError = !mapToken
+    ? "Missing VITE_MAPBOX_ACCESS_TOKEN. Add it to the project-root .env.local file (the same folder as vite.config.js), then restart Vite."
+    : !route?.geometry?.coordinates?.length
+      ? "The route API did not return route geometry. Check the /api/transport/route-distance response."
+      : !route?.origin?.coordinates || !route?.destination?.coordinates
+        ? "The route API did not return valid pickup and destination coordinates."
+        : "";
   const routeMapUrl = (() => {
-    if (!route || !mapToken || !route.geometry?.coordinates?.length) return null;
+    if (mapBuildError) return null;
     const coordinates = route.geometry.coordinates;
-    const routeFeature = {
-      type: "Feature",
-      properties: { stroke: "#2563a6", "stroke-width": 5, "stroke-opacity": 0.9 },
-      geometry: { type: "LineString", coordinates: simplifyRouteCoordinates(coordinates, 0.00015) }
-    };
-    const originFeature = {
-      type: "Feature",
-      properties: { "marker-size": "large", "marker-color": "#2563a6", "marker-symbol": "a" },
-      geometry: { type: "Point", coordinates: route.origin.coordinates }
-    };
-    const destinationFeature = {
-      type: "Feature",
-      properties: { "marker-size": "large", "marker-color": "#facc15", "marker-symbol": "b" },
-      geometry: { type: "Point", coordinates: route.destination.coordinates }
-    };
-    const overlay = encodeURIComponent(JSON.stringify({
-      type: "FeatureCollection",
-      features: [routeFeature, originFeature, destinationFeature]
-    }));
-    const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/geojson(${overlay})/auto/600x420?access_token=${encodeURIComponent(mapToken)}&padding=48`;
-    return url.length <= 8192 ? url : null;
+    // Reduce the route until the GeoJSON overlay fits Mapbox's 8,192-character URL limit.
+    for (const tolerance of [0.00015, 0.0003, 0.0006, 0.0012, 0.0024, 0.0048, 0.0096, 0.0192, 0.0384, 0.0768]) {
+      const routeFeature = {
+        type: "Feature",
+        properties: { stroke: "#2563a6", "stroke-width": 5, "stroke-opacity": 0.9 },
+        geometry: { type: "LineString", coordinates: simplifyRouteCoordinates(coordinates, tolerance).map(([lng, lat]) => [Number(lng.toFixed(6)), Number(lat.toFixed(6))]) }
+      };
+      const originFeature = {
+        type: "Feature",
+        properties: { "marker-size": "large", "marker-color": "#2563a6", "marker-symbol": "a" },
+        geometry: { type: "Point", coordinates: route.origin.coordinates }
+      };
+      const destinationFeature = {
+        type: "Feature",
+        properties: { "marker-size": "large", "marker-color": "#facc15", "marker-symbol": "b" },
+        geometry: { type: "Point", coordinates: route.destination.coordinates }
+      };
+      const overlay = encodeURIComponent(JSON.stringify({ type: "FeatureCollection", features: [routeFeature, originFeature, destinationFeature] }));
+      const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/geojson(${overlay})/auto/600x420?access_token=${encodeURIComponent(mapToken)}&padding=48`;
+      if (url.length <= 8192) return url;
+    }
+    return null;
   })();
 
   const bookingReturnPath = window.location.pathname + window.location.search;
@@ -249,7 +257,7 @@ export default function TransportBookingPage() {
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">Driving route from {route.origin.name} to {route.destination.name}</p></div>
               {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block min-h-48 w-full bg-slate-100 object-cover" loading="lazy" onLoad={() => setMapError("")} onError={event => { setMapError("Mapbox could not render this route image (HTTP response unavailable to the browser). Check the browser Network response for the exact Mapbox error."); event.currentTarget.style.display = "none"; }} /> : null}
-              {mapError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapError}</div> : !routeMapUrl ? <div className="px-4 py-5 text-sm text-slate-600">The route map could not be generated. Check that a Mapbox public token is configured and that the route coordinates are valid.</div> : null}
+              {mapError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapError}</div> : !routeMapUrl ? <div className="px-4 py-5 text-sm text-red-700">{mapBuildError || "The route overlay is still too large after simplification. The route response may contain an unusually complex geometry."}</div> : null}
             </div>
           </div>}
         </div>
