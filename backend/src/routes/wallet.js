@@ -123,6 +123,22 @@ admin.get("/drivers", async (_req, res, next) => {
   } catch (error) { next(error); }
 });
 
+
+admin.get("/drivers/:id/transactions", async (req, res, next) => {
+  try {
+    const wallet = await prisma.driverWallet.findUnique({
+      where: { driverId: req.params.id },
+      include: {
+        driver: { select: { id: true, fullName: true, email: true, phoneNumber: true } },
+        transactions: { orderBy: { createdAt: "desc" }, take: 100 },
+        recharges: { orderBy: { createdAt: "desc" }, take: 50 }
+      }
+    });
+    if (!wallet) return res.status(404).json({ message: "Driver wallet not found." });
+    res.json({ wallet });
+  } catch (error) { next(error); }
+});
+
 admin.get("/recharges", async (_req, res, next) => {
   try {
     const recharges = await prisma.walletRecharge.findMany({
