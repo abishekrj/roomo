@@ -27,6 +27,31 @@ async function getSettings(db = prisma) {
   return db.walletSettings.upsert({ where: { id: "default" }, create: { id: "default", ...defaults }, update: {} });
 }
 
+async function getOrCreateDriverWallet(driverId, include) {
+  const existing = await prisma.driverWallet.findUnique({
+    where: { driverId },
+    ...(include ? { include } : {})
+  });
+  if (existing) return existing;
+
+  try {
+    return await prisma.driverWallet.create({
+      data: { driverId, balance: 0, status: "LOW_BALANCE" },
+      ...(include ? { include } : {})
+    });
+  } catch (error) {
+    // Two simultaneous requests may both try to create the first wallet.
+    // The unique driver_id constraint allows only one; fetch the winner.
+    if (error.code !== "P2002") throw error;
+    const wallet = await prisma.driverWallet.findUnique({
+      where: { driverId },
+      ...(include ? { include } : {})
+    });
+    if (!wallet) throw error;
+    return wallet;
+  }
+}
+
 async function updateWalletStatus(tx, walletId, minimumBalance) {
   const wallet = await tx.driverWallet.findUnique({ where: { id: walletId } });
   if (!wallet || wallet.status === "RESTRICTED") return wallet;
@@ -39,14 +64,9 @@ async function updateWalletStatus(tx, walletId, minimumBalance) {
 router.get("/driver", driverAuth, async (req, res, next) => {
   try {
     const settings = await getSettings();
-    const wallet = await prisma.driverWallet.upsert({
-      where: { driverId: req.driver.sub },
-      create: { driverId: req.driver.sub, balance: 0, status: "LOW_BALANCE" },
-      update: {},
-      include: {
-        transactions: { orderBy: { createdAt: "desc" }, take: 50 },
-        recharges: { orderBy: { createdAt: "desc" }, take: 30 }
-      }
+    const wallet = await getOrCreateDriverWallet(req.driver.sub, {
+      transactions: { orderBy: { createdAt: "desc" }, take: 50 },
+      recharges: { orderBy: { createdAt: "desc" }, take: 30 }
     });
     res.json({
       wallet: { ...wallet, balance: amount(wallet.balance), totalRecharged: amount(wallet.totalRecharged), totalCommission: amount(wallet.totalCommission) },
@@ -69,11 +89,7 @@ router.post("/driver/recharges", driverAuth, async (req, res, next) => {
     const settings = await getSettings();
     if (!settings.isEnabled) return res.status(403).json({ message: "Driver wallet recharge is currently disabled." });
     if (settings.rechargeMethod !== "BOTH" && settings.rechargeMethod !== parsed.data.method) return res.status(400).json({ message: "This recharge method is not currently enabled." });
-    const wallet = await prisma.driverWallet.upsert({
-      where: { driverId: req.driver.sub },
-      create: { driverId: req.driver.sub, balance: 0, status: "LOW_BALANCE" },
-      update: {}
-    });
+    const wallet = await getOrCreateDriverWallet(req.driver.sub);
     const recharge = await prisma.walletRecharge.create({
       data: { walletId: wallet.id, driverId: req.driver.sub, amount: parsed.data.amount.toFixed(2), method: parsed.data.method, remarks: parsed.data.remarks || null }
     });
