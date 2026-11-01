@@ -190,28 +190,57 @@ router.post("/route-distance", async (req, res) => {
 
     const [originLng, originLat] = origin.coordinates;
     const [destinationLng, destinationLat] = destination.coordinates;
-    const coordinates = `${originLng},${originLat};${destinationLng},${destinationLat}`;
-    const routeUrl = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}`);
-    routeUrl.searchParams.set("access_token", token);
-    routeUrl.searchParams.set("overview", "full");
-    routeUrl.searchParams.set("geometries", "geojson");
-    routeUrl.searchParams.set("steps", "false");
-    routeUrl.searchParams.set("alternatives", "true");
+    const requestDirections = async (waypoints, alternatives = false) => {
+      const coordinates = waypoints.map(point => point.coordinates.join(",")).join(";");
+      const routeUrl = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}`);
+      routeUrl.searchParams.set("access_token", token);
+      routeUrl.searchParams.set("overview", "full");
+      routeUrl.searchParams.set("geometries", "geojson");
+      routeUrl.searchParams.set("steps", "false");
+      if (alternatives && waypoints.length === 2) routeUrl.searchParams.set("alternatives", "true");
+      const response = await fetch(routeUrl);
+      if (!response.ok) throw new Error(`Mapbox route calculation failed (${response.status}).`);
+      const data = await response.json();
+      return data.routes || [];
+    };
 
-    const routeResponse = await fetch(routeUrl);
-    if (!routeResponse.ok) throw new Error(`Mapbox route calculation failed (${routeResponse.status}).`);
-    const routeData = await routeResponse.json();
-    const mapRoutes = (routeData.routes || []).slice(0, 3);
+    const [automaticRoutes] = await Promise.all([
+      requestDirections([origin, destination], true)
+    ]);
+    const mapRoutes = automaticRoutes.slice(0, 2).map((item, index) => ({
+      item, label: index === 0 ? "Fastest route" : "Alternative route", via: []
+    }));
+
+    // Add a deliberately waypointed corridor for the commonly requested
+    // Tambaram–Tiruvannamalai journey. Mapbox alternatives alone do not
+    // guarantee that a route passes through these towns.
+    const routeText = `${parsed.data.origin} ${parsed.data.originPlaceName || ""} ${parsed.data.destination} ${parsed.data.destinationPlaceName || ""}`.toLowerCase();
+    const isTambaramToTiruvannamalai =
+      routeText.includes("tambaram") && routeText.includes("tiruvannamalai");
+    if (isTambaramToTiruvannamalai) {
+      const viaNames = ["Melmaruvathur", "Tindivanam", "Gingee"];
+      const viaPlaces = await Promise.all(viaNames.map(name => geocodeMapboxLocation(`${name}, Tamil Nadu, India`, token)));
+      if (viaPlaces.every(Boolean)) {
+        const viaRoute = (await requestDirections([origin, ...viaPlaces, destination]))[0];
+        if (viaRoute) mapRoutes.push({
+          item: viaRoute,
+          label: "Via Melmaruvathur · Tindivanam · Gingee",
+          via: viaNames
+        });
+      }
+    }
+
     if (!mapRoutes.length) return res.status(422).json({ message: "No driving route was found between these locations." });
-
-    const formatRoute = (item, index) => ({
+    const formatRoute = (entry, index) => ({
       id: index,
-      distanceMeters: item.distance,
-      distanceKm: Math.round((item.distance / 1000) * 10) / 10,
-      durationSeconds: Math.round(item.duration),
-      durationMinutes: Math.round(item.duration / 60),
-      durationText: `${Math.floor(item.duration / 3600)} hr ${Math.round((item.duration % 3600) / 60)} min`,
-      geometry: item.geometry
+      label: entry.label,
+      via: entry.via,
+      distanceMeters: entry.item.distance,
+      distanceKm: Math.round((entry.item.distance / 1000) * 10) / 10,
+      durationSeconds: Math.round(entry.item.duration),
+      durationMinutes: Math.round(entry.item.duration / 60),
+      durationText: `${Math.floor(entry.item.duration / 3600)} hr ${Math.round((entry.item.duration % 3600) / 60)} min`,
+      geometry: entry.item.geometry
     });
     const routes = mapRoutes.map(formatRoute);
     return res.json({
