@@ -33,15 +33,17 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   }, [value]);
 
   function choose(place) {
+    // Display only the main place name in the input; retain the full prediction
+    // separately for accurate route calculation.
     selectedPlaceNameRef.current = place.name;
     onChange({ target: { name, value: place.name } });
     setSuggestions([]);
     setOpen(false);
-    onSelect?.(place);
+    onSelect?.({ ...place, displayName: place.name });
   }
 
   return <label className="relative block min-w-0 text-sm font-medium">{label}
-    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { selectedPlaceNameRef.current = ""; setSuggestions([]); setOpen(false); onChange(event); }} onFocus={() => setOpen(false)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+    <input ref={inputRef} className={inputClass} name={name} required minLength={3} maxLength={500} autoComplete="off" placeholder={placeholder} value={value} onChange={event => { selectedPlaceNameRef.current = ""; setSuggestions([]); setOpen(false); onChange(event); }} onFocus={() => { if (value.trim().length < 3 || value.trim() === selectedPlaceNameRef.current) setOpen(false); }} onBlur={() => setTimeout(() => setOpen(false), 150)} />
     {loading && <span className="absolute right-3 top-10 text-xs font-normal text-slate-400">Searching…</span>}
     {open && suggestions.length > 0 && <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
       {suggestions.map(place => <button key={place.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(place)} className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-blue-50">
