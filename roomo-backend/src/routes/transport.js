@@ -303,14 +303,137 @@ adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
     res.json({ message: "Driver assigned successfully." });
   } catch (error) { next(error); }
 });
+adminRouter.patch("/bookings/:id/fare", async (req, res, next) => {
+  try {
+    const fare = Number(req.body?.totalTripFare);
+    if (!Number.isFinite(fare) || fare <= 0 || fare > 10000000) {
+      return res.status(400).json({ message: "Enter a valid total customer trip fare." });
+    }
+    const booking = await prisma.transportBooking.findUnique({ where: { id: req.params.id } });
+    if (!booking) return res.status(404).json({ message: "Transport booking not found." });
+    if (booking.status === "COMPLETED" || booking.status === "CANCELLED") {
+      return res.status(409).json({ message: "The fare cannot be changed after a trip is completed or cancelled." });
+    }
+    const updated = await prisma.transportBooking.update({
+      where: { id: booking.id },
+      data: { totalTripFare: fare.toFixed(2) },
+    });
+    res.json({ message: "Total customer trip fare saved.", booking: updated });
+  } catch (error) { next(error); }
+});
+
 adminRouter.patch("/bookings/:id/status", async (req, res, next) => {
   try {
     const status = String(req.body?.status || "");
-    if (!["CONFIRMED", "PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) return res.status(400).json({ message: "Invalid transport booking status." });
-    const booking = await prisma.transportBooking.update({ where: { id: req.params.id }, data: { status } });
-    if (booking.assignedDriverId && ["COMPLETED", "CANCELLED"].includes(status)) await prisma.driver.update({ where: { id: booking.assignedDriverId }, data: { isAvailable: true } });
-    if (["COMPLETED", "CANCELLED"].includes(status)) {
-      await prisma.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+    if (!["CONFIRMED", "PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) {
+      return res.status(400).json({ message: "Invalid transport booking status." });
+    }
+
+    let booking;
+    if (status === "COMPLETED") {
+      const result = await prisma.$transaction(async (tx) => {
+        const current = await tx.transportBooking.findUnique({ where: { id: req.params.id } });
+        if (!current) return { error: "Transport booking not found.", status: 404 };
+        if (current.status === "COMPLETED") return { booking: current, alreadyCompleted: true };
+        if (current.status === "CANCELLED") return { error: "A cancelled trip cannot be completed.", status: 409 };
+        if (!current.assignedDriverId) return { error: "Assign a driver before completing this trip.", status: 400 };
+        if (current.totalTripFare === null || Number(current.totalTripFare) <= 0) {
+          return { error: "Enter the customer's total trip fare before completing this trip.", status: 400 };
+        }
+
+        const settings = await tx.walletSettings.findUnique({ where: { id: "default" } });
+        if (!settings || !settings.isEnabled) return { error: "Driver wallet commission is disabled or not configured.", status: 409 };
+        const fare = Number(current.totalTripFare);
+        const configuredValue = Number(settings.commissionValue);
+        const commission = Math.round((settings.commissionModel === "PERCENTAGE"
+          ? fare * configuredValue / 100
+          : configuredValue) * 100) / 100;
+
+        const changed = await tx.transportBooking.updateMany({
+          where: { id: current.id, status: { not: "COMPLETED" } },
+          data: { status: "COMPLETED" },
+        });
+        if (changed.count !== 1) return { error: "The booking status changed. Refresh and try again.", status: 409 };
+
+        const wallet = await tx.driverWallet.upsert({
+          where: { driverId: current.assignedDriverId },
+          create: { driverId: current.assignedDriverId, balance: 0, status: "LOW_BALANCE" },
+          update: {},
+        });
+        const before = Number(wallet.balance);
+        const after = Math.round((before - commission) * 100) / 100;
+
+        if (commission > 0) {
+          await tx.walletTransaction.create({
+            data: {
+              walletId: wallet.id,
+              driverId: current.assignedDriverId,
+              type: "DEBIT",
+              category: "COMMISSION",
+              amount: commission.toFixed(2),
+              balanceBefore: before.toFixed(2),
+              balanceAfter: after.toFixed(2),
+              bookingId: current.id,
+              commissionBaseAmount: fare.toFixed(2),
+              commissionRateSnapshot: configuredValue.toFixed(2),
+              referenceId: "booking-commission:" + current.id,
+              idempotencyKey: "booking-commission:" + current.id,
+              description: settings.commissionModel === "PERCENTAGE"
+                ? "ROOMO commission (" + configuredValue + "%) on total customer trip fare"
+                : "ROOMO fixed commission on completed trip",
+              metadata: {
+                commissionModel: settings.commissionModel,
+                configuredValue,
+                totalCustomerTripFare: fare,
+                currency: "INR",
+              },
+            },
+          });
+        }
+
+        const walletStatus = wallet.status === "RESTRICTED"
+          ? "RESTRICTED"
+          : after >= Number(settings.minimumBalance) ? "ACTIVE" : "LOW_BALANCE";
+        await tx.driverWallet.update({
+          where: { id: wallet.id },
+          data: {
+            balance: after.toFixed(2),
+            totalCommission: { increment: commission },
+            status: walletStatus,
+          },
+        });
+        const completed = await tx.transportBooking.findUnique({ where: { id: current.id } });
+        return { booking: completed, commission, walletBalance: after };
+      });
+      if (result.error) return res.status(result.status).json({ message: result.error });
+      booking = result.booking;
+      if (result.alreadyCompleted) {
+        return res.json({ message: "This trip was already completed. No duplicate commission was deducted.", booking });
+      }
+      if (booking.assignedDriverId) {
+        await prisma.driver.update({ where: { id: booking.assignedDriverId }, data: { isAvailable: true } });
+      }
+      await prisma.driverOffer.updateMany({
+        where: { bookingId: booking.id, status: "OFFERED" },
+        data: { status: "UNAVAILABLE", respondedAt: new Date() },
+      });
+      return res.json({
+        message: "Trip completed and ROOMO commission deducted from the driver's wallet.",
+        booking,
+        commissionDeducted: result.commission,
+        walletBalance: result.walletBalance,
+      });
+    }
+
+    booking = await prisma.transportBooking.update({ where: { id: req.params.id }, data: { status } });
+    if (booking.assignedDriverId && status === "CANCELLED") {
+      await prisma.driver.update({ where: { id: booking.assignedDriverId }, data: { isAvailable: true } });
+    }
+    if (status === "CANCELLED") {
+      await prisma.driverOffer.updateMany({
+        where: { bookingId: booking.id, status: "OFFERED" },
+        data: { status: "UNAVAILABLE", respondedAt: new Date() },
+      });
     }
     res.json({ booking });
   } catch (error) { next(error); }
