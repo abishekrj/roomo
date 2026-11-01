@@ -254,11 +254,11 @@ export default function TransportBookingPage() {
           </div>
           {route ? <div className="space-y-3">
             {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => setSelectedRouteIndex(index)} aria-pressed={selectedRouteIndex === index} className={`w-full rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-              <span className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{option.label || "Google driving route"}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
+              <span className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{index === 0 ? "Recommended Route" : "Alternate Route"}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
               <span className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1"><span className="text-lg font-semibold text-slate-900">{option.distanceKm} km</span><span className="text-sm text-slate-600">{option.durationText}</span></span>
               <span className={`mt-2 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "Show on map"}</span>
             </button>)}
-            {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Showing the configured driving corridor for this journey.</p>}
+            {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Google Maps returned only one available route for this journey.</p>}
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <div className="border-b border-slate-200 px-4 py-3"><h4 className="text-sm font-semibold text-slate-900">Route map</h4><p className="mt-1 text-xs text-slate-500">{activeRoute.label || "Google driving route"} · {route.origin.name} to {route.destination.name}</p></div>
               {mapBuildError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapBuildError}</div> : <GoogleRouteMap route={activeRoute} origin={route.origin.name} destination={route.destination.name} />}
