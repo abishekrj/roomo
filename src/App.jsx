@@ -100,7 +100,7 @@ export default function App() {
     }
   }
   const path = rawPath;
-  if (["/driver", "/driver/", "/driver/login", "/driver/signup", "/driver/dashboard", "/driver/new-trip-requests", "/driver/completed-trips", "/driver/current-trip"].includes(path)) return <DriverPortal />;
+  if (["/driver", "/driver/", "/driver/login", "/driver/signup", "/driver/dashboard", "/driver/new-trip-requests", "/driver/completed-trips", "/driver/current-trip", "/driver/confirmed-trips", "/driver/wallet"].includes(path)) return <DriverPortal />;
   if (path === "/transport-booking" || path === "/transport-booking") return <TransportBookingPage />;
   if (path === "/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
   if (path === "/post-property" || path === "/post-property") return <PostPropertyPage />;
