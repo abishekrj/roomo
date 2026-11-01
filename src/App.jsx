@@ -11,6 +11,8 @@ import CommissionManagementPage from "./pages/CommissionManagementPage.jsx";
 import { useEffect, useState } from "react";
 import DriverPortal from "./pages/DriverPortal.jsx";
 import TransportBookingPage from "./pages/TransportBookingPage.jsx";
+import MyTravelBookingsPage from "./pages/MyTravelBookingsPage.jsx";
+import MyRoomBookingsPage from "./pages/MyRoomBookingsPage.jsx";
 
 const legacyRoutes = {
   "/frontend/admin/admin.html": "/admin/login",
@@ -47,7 +49,7 @@ const legacyRoutes = {
   "/frontend/roomo-owner-auth.html": "/owner/login",
   "/frontend/post-property.html": "/post-property",
   "/frontend/roomo-verify-email.html": "/verify-email",
-  "/frontend/roomo-my-bookings.html": "/my-bookings",
+  "/frontend/roomo-my-bookings.html": "/my-travel-bookings",
   "/frontend/roomo-admin-commissions.html": "/admin/commissions",
   "/frontend/cms-page.html": "/guides",
   "/frontend/budget-rooms-in-tiruvannamalai.html": "/guides/budget-rooms-in-tiruvannamalai",
@@ -68,7 +70,7 @@ const legacyRoutes = {
   "/roomo-owner-auth.html": "/owner/login",
   "/post-property.html": "/post-property",
   "/roomo-verify-email.html": "/verify-email",
-  "/roomo-my-bookings.html": "/my-bookings",
+  "/roomo-my-bookings.html": "/my-travel-bookings",
   "/roomo-admin-commissions.html": "/admin/commissions",
   "/admin.html": "/admin/login",
   "/owner-dashboard.html": "/owner/login",
@@ -103,7 +105,9 @@ export default function App() {
   if (path === "/admin/commissions" || path === "/admin/commissions") return <CommissionManagementPage />;
   if (path === "/post-property" || path === "/post-property") return <PostPropertyPage />;
   if (path === "/verify-email" || path === "/verify-email") return <VerifyEmailPage />;
-  if (path === "/my-bookings" || path === "/my-bookings") return <MyBookingsPage />;
+  if (path === "/my-bookings") { window.history.replaceState({}, "", "/my-travel-bookings" + window.location.search); return <MyTravelBookingsPage />; }
+  if (path === "/my-travel-bookings") return <MyTravelBookingsPage />;
+  if (path === "/my-room-bookings") return <MyRoomBookingsPage />;
   if (path === "/my-profile" || path === "/my-profile") return <MyProfilePage />;
   if (path === "/guides" || path === "/guides") return <CmsGuidePage />;
   if (path.startsWith("/guides/") || path.startsWith("/guides/")) return <CmsGuidePage slug={path.split("/").filter(Boolean).pop()} />;
