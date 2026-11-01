@@ -93,9 +93,17 @@ export default function DriverPortal() {
   const refresh = useCallback(async () => {
     if (!token) return;
     const data = await api("/driver/requests");
-    setRequests(data.requests || []);
+    const nextRequests = data.requests || [];
+    const nextIds = new Set(nextRequests.map(item => item.offerId));
+    const arrived = nextRequests.find(item => !knownOfferIds.current.has(item.offerId));
+    if (knownOfferIds.current.size && arrived) {
+      setNewRequestAlert(arrived);
+      playRequestAlert();
+    }
+    knownOfferIds.current = nextIds;
+    setRequests(nextRequests);
     setAssigned(data.assigned || []);
-  }, [api, token]);
+  }, [api, token, soundEnabled]);
 
   useEffect(() => {
     if (!token) return;
