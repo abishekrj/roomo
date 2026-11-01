@@ -196,22 +196,29 @@ router.post("/route-distance", async (req, res) => {
     routeUrl.searchParams.set("overview", "full");
     routeUrl.searchParams.set("geometries", "geojson");
     routeUrl.searchParams.set("steps", "false");
+    routeUrl.searchParams.set("alternatives", "true");
 
     const routeResponse = await fetch(routeUrl);
     if (!routeResponse.ok) throw new Error(`Mapbox route calculation failed (${routeResponse.status}).`);
     const routeData = await routeResponse.json();
-    const route = routeData.routes?.[0];
-    if (!route) return res.status(422).json({ message: "No driving route was found between these locations." });
+    const mapRoutes = (routeData.routes || []).slice(0, 3);
+    if (!mapRoutes.length) return res.status(422).json({ message: "No driving route was found between these locations." });
 
+    const formatRoute = (item, index) => ({
+      id: index,
+      distanceMeters: item.distance,
+      distanceKm: Math.round((item.distance / 1000) * 10) / 10,
+      durationSeconds: Math.round(item.duration),
+      durationMinutes: Math.round(item.duration / 60),
+      durationText: `${Math.floor(item.duration / 3600)} hr ${Math.round((item.duration % 3600) / 60)} min`,
+      geometry: item.geometry
+    });
+    const routes = mapRoutes.map(formatRoute);
     return res.json({
       origin: { name: origin.placeName, coordinates: origin.coordinates },
       destination: { name: destination.placeName, coordinates: destination.coordinates },
-      distanceMeters: route.distance,
-      distanceKm: Math.round((route.distance / 1000) * 10) / 10,
-      durationSeconds: Math.round(route.duration),
-      durationMinutes: Math.round(route.duration / 60),
-      durationText: `${Math.floor(route.duration / 3600)} hr ${Math.round((route.duration % 3600) / 60)} min`,
-      geometry: route.geometry
+      ...routes[0],
+      routes
     });
   } catch (error) {
     console.error("Mapbox route estimate failed:", error.message);
