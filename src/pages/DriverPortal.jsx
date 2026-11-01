@@ -28,7 +28,7 @@ export default function DriverPortal() {
   }, []);
   const signupMode = currentPath === "/driver/signup";
   const dashboardPath = "/driver/dashboard";
-  const driverPagePaths = [dashboardPath, "/driver/new-trip-requests", "/driver/completed-trips", "/driver/current-trip"];
+  const driverPagePaths = [dashboardPath, "/driver/new-trip-requests", "/driver/current-trip", "/driver/confirmed-trips", "/driver/completed-trips"];
 
   useEffect(() => {
     if (currentPath === "/driver") {
@@ -49,10 +49,10 @@ export default function DriverPortal() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
-  const pageByPath = { "/driver/dashboard": "dashboard", "/driver/new-trip-requests": "new-requests", "/driver/completed-trips": "completed-trips", "/driver/current-trip": "current-trip" };
+  const pageByPath = { "/driver/dashboard": "dashboard", "/driver/new-trip-requests": "new-requests", "/driver/current-trip": "current-trip", "/driver/confirmed-trips": "confirmed-trips", "/driver/completed-trips": "completed-trips" };
   const activePage = pageByPath[currentPath] || "dashboard";
   function navigateToPage(pageId) {
-    const pagePaths = { dashboard: "/driver/dashboard", "new-requests": "/driver/new-trip-requests", "completed-trips": "/driver/completed-trips", "current-trip": "/driver/current-trip" };
+    const pagePaths = { dashboard: "/driver/dashboard", "new-requests": "/driver/new-trip-requests", "current-trip": "/driver/current-trip", "confirmed-trips": "/driver/confirmed-trips", "completed-trips": "/driver/completed-trips" };
     const nextPath = pagePaths[pageId] || "/driver/dashboard";
     if (nextPath !== currentPath) {
       window.history.pushState({}, "", nextPath);
@@ -124,14 +124,16 @@ export default function DriverPortal() {
   }
   function signOut() { sessionStorage.removeItem("roomo_driver_token"); setToken(""); setDriver(null); setRequests([]); setAssigned([]); setPushEnabled(false); setNotice(""); setError(""); window.history.pushState({}, "", "/driver/login"); setCurrentPath("/driver/login"); }
 
-  const currentTrips = useMemo(() => assigned.filter(item => ["CONFIRMED", "IN_PROGRESS"].includes(item.status)), [assigned]);
+  const currentTrips = useMemo(() => assigned.filter(item => item.status === "IN_PROGRESS"), [assigned]);
+  const confirmedTrips = useMemo(() => assigned.filter(item => item.status === "CONFIRMED"), [assigned]);
   const completedTrips = useMemo(() => assigned.filter(item => item.status === "COMPLETED"), [assigned]);
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "▦" },
     { id: "my-trips", label: "My Trips", icon: "⌁", children: [
       { id: "new-requests", label: "New Trip Request", count: requests.length },
-      { id: "completed-trips", label: "Completed Trips", count: completedTrips.length },
-      { id: "current-trip", label: "Current Trip", count: currentTrips.length }
+      { id: "current-trip", label: "Current Trip", count: currentTrips.length },
+      { id: "confirmed-trips", label: "Confirmed Trips", count: confirmedTrips.length },
+      { id: "completed-trips", label: "Completed Trips", count: completedTrips.length }
     ] }
   ];
 
@@ -147,7 +149,7 @@ export default function DriverPortal() {
     </article>;
   }
 
-  const pageHeading = activePage === "dashboard" ? "Dashboard" : activePage === "new-requests" ? "New Trip Request" : activePage === "completed-trips" ? "Completed Trips" : "Current Trip";
+  const pageHeading = activePage === "dashboard" ? "Dashboard" : activePage === "new-requests" ? "New Trip Request" : activePage === "completed-trips" ? "Completed Trips" : activePage === "confirmed-trips" ? "Confirmed Trips" : "Current Trip";
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink">
     <header className="border-b border-slate-200 bg-white"><div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8"><div><a href="/" className="text-lg font-semibold tracking-tight text-[#2563a6]">ROOMO</a><p className="mt-0.5 text-xs text-slate-500">Driver workspace</p></div><div className="flex items-center gap-3"><div className="hidden text-right sm:block"><p className="text-sm font-semibold">{driver.fullName}</p><p className="text-xs text-slate-500">{driver.vehicleNumber || driver.vehicleType}</p></div><button onClick={signOut} className={secondaryButton}>Sign out</button></div></div></header>
@@ -162,16 +164,17 @@ export default function DriverPortal() {
           <div className="mt-6 border-t border-white/10 pt-4"><p className="px-3 text-xs text-slate-300">Your driver account</p><button onClick={signOut} className="mt-3 w-full rounded-lg border border-white/20 px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Sign out</button></div>
         </aside>
         <div className="min-w-0">
-          <div className="mb-6 flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver workspace</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{pageHeading}</h1><p className="mt-2 text-sm text-slate-500">{activePage === "dashboard" ? "Your trips, requests and notifications in one place." : activePage === "new-requests" ? "Review and respond to new trip requests." : activePage === "completed-trips" ? "A record of the trips you have completed." : "Trips currently assigned to you."}</p></div><button onClick={() => refresh().catch(e => setError(e.message))} className={secondaryButton}>↻ Refresh</button></div>
+          <div className="mb-6 flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Driver workspace</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{pageHeading}</h1><p className="mt-2 text-sm text-slate-500">{activePage === "dashboard" ? "Your trips, requests and notifications in one place." : activePage === "new-requests" ? "Review and respond to new trip requests." : activePage === "completed-trips" ? "A record of the trips you have completed." : activePage === "confirmed-trips" ? "Trips accepted and confirmed for your upcoming journeys." : "Trips currently in progress."}</p></div><button onClick={() => refresh().catch(e => setError(e.message))} className={secondaryButton}>↻ Refresh</button></div>
           {notice && <p role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
           {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
           {activePage === "dashboard" && <>
             <section className="rounded-lg bg-[#102747] p-5 text-white sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-7"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Your trips at a glance</p><h2 className="mt-2 text-2xl font-semibold">Ready for your next journey?</h2><p className="mt-2 max-w-xl text-sm leading-6 text-blue-100">Keep this portal available and enable push notifications so you can respond to new trip requests promptly.</p></div><button onClick={enablePush} className="mt-5 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#102747] transition hover:bg-blue-50 sm:mt-0">{pushEnabled ? "✓ Notifications enabled" : "♧ Enable notifications"}</button></section>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><button onClick={() => navigateToPage("new-requests")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">New trip requests</p><p className="mt-2 text-3xl font-semibold">{requests.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">Review requests →</p></button><button onClick={() => navigateToPage("current-trip")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Current trips</p><p className="mt-2 text-3xl font-semibold">{currentTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View current trips →</p></button><button onClick={() => navigateToPage("completed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Completed trips</p><p className="mt-2 text-3xl font-semibold">{completedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View history →</p></button><div className="rounded-lg border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">Notification status</p><p className="mt-2 text-lg font-semibold">{pushEnabled ? "Enabled" : "Not enabled"}</p><p className="mt-2 text-sm text-slate-500">For this device</p></div></div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><button onClick={() => navigateToPage("new-requests")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">New trip requests</p><p className="mt-2 text-3xl font-semibold">{requests.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">Review requests →</p></button><button onClick={() => navigateToPage("current-trip")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Current trips</p><p className="mt-2 text-3xl font-semibold">{currentTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View current trips →</p></button><button onClick={() => navigateToPage("confirmed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Confirmed trips</p><p className="mt-2 text-3xl font-semibold">{confirmedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View confirmed trips →</p></button><button onClick={() => navigateToPage("completed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Completed trips</p><p className="mt-2 text-3xl font-semibold">{completedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View history →</p></button><div className="rounded-lg border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">Notification status</p><p className="mt-2 text-lg font-semibold">{pushEnabled ? "Enabled" : "Not enabled"}</p><p className="mt-2 text-sm text-slate-500">For this device</p></div></div>
             <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">New trip requests</h2><p className="mt-1 text-sm text-slate-500">Requests expire after the response window closes.</p></div><button onClick={() => navigateToPage("new-requests")} className="text-sm font-semibold text-[#2563a6]">View all →</button></div>{requests.length ? <div className="grid gap-4 xl:grid-cols-2">{requests.slice(0, 2).map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">No new requests right now.</p>}</section>
           </>}
           {activePage === "new-requests" && <section>{requests.length ? <div className="grid gap-4 xl:grid-cols-2">{requests.map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No new requests right now</h2><p className="mt-1 text-sm text-slate-500">We’ll show matching trips here when they become available.</p></div>}</section>}
-          {activePage === "current-trip" && <section>{currentTrips.length ? <div className="grid gap-4 xl:grid-cols-2">{currentTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No current trips</h2><p className="mt-1 text-sm text-slate-500">Accepted and in-progress trips assigned to you will appear here.</p></div>}</section>}
+          {activePage === "current-trip" && <section>{currentTrips.length ? <div className="grid gap-4 xl:grid-cols-2">{currentTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No current trips</h2><p className="mt-1 text-sm text-slate-500">Trips currently in progress will appear here.</p></div>}</section>}
+          {activePage === "confirmed-trips" && <section>{confirmedTrips.length ? <div className="grid gap-4 xl:grid-cols-2">{confirmedTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No confirmed trips</h2><p className="mt-1 text-sm text-slate-500">Accepted trips waiting to start will be listed here.</p></div>}</section>}
           {activePage === "completed-trips" && <section>{completedTrips.length ? <div className="grid gap-4 xl:grid-cols-2">{completedTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No completed trips yet</h2><p className="mt-1 text-sm text-slate-500">Completed journeys will be listed here.</p></div>}</section>}
         </div>
       </div>
