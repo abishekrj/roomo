@@ -164,7 +164,7 @@ export default function TransportBookingPage() {
 
   const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const routeMapUrl = route && mapToken && route.geometry?.coordinates?.length
-    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-5+2563a6-0.85(${encodeURIComponent(encodePolyline(route.geometry.coordinates))})/pin-s-a+2563a6(${route.origin.coordinates[0]},${route.origin.coordinates[1]}),pin-l-b+facc15(${route.destination.coordinates[0]},${route.destination.coordinates[1]})/auto/900x420@2x?access_token=${encodeURIComponent(mapToken)}&padding=48`
+    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-5+2563a6-0.85(${encodeURIComponent(encodePolyline(route.geometry.coordinates))})/pin-s-a+2563a6(${route.origin.coordinates[0]},${route.origin.coordinates[1]}),pin-l-b+facc15(${route.destination.coordinates[0]},${route.destination.coordinates[1]})/auto/600x420@2x?access_token=${encodeURIComponent(mapToken)}&padding=48`
     : null;
 
   const bookingReturnPath = window.location.pathname + window.location.search;
