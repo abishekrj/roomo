@@ -196,14 +196,14 @@ router.get("/place-suggestions", async (req, res) => {
   try {
     const response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text.text" },
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text.text,suggestions.placePrediction.structuredFormat.mainText.text,suggestions.placePrediction.structuredFormat.secondaryText.text" },
       body: JSON.stringify({ input: query, includedRegionCodes: ["in"], languageCode: "en" })
     });
     if (!response.ok) throw new Error(`Google Places failed (${response.status}).`);
     const data = await response.json();
     return res.json({ suggestions: (data.suggestions || []).map((item, index) => {
       const prediction = item.placePrediction;
-      return prediction ? { id: prediction.placeId || String(index), placeId: prediction.placeId, name: prediction.text?.text || query, placeName: prediction.text?.text || query } : null;
+      return prediction ? { id: prediction.placeId || String(index), placeId: prediction.placeId, name: prediction.structuredFormat?.mainText?.text || prediction.text?.text || query, placeName: prediction.text?.text || [prediction.structuredFormat?.mainText?.text, prediction.structuredFormat?.secondaryText?.text].filter(Boolean).join(", ") || query } : null;
     }).filter(Boolean) });
   } catch (error) {
     console.error("Google Places suggestions failed:", error.message);
