@@ -263,12 +263,13 @@ router.post("/route-distance", async (req, res) => {
     if (!routes.length) return res.status(422).json({ message: "Google Maps could not find driving routes between these locations." });
     const route = routes[0];
     const [originPoint, destinationPoint] = await Promise.all([
-      parsed.data.originCoordinates ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: originName }) : googleGeocode(originName, apiKey),
-      parsed.data.destinationCoordinates ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: destinationName }) : googleGeocode(destinationName, apiKey)
+      parsed.data.originCoordinates ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: originName }) : googleGeocode(originName, apiKey).catch(() => null),
+      parsed.data.destinationCoordinates ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: destinationName }) : googleGeocode(destinationName, apiKey).catch(() => null)
     ]);
+    const routeCoordinates = route.geometry.coordinates;
     return res.json({
-      origin: { name: originPoint?.placeName || originName, coordinates: originPoint?.coordinates || coordinates[0] },
-      destination: { name: destinationPoint?.placeName || destinationName, coordinates: destinationPoint?.coordinates || coordinates[coordinates.length - 1] },
+      origin: { name: originPoint?.placeName || originName, coordinates: originPoint?.coordinates || routeCoordinates[0] },
+      destination: { name: destinationPoint?.placeName || destinationName, coordinates: destinationPoint?.coordinates || routeCoordinates[routeCoordinates.length - 1] },
       ...route,
       routes
     });
