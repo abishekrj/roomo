@@ -30,6 +30,7 @@ const ownerRoomTypesRoutes = require("./routes/ownerRoomTypes");
 const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
 const cmsPagesRoutes = require("./routes/cmsPages");
 const transportRoutes = require("./routes/transport");
+const walletRoutes = require("./routes/wallet");
 const adminCmsPagesRoutes = require("./routes/adminCmsPages");
 const authenticateToken = require("./middleware/auth");
 
@@ -62,6 +63,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/transport", transportRoutes);
+app.use("/api/transport/wallet", walletRoutes);
 app.use("/api/guest-auth", authLimiter, guestAuthRoutes);
 
 app.get("/api/auth/me", authenticateToken, async (req, res, next) => {
