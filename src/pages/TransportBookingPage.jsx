@@ -110,7 +110,7 @@ function csrfHeaders() {
 export default function TransportBookingPage() {
   const [user, setUser] = useState(null);
   const [authState, setAuthState] = useState("checking");
-  const [form, setForm] = useState(() => { const params=new URLSearchParams(window.location.search); return {pickupLocation:params.get("pickup")||"",dropoffLocation:"",travelAt:"",passengerCount:"2",vehicleType:"CAR",notes:""}; });
+  const [form, setForm] = useState(() => { const params=new URLSearchParams(window.location.search); return {pickupLocation:params.get("pickup")||"",dropoffLocation:"",travelAt:"",passengerCount:"2",vehicleType:"CAR",guestPhone:"",notes:""}; });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
@@ -132,7 +132,7 @@ export default function TransportBookingPage() {
         if (response.status === 401) { setAuthState("signed-out"); return; }
         if (!response.ok || !data.user) throw new Error(data.message || "Unable to verify your ROOMO account.");
         setUser(data.user);
-        setForm(current => ({ ...current, pickupLocation: current.pickupLocation || data.user.defaultPickupLocation || "" }));
+        setForm(current => ({ ...current, guestPhone: data.user.phoneNumber || "", pickupLocation: current.pickupLocation || data.user.defaultPickupLocation || "" }));
         setAuthState("signed-in");
       })
       .catch(e => { if (e.name !== "AbortError") { setError(e.message || "Unable to verify your session."); setAuthState("error"); } });
@@ -211,7 +211,7 @@ export default function TransportBookingPage() {
       {authState === "checking" && <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Checking your ROOMO account…</div>}
       {authState === "signed-out" && <div className="rounded-lg border border-blue-100 bg-blue-50 p-5"><h3 className="font-semibold text-slate-900">Sign in to request a driver</h3><p className="mt-2 text-sm leading-6 text-slate-600">Your trip requests are saved to your account, so you can review pickup details and booking status any time in My Travel.</p><div className="mt-5 flex flex-wrap gap-3"><a href={loginHref} className="inline-flex items-center justify-center rounded-lg bg-[#2563a6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1e4f85]">Sign in</a><a href={signupHref} className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Create an account</a></div></div>}
       {authState === "error" && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error || "Unable to verify your account. Please refresh the page."}<button type="button" className="ml-2 font-semibold underline" onClick={() => window.location.reload()}>Try again</button></div>}
-      {authState === "signed-in" && <><div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Requesting as</p><p className="mt-1 font-semibold text-slate-900">{user.fullName}</p><p className="mt-1 text-sm text-slate-600">{user.email}</p><a href="/my-bookings" className="mt-2 inline-block text-sm font-semibold text-[#2563a6] hover:underline">View My Travel →</a></div>
+      {authState === "signed-in" && <><div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Requesting as</p><p className="mt-1 font-semibold text-slate-900">{user.fullName}</p><p className="mt-1 text-sm text-slate-600">{user.email}</p>{user.phoneNumber ? <p className="mt-1 text-sm text-slate-600">Mobile: {user.phoneNumber}</p> : <label className="mt-3 block max-w-sm text-sm font-medium text-slate-700">Mobile number <span className="text-red-600">*</span><input className={inputClass} name="guestPhone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={32} placeholder="Enter your mobile number" value={form.guestPhone} onChange={change} /></label>}<a href="/my-bookings" className="mt-2 inline-block text-sm font-semibold text-[#2563a6] hover:underline">View My Travel →</a></div>
       {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {success && <div role="status" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-emerald-900">Your driver request has been received.</p><p className="mt-1 text-sm text-emerald-800">Reference: <strong>{success.bookingCode}</strong> · Status: {success.status}.</p><p className="mt-2 text-sm text-emerald-800">You can track this request from My Travel.</p><a href="/my-bookings" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">Go to My Travel →</a></div>}
       <form onSubmit={submit} className="grid w-full grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
