@@ -123,6 +123,46 @@ export default function TransportBookingPage() {
   }
 
 
+  function simplifyRouteCoordinates(coordinates, tolerance) {
+    if (coordinates.length <= 2) return coordinates;
+    const squaredTolerance = tolerance * tolerance;
+    const keep = new Uint8Array(coordinates.length);
+    keep[0] = 1;
+    keep[coordinates.length - 1] = 1;
+    const stack = [[0, coordinates.length - 1]];
+
+    while (stack.length) {
+      const [first, last] = stack.pop();
+      const [x1, y1] = coordinates[first];
+      const [x2, y2] = coordinates[last];
+      const dx = x2 - x1, dy = y2 - y1;
+      let maxDistance = squaredTolerance;
+      let farthest = -1;
+
+      for (let i = first + 1; i < last; i++) {
+        const [x, y] = coordinates[i];
+        const lengthSquared = dx * dx + dy * dy;
+        const projection = lengthSquared
+          ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / lengthSquared))
+          : 0;
+        const nearestX = x1 + projection * dx;
+        const nearestY = y1 + projection * dy;
+        const distance = (x - nearestX) ** 2 + (y - nearestY) ** 2;
+        if (distance > maxDistance) {
+          maxDistance = distance;
+          farthest = i;
+        }
+      }
+
+      if (farthest !== -1) {
+        keep[farthest] = 1;
+        stack.push([first, farthest], [farthest, last]);
+      }
+    }
+
+    return coordinates.filter((_, index) => keep[index]);
+  }
+
   function encodePolyline(coordinates) {
     let lastLat = 0, lastLng = 0;
     const parts = [];
@@ -163,9 +203,20 @@ export default function TransportBookingPage() {
   }
 
   const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-  const routeMapUrl = route && mapToken && route.geometry?.coordinates?.length
-    ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/path-5+2563a6-0.85(${encodeURIComponent(encodePolyline(route.geometry.coordinates))})/pin-s-a+2563a6(${route.origin.coordinates[0]},${route.origin.coordinates[1]}),pin-l-b+facc15(${route.destination.coordinates[0]},${route.destination.coordinates[1]})/auto/600x420@2x?access_token=${encodeURIComponent(mapToken)}&padding=48`
-    : null;
+  const routeMapUrl = (() => {
+    if (!route || !mapToken || !route.geometry?.coordinates?.length) return null;
+    const markers = `/pin-s-a+2563a6(${route.origin.coordinates[0]},${route.origin.coordinates[1]}),pin-l-b+facc15(${route.destination.coordinates[0]},${route.destination.coordinates[1]})`;
+    const mapBase = "https://api.mapbox.com/styles/v1/mapbox/streets-v12/static";
+    // Static Images URLs have a strict length limit. Simplify the road geometry
+    // progressively while retaining the route endpoints to avoid HTTP 414.
+    for (const tolerance of [0.00005, 0.0001, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128]) {
+      const simplified = simplifyRouteCoordinates(route.geometry.coordinates, tolerance);
+      const path = `/path-5+2563a6-0.85(${encodeURIComponent(encodePolyline(simplified))})`;
+      const url = `${mapBase}${path}${markers}/auto/600x420@2x?access_token=${encodeURIComponent(mapToken)}&padding=48`;
+      if (url.length <= 7000) return url;
+    }
+    return null;
+  })();
 
   const bookingReturnPath = window.location.pathname + window.location.search;
   const loginHref = "/login?returnTo=" + encodeURIComponent(bookingReturnPath);
