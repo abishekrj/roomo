@@ -322,8 +322,28 @@ router.get("/driver/me", driverAuth, async (req, res, next) => {
     res.json({ driver });
   } catch (error) { next(error); }
 });
+async function completeOverdueDriverTrips() {
+  // A booking has no scheduled end-time field yet; treat the pickup date as the trip date
+  // and complete it after that calendar day has passed (24 hours after scheduled pickup).
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const overdue = await prisma.transportBooking.findMany({
+    where: { status: { in: ["CONFIRMED", "IN_PROGRESS"] }, travelAt: { lt: cutoff }, assignedDriverId: { not: null } },
+    select: { id: true, assignedDriverId: true }
+  });
+  if (!overdue.length) return;
+  await prisma.transportBooking.updateMany({
+    where: { id: { in: overdue.map(item => item.id) }, status: { in: ["CONFIRMED", "IN_PROGRESS"] } },
+    data: { status: "COMPLETED" }
+  });
+  await prisma.driver.updateMany({
+    where: { id: { in: [...new Set(overdue.map(item => item.assignedDriverId).filter(Boolean))] } },
+    data: { isAvailable: true }
+  });
+}
+
 router.get("/driver/requests", driverAuth, async (req, res, next) => {
   try {
+    await completeOverdueDriverTrips();
     const offers = await prisma.driverOffer.findMany({
       where: { driverId: req.driver.sub, status: "OFFERED", expiresAt: { gt: new Date() }, booking: { status: "PENDING" } },
       include: { booking: true }, orderBy: { offeredAt: "desc" }
@@ -335,6 +355,23 @@ router.get("/driver/requests", driverAuth, async (req, res, next) => {
     res.json({ requests: offers.map(offer => ({ offerId: offer.id, expiresAt: offer.expiresAt, booking: offer.booking })), assigned });
   } catch (error) { next(error); }
 });
+router.patch("/driver/bookings/:id/complete", driverAuth, async (req, res, next) => {
+  try {
+    const result = await prisma.$transaction(async tx => {
+      const booking = await tx.transportBooking.findFirst({
+        where: { id: req.params.id, assignedDriverId: req.driver.sub, status: { in: ["CONFIRMED", "IN_PROGRESS"] } }
+      });
+      if (!booking) return null;
+      const updated = await tx.transportBooking.update({ where: { id: booking.id }, data: { status: "COMPLETED" } });
+      await tx.driver.update({ where: { id: req.driver.sub }, data: { isAvailable: true } });
+      await tx.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
+      return updated;
+    });
+    if (!result) return res.status(404).json({ message: "This trip is no longer active or is not assigned to you." });
+    res.json({ message: "Trip marked as completed.", booking: result });
+  } catch (error) { next(error); }
+});
+
 router.post("/driver/push-subscriptions", driverAuth, async (req, res, next) => {
   try {
     const subscription = req.body?.subscription;
@@ -441,6 +478,7 @@ adminRouter.patch("/drivers/:id/status", async (req, res, next) => {
 });
 adminRouter.get("/bookings", async (req, res, next) => {
   try {
+    await completeOverdueDriverTrips();
     const bookings = await prisma.transportBooking.findMany({
       include: { assignedDriver: { select: { id: true, fullName: true, phoneNumber: true, vehicleType: true, vehicleNumber: true } } },
       orderBy: { createdAt: "desc" }
