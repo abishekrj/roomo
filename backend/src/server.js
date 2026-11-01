@@ -31,6 +31,7 @@ const listingDisplaySettingsRoutes = require("./routes/listingDisplaySettings");
 const cmsPagesRoutes = require("./routes/cmsPages");
 const adminCmsPagesRoutes = require("./routes/adminCmsPages");
 const transportRoutes = require("./routes/transport");
+const walletRoutes = require("./routes/wallet");
 const authenticateToken = require("./middleware/auth");
 const { assertSecurityConfig } = require("./lib/securityConfig");
 const { ensureCsrfCookie, csrfProtection } = require("./lib/sessionCookies");
@@ -170,6 +171,7 @@ app.use("/api/admin/homepage", adminHomepageRoutes);
 app.use("/api/admin/testimonials", adminTestimonialsRoutes);
 app.use("/api/admin/reviews", adminReviewRoutes);
 app.use("/api/transport", transportRoutes);
+app.use("/api/transport/wallet", walletRoutes);
 
 app.use((error, req, res, next) => {
   console.error("API error:", error.message);
