@@ -98,7 +98,14 @@ async function dispatchBooking(booking) {
     const configured = Array.isArray(driver.serviceAreas) ? driver.serviceAreas : [];
     return configured.length === 0 || configured.some(area => (booking.pickupLocation + " " + booking.dropoffLocation).toLowerCase().includes(String(area).toLowerCase()));
   });
-  if (!eligible.length) return;
+  if (!eligible.length) {
+    // No eligible driver: keep the request pending and surface it to Super Admin immediately.
+    await prisma.transportBooking.updateMany({
+      where: { id: booking.id, status: "PENDING", assignedDriverId: null },
+      data: { dispatchExpiresAt: new Date() }
+    });
+    return;
+  }
   const dispatched = await prisma.$transaction(async tx => {
     const stillPending = await tx.transportBooking.updateMany({
       where: { id: booking.id, status: "PENDING", assignedDriverId: null },
@@ -274,8 +281,15 @@ router.post("/bookings", guestAuth, async (req, res, next) => {
     const booking = await prisma.transportBooking.create({
       data: { ...data, guestUserId: req.guestUser.id, guestEmail: req.guestUser.email, notes: data.notes || null, bookingCode: "TR" + crypto.randomBytes(4).toString("hex").toUpperCase() }
     });
-    dispatchBooking(booking).catch(error => console.error("Transport dispatch failed:", error.message));
-    res.status(201).json({ message: "Your transport request has been received. ROOMO is notifying eligible drivers.", booking: { id: booking.id, bookingCode: booking.bookingCode, status: booking.status } });
+    dispatchBooking(booking).catch(async error => {
+      console.error("Transport dispatch failed:", error.message);
+      // A dispatch error must not hide the booking; mark it for immediate admin attention.
+      await prisma.transportBooking.updateMany({
+        where: { id: booking.id, status: "PENDING", assignedDriverId: null },
+        data: { dispatchExpiresAt: new Date() }
+      }).catch(updateError => console.error("Unable to flag transport booking for admin:", updateError.message));
+    });
+    res.status(201).json({ message: "Your transport request has been received. Eligible drivers have two minutes to accept; if none accepts, the request remains pending for Super Admin assignment.", booking: { id: booking.id, bookingCode: booking.bookingCode, status: booking.status } });
   } catch (error) { next(error); }
 });
 
@@ -431,7 +445,13 @@ adminRouter.get("/bookings", async (req, res, next) => {
       include: { assignedDriver: { select: { id: true, fullName: true, phoneNumber: true, vehicleType: true, vehicleNumber: true } } },
       orderBy: { createdAt: "desc" }
     });
-    res.json({ bookings });
+    const now = new Date();
+    res.json({
+      bookings: bookings.map(booking => ({
+        ...booking,
+        needsAdminAttention: booking.status === "PENDING" && !booking.assignedDriverId && Boolean(booking.dispatchExpiresAt && booking.dispatchExpiresAt <= now)
+      }))
+    });
   } catch (error) { next(error); }
 });
 adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
