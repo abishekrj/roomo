@@ -253,11 +253,19 @@ export default function TransportBookingPage() {
             <p className="mt-1 text-sm text-slate-500">Your route options and driving map will appear here after you select a destination.</p>
           </div>
           {route ? <div className="space-y-3">
-            {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => setSelectedRouteIndex(index)} aria-pressed={selectedRouteIndex === index} className={`w-full rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-              <span className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{index === 0 ? "Recommended Route" : "Alternate Route"}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
-              <span className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1"><span className="text-lg font-semibold text-slate-900">{option.distanceKm} km</span><span className="text-sm text-slate-600">{option.durationText}</span></span>
-              <span className={`mt-2 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "Show on map"}</span>
-            </button>)}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => setSelectedRouteIndex(index)} aria-pressed={selectedRouteIndex === index} className={`flex min-w-0 flex-col rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+                <span className="flex w-full min-w-0 items-start justify-between gap-2">
+                  <span className="min-w-0 text-sm font-semibold leading-5 text-slate-900">{index === 0 ? "Recommended Route" : "Alternate Route"}</span>
+                  {index === 0 && <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}
+                </span>
+                <span className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-xl font-semibold tabular-nums text-slate-900">{option.distanceKm} km</span>
+                  <span className="text-sm text-slate-600">{option.durationText}</span>
+                </span>
+                <span className={`mt-3 text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "View this route on map"}</span>
+              </button>)}
+            </div>
             {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Google Maps returned only one available route for this journey.</p>}
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <div className="border-b border-slate-200 px-4 py-3"><h4 className="text-sm font-semibold text-slate-900">Route map</h4><p className="mt-1 text-xs text-slate-500">{activeRoute.label || "Google driving route"} · {route.origin.name} to {route.destination.name}</p></div>
