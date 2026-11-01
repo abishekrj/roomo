@@ -240,7 +240,7 @@ export default function TransportBookingPage() {
             {routeError && <p role="alert" className="mt-3 text-sm text-red-600">{routeError}</p>}
             {route && <p className="mt-3 text-xs leading-5 text-slate-500">Estimate based on the selected driving route. Actual travel time may vary with traffic and road conditions.</p>}
           </div>
-          {!user.phoneNumber && <label className="block text-sm font-medium">Mobile number <span className="text-red-600">*</span><input className={inputClass} name="guestPhone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={32} placeholder="Enter your mobile number" value={form.guestPhone} onChange={change} /></label>}
+          <label className="block text-sm font-medium">Mobile number <span className="text-red-600">*</span><input className={inputClass} name="guestPhone" type="tel" inputMode="tel" autoComplete="tel" required minLength={7} maxLength={32} placeholder="Enter your mobile number" value={form.guestPhone} onChange={change} /></label>
           <label className="block text-sm font-medium">Trip notes (optional)<textarea className={inputClass} name="notes" rows="3" maxLength={1000} placeholder="Luggage, additional stops or pickup instructions" value={form.notes} onChange={change} /></label>
           <div>
             <button disabled={busy} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#facc15] px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-100 disabled:cursor-wait disabled:opacity-60">{busy ? "Sending request…" : "Request a driver"}</button>
