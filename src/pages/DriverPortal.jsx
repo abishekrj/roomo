@@ -18,6 +18,10 @@ function statusPill(status) {
 export default function DriverPortal() {
   const [token, setToken] = useState(() => sessionStorage.getItem("roomo_driver_token") || "");
   const [driver, setDriver] = useState(null);
+  const [walletData, setWalletData] = useState(null);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [rechargeAmount, setRechargeAmount] = useState("1000");
+  const [rechargeMethod, setRechargeMethod] = useState("MANUAL");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname.replace(/\/+$/, "") || "/driver/login");
@@ -28,7 +32,7 @@ export default function DriverPortal() {
   }, []);
   const signupMode = currentPath === "/driver/signup";
   const dashboardPath = "/driver/dashboard";
-  const driverPagePaths = [dashboardPath, "/driver/new-trip-requests", "/driver/current-trip", "/driver/confirmed-trips", "/driver/completed-trips"];
+  const driverPagePaths = [dashboardPath, "/driver/new-trip-requests", "/driver/current-trip", "/driver/confirmed-trips", "/driver/completed-trips", "/driver/wallet"];
 
   useEffect(() => {
     if (currentPath === "/driver") {
@@ -71,10 +75,10 @@ export default function DriverPortal() {
     } catch {}
   }
   useEffect(() => { const unlock = () => { audioReady.current = true; }; window.addEventListener("pointerdown", unlock, { once: true }); window.addEventListener("keydown", unlock, { once: true }); return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); }; }, []);
-  const pageByPath = { "/driver/dashboard": "dashboard", "/driver/new-trip-requests": "new-requests", "/driver/current-trip": "current-trip", "/driver/confirmed-trips": "confirmed-trips", "/driver/completed-trips": "completed-trips" };
+  const pageByPath = { "/driver/dashboard": "dashboard", "/driver/new-trip-requests": "new-requests", "/driver/current-trip": "current-trip", "/driver/confirmed-trips": "confirmed-trips", "/driver/completed-trips": "completed-trips", "/driver/wallet": "wallet" };
   const activePage = pageByPath[currentPath] || "dashboard";
   function navigateToPage(pageId) {
-    const pagePaths = { dashboard: "/driver/dashboard", "new-requests": "/driver/new-trip-requests", "current-trip": "/driver/current-trip", "confirmed-trips": "/driver/confirmed-trips", "completed-trips": "/driver/completed-trips" };
+    const pagePaths = { dashboard: "/driver/dashboard", "new-requests": "/driver/new-trip-requests", "current-trip": "/driver/current-trip", "confirmed-trips": "/driver/confirmed-trips", "completed-trips": "/driver/completed-trips", wallet: "/driver/wallet" };
     const nextPath = pagePaths[pageId] || "/driver/dashboard";
     if (nextPath !== currentPath) {
       window.history.pushState({}, "", nextPath);
@@ -89,6 +93,25 @@ export default function DriverPortal() {
     if (!response.ok) throw new Error(data.message || "Unable to complete this request.");
     return data;
   }, [token]);
+
+  const loadWallet = useCallback(async () => {
+    if (!token) return;
+    setWalletLoading(true);
+    try { const data = await api("/wallet/driver"); setWalletData(data); }
+    catch (e) { setError(e.message || "Unable to load your wallet."); }
+    finally { setWalletLoading(false); }
+  }, [api, token]);
+
+  async function submitRecharge(event) {
+    event.preventDefault();
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const data = await api("/wallet/driver/recharges", { method: "POST", body: JSON.stringify({ amount: Number(rechargeAmount), method: rechargeMethod }) });
+      setNotice(data.message || "Recharge request submitted.");
+      await loadWallet();
+    } catch (e) { setError(e.message || "Unable to submit recharge request."); }
+    finally { setBusy(false); }
+  }
 
   const refresh = useCallback(async () => {
     if (!token) return;
@@ -110,9 +133,10 @@ export default function DriverPortal() {
     let cancelled = false;
     api("/driver/me").then(data => { if (!cancelled) setDriver(data.driver); }).catch(e => { if (!cancelled) { setError(e.message); sessionStorage.removeItem("roomo_driver_token"); setToken(""); } });
     refresh().catch(e => { if (!cancelled) setError(e.message); });
+    loadWallet().catch(() => {});
     const timer = window.setInterval(() => refresh().catch(() => {}), 15000);
     return () => { cancelled = true; window.clearInterval(timer); };
-  }, [token, api, refresh]);
+  }, [token, api, refresh, loadWallet]);
 
   async function signIn(event) {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
@@ -160,6 +184,7 @@ export default function DriverPortal() {
   const completedTrips = useMemo(() => assigned.filter(item => item.status === "COMPLETED"), [assigned]);
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "▦" },
+    { id: "wallet", label: "My Wallet", icon: "₹" },
     { id: "my-trips", label: "My Trips", icon: "⌁", children: [
       { id: "new-requests", label: "New Trip Request", count: requests.length },
       { id: "current-trip", label: "Current Trip", count: currentTrips.length },
@@ -180,7 +205,7 @@ export default function DriverPortal() {
     </article>;
   }
 
-  const pageHeading = activePage === "dashboard" ? "Dashboard" : activePage === "new-requests" ? "New Trip Request" : activePage === "completed-trips" ? "Completed Trips" : activePage === "confirmed-trips" ? "Confirmed Trips" : "Current Trip";
+  const pageHeading = activePage === "dashboard" ? "Dashboard" : activePage === "wallet" ? "My Wallet" : activePage === "new-requests" ? "New Trip Request" : activePage === "completed-trips" ? "Completed Trips" : activePage === "confirmed-trips" ? "Confirmed Trips" : "Current Trip";
 
   return <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-roomo-ink">
     <header className="border-b border-slate-200 bg-white"><div className="flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8"><div><a href="/" className="text-lg font-semibold tracking-tight text-[#2563a6]">ROOMO</a><p className="mt-0.5 text-xs text-slate-500">Driver workspace</p></div><div className="flex items-center gap-3"><div className="hidden text-right sm:block"><p className="text-sm font-semibold">{driver.fullName}</p><p className="text-xs text-slate-500">{driver.vehicleNumber || driver.vehicleType}</p></div><button onClick={signOut} className={secondaryButton}>Sign out</button></div></div></header>
@@ -203,6 +228,30 @@ export default function DriverPortal() {
             <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><button onClick={() => navigateToPage("new-requests")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">New trip requests</p><p className="mt-2 text-3xl font-semibold">{requests.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">Review requests →</p></button><button onClick={() => navigateToPage("current-trip")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Current trips</p><p className="mt-2 text-3xl font-semibold">{currentTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View current trips →</p></button><button onClick={() => navigateToPage("confirmed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Confirmed trips</p><p className="mt-2 text-3xl font-semibold">{confirmedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View confirmed trips →</p></button><button onClick={() => navigateToPage("completed-trips")} className="rounded-lg border border-slate-200 bg-white p-5 text-left hover:border-blue-300"><p className="text-sm text-slate-500">Completed trips</p><p className="mt-2 text-3xl font-semibold">{completedTrips.length}</p><p className="mt-2 text-sm font-semibold text-[#2563a6]">View history →</p></button><div className="rounded-lg border border-slate-200 bg-white p-5"><p className="text-sm text-slate-500">Notification status</p><p className="mt-2 text-lg font-semibold">{pushEnabled ? "Enabled" : "Not enabled"}</p><p className="mt-2 text-sm text-slate-500">For this device</p></div></div>
             <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">New trip requests</h2><p className="mt-1 text-sm text-slate-500">Requests expire after the response window closes.</p></div><button onClick={() => navigateToPage("new-requests")} className="text-sm font-semibold text-[#2563a6]">View all →</button></div>{requests.length ? <div className="grid grid-cols-1 gap-4">{requests.slice(0, 2).map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">No new requests right now.</p>}</section>
           </>}
+          {activePage === "wallet" && <section className="space-y-5">
+            {walletLoading && !walletData ? <div className="rounded-lg border border-slate-200 bg-white p-8 text-sm text-slate-500">Loading your wallet…</div> : walletData && <>
+              <div className="rounded-xl bg-[#102747] p-5 text-white sm:p-7"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-blue-200">Available wallet balance</p><p className="mt-2 text-3xl font-semibold sm:text-4xl">₹{Number(walletData.wallet?.balance||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</p><p className="mt-2 text-sm text-blue-100">Minimum required to accept a new trip: ₹{Number(walletData.settings?.minimumBalance||500).toLocaleString("en-IN")}</p></div><span className={"rounded-full px-3 py-1.5 text-xs font-semibold "+(walletData.canAcceptBookings?"bg-emerald-100 text-emerald-800":"bg-amber-100 text-amber-900")}>{walletData.canAcceptBookings?"Eligible for new trips":"Recharge required"}</span></div>
+                {!walletData.canAcceptBookings && <p className="mt-5 rounded-lg border border-amber-200/30 bg-white/10 p-3 text-sm leading-6 text-blue-50">Your balance is below the minimum. Please recharge to receive new trip requests. You can still complete trips that are already in progress.</p>}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-sm text-slate-500">Total recharged</p><p className="mt-2 text-xl font-semibold">₹{Number(walletData.wallet?.totalRecharged||0).toLocaleString("en-IN",{minimumFractionDigits:2})}</p></div><div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-sm text-slate-500">Commission deducted</p><p className="mt-2 text-xl font-semibold">₹{Number(walletData.wallet?.totalCommission||0).toLocaleString("en-IN",{minimumFractionDigits:2})}</p></div><div className="rounded-lg border border-slate-200 bg-white p-4"><p className="text-sm text-slate-500">Wallet status</p><p className="mt-2 text-xl font-semibold">{walletData.wallet?.status?.replaceAll("_"," ")||"—"}</p></div></div>
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,.8fr)]">
+                <section className="rounded-lg border border-slate-200 bg-white p-5"><div className="mb-4"><h2 className="text-lg font-semibold">Recharge wallet</h2><p className="mt-1 text-sm text-slate-500">Submit a recharge request to add funds to your ROOMO driver wallet.</p></div>
+                  <form onSubmit={submitRecharge} className="space-y-4"><label className="block text-sm font-medium">Recharge amount (₹)<input className={inputClass} type="number" min="1" max="1000000" step="0.01" required value={rechargeAmount} onChange={e=>setRechargeAmount(e.target.value)}/></label>
+                    <label className="block text-sm font-medium">Recharge method<select className={inputClass} value={rechargeMethod} onChange={e=>setRechargeMethod(e.target.value)}>{(walletData.settings?.rechargeMethod==="BOTH"?["MANUAL","ONLINE"]:[walletData.settings?.rechargeMethod||"MANUAL"]).map(m=><option key={m} value={m}>{m==="MANUAL"?"Manual payment / bank transfer":"Online payment (gateway setup pending)"}</option>)}</select></label>
+                    {rechargeMethod==="MANUAL" ? <p className="rounded-lg bg-blue-50 p-3 text-xs leading-5 text-blue-800">Your request will be sent to Super Admin. The amount is added only after the administrator verifies and approves it.</p> : <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-800">Online payment gateway integration is not active yet. An online request will remain pending until a verified payment confirmation is received. Do not treat this as a completed payment.</p>}
+                    <button disabled={busy||walletLoading||!walletData.settings?.isEnabled} className={buttonClass+" w-full"}>{busy?"Submitting…":"Submit recharge request"}</button>
+                    {!walletData.settings?.isEnabled&&<p className="text-xs text-red-600">Wallet recharge is currently disabled. Contact Super Admin.</p>}
+                  </form>
+                </section>
+                <section className="rounded-lg border border-slate-200 bg-white p-5"><h2 className="text-lg font-semibold">Recharge requests</h2><p className="mt-1 text-sm text-slate-500">Track the status of your recharge submissions.</p>
+                  {walletData.wallet?.recharges?.length ? <div className="mt-4 space-y-3">{walletData.wallet.recharges.map(r=><div key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3"><div><p className="text-sm font-semibold">{r.method==="MANUAL"?"Manual recharge":"Online recharge"}</p><p className="mt-1 text-xs text-slate-500">{localTime(r.createdAt)}</p></div><div className="text-right"><p className="font-semibold">₹{Number(r.amount).toLocaleString("en-IN",{minimumFractionDigits:2})}</p><span className={"text-xs font-semibold "+(r.status==="SUCCESS"?"text-emerald-700":r.status==="REJECTED"||r.status==="FAILED"?"text-red-700":"text-amber-700")}>{r.status}</span></div></div>)}</div> : <p className="mt-5 rounded-lg border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">No recharge requests yet.</p>}
+                </section>
+              </div>
+              <section className="overflow-hidden rounded-lg border border-slate-200 bg-white"><div className="border-b p-5"><h2 className="text-lg font-semibold">Wallet transaction history</h2><p className="mt-1 text-sm text-slate-500">Recharge credits and ROOMO commission deductions.</p></div>
+                {walletData.wallet?.transactions?.length ? <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Date</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Balance after</th></tr></thead><tbody className="divide-y">{walletData.wallet.transactions.map(t=><tr key={t.id}><td className="px-5 py-4">{localTime(t.createdAt)}</td><td className="px-5 py-4">{t.description}</td><td className="px-5 py-4">{t.category}</td><td className={"px-5 py-4 font-semibold "+(t.type==="CREDIT"?"text-emerald-700":"text-red-700")}>{t.type==="CREDIT"?"+":"−"}₹{Number(t.amount).toLocaleString("en-IN",{minimumFractionDigits:2})}</td><td className="px-5 py-4">₹{Number(t.balanceAfter).toLocaleString("en-IN",{minimumFractionDigits:2})}</td></tr>)}</tbody></table></div> : <p className="p-8 text-center text-sm text-slate-500">Your wallet transactions will appear here.</p>}
+              </section>
+            </>}
+          </section>}
           {activePage === "new-requests" && <section>{requests.length ? <div className="grid grid-cols-1 gap-4">{requests.map(item => <TripCard key={item.offerId} item={item} requestCard />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No new requests right now</h2><p className="mt-1 text-sm text-slate-500">We’ll show matching trips here when they become available.</p></div>}</section>}
           {activePage === "current-trip" && <section>{currentTrips.length ? <div className="grid grid-cols-1 gap-4">{currentTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No current trips</h2><p className="mt-1 text-sm text-slate-500">Trips currently in progress will appear here.</p></div>}</section>}
           {activePage === "confirmed-trips" && <section>{confirmedTrips.length ? <div className="grid grid-cols-1 gap-4">{confirmedTrips.map(item => <TripCard key={item.id} item={item} />)}</div> : <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center"><h2 className="font-semibold">No confirmed trips</h2><p className="mt-1 text-sm text-slate-500">Accepted trips waiting to start will be listed here.</p></div>}</section>}
