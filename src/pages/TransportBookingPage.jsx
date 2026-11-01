@@ -51,6 +51,55 @@ function PlaceAutocomplete({ label, name, value, onChange, placeholder, inputRef
   </label>;
 }
 
+function GoogleRouteMap({ route, origin, destination }) {
+  const mapRef = useRef(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!key) { setError("Missing VITE_GOOGLE_MAPS_API_KEY in the project-root .env.local file."); return; }
+    let cancelled = false;
+    const loadMap = () => new Promise((resolve, reject) => {
+      if (window.google?.maps) return resolve();
+      const existing = document.querySelector('script[data-roomo-google-maps="true"]');
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.dataset.roomoGoogleMaps = "true";
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly`;
+      script.async = true;
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    loadMap().then(() => {
+      if (cancelled || !mapRef.current) return;
+      const points = route?.geometry?.coordinates || [];
+      if (points.length < 2) { setError("Google did not return route geometry."); return; }
+      const path = points.map(([lng, lat]) => ({ lat, lng }));
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: path[Math.floor(path.length / 2)],
+        zoom: 8,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true
+      });
+      const line = new window.google.maps.Polyline({ path, geodesic: true, strokeColor: "#2563a6", strokeOpacity: 0.95, strokeWeight: 5 });
+      line.setMap(map);
+      const bounds = new window.google.maps.LatLngBounds();
+      path.forEach(point => bounds.extend(point));
+      map.fitBounds(bounds, 48);
+      new window.google.maps.Marker({ map, position: path[0], title: origin });
+      new window.google.maps.Marker({ map, position: path[path.length - 1], title: destination });
+    }).catch(() => { if (!cancelled) setError("Google Maps could not load. Check the frontend API key and its website/API restrictions."); });
+    return () => { cancelled = true; };
+  }, [route, origin, destination]);
+  return <>{error && <p role="alert" className="px-4 py-4 text-sm text-red-700">{error}</p>}<div ref={mapRef} className="h-[420px] w-full bg-slate-100" aria-label={`Driving route from ${origin} to ${destination}`} /></>;
+}
+
 function csrfHeaders() {
   const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf="));
   return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {};
@@ -126,48 +175,6 @@ export default function TransportBookingPage() {
   }
 
 
-  function simplifyRouteCoordinates(coordinates, tolerance) {
-    if (coordinates.length <= 2) return coordinates;
-    const squaredTolerance = tolerance * tolerance;
-    const keep = new Uint8Array(coordinates.length);
-    keep[0] = 1;
-    keep[coordinates.length - 1] = 1;
-    const stack = [[0, coordinates.length - 1]];
-
-    while (stack.length) {
-      const [first, last] = stack.pop();
-      const [x1, y1] = coordinates[first];
-      const [x2, y2] = coordinates[last];
-      const dx = x2 - x1, dy = y2 - y1;
-      let maxDistance = squaredTolerance;
-      let farthest = -1;
-
-      for (let i = first + 1; i < last; i++) {
-        const [x, y] = coordinates[i];
-        const lengthSquared = dx * dx + dy * dy;
-        const projection = lengthSquared
-          ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / lengthSquared))
-          : 0;
-        const nearestX = x1 + projection * dx;
-        const nearestY = y1 + projection * dy;
-        const distance = (x - nearestX) ** 2 + (y - nearestY) ** 2;
-        if (distance > maxDistance) {
-          maxDistance = distance;
-          farthest = i;
-        }
-      }
-
-      if (farthest !== -1) {
-        keep[farthest] = 1;
-        stack.push([first, farthest], [farthest, last]);
-      }
-    }
-
-    return coordinates.filter((_, index) => keep[index]);
-  }
-
-
-
   async function calculateRoute(originValue = form.pickupLocation, destinationValue = form.dropoffLocation, originPlace = selectedFromRef.current, destinationPlace = selectedToRef.current) {
     if (originValue.trim().length < 3 || destinationValue.trim().length < 3) {
       setRouteError("Enter both pickup and destination to calculate the route.");
@@ -192,40 +199,7 @@ export default function TransportBookingPage() {
   }
 
   const activeRoute = route ? (route.routes?.[selectedRouteIndex] || route) : null;
-  const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-  const mapBuildError = !mapToken
-    ? "Missing VITE_MAPBOX_ACCESS_TOKEN. Add it to the project-root .env.local file (the same folder as vite.config.js), then restart Vite."
-    : !activeRoute?.geometry?.coordinates?.length
-      ? "The route API did not return route geometry. Check the /api/transport/route-distance response."
-      : !route?.origin?.coordinates || !route?.destination?.coordinates
-        ? "The route API did not return valid pickup and destination coordinates."
-        : "";
-  const routeMapUrl = (() => {
-    if (mapBuildError) return null;
-    const coordinates = activeRoute.geometry.coordinates;
-    // Reduce the route until the GeoJSON overlay fits Mapbox's 8,192-character URL limit.
-    for (const tolerance of [0.00015, 0.0003, 0.0006, 0.0012, 0.0024, 0.0048, 0.0096, 0.0192, 0.0384, 0.0768]) {
-      const routeFeature = {
-        type: "Feature",
-        properties: { stroke: "#2563a6", "stroke-width": 5, "stroke-opacity": 0.9 },
-        geometry: { type: "LineString", coordinates: simplifyRouteCoordinates(coordinates, tolerance).map(([lng, lat]) => [Number(lng.toFixed(6)), Number(lat.toFixed(6))]) }
-      };
-      const originFeature = {
-        type: "Feature",
-        properties: { "marker-size": "large", "marker-color": "#2563a6", "marker-symbol": "a" },
-        geometry: { type: "Point", coordinates: route.origin.coordinates }
-      };
-      const destinationFeature = {
-        type: "Feature",
-        properties: { "marker-size": "large", "marker-color": "#facc15", "marker-symbol": "b" },
-        geometry: { type: "Point", coordinates: route.destination.coordinates }
-      };
-      const overlay = encodeURIComponent(JSON.stringify({ type: "FeatureCollection", features: [routeFeature, originFeature, destinationFeature] }));
-      const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/geojson(${overlay})/auto/600x420?access_token=${encodeURIComponent(mapToken)}&padding=48`;
-      if (url.length <= 8192) return url;
-    }
-    return null;
-  })();
+  const mapBuildError = !activeRoute?.geometry?.coordinates?.length ? "The route API did not return route geometry." : "";
 
   const bookingReturnPath = window.location.pathname + window.location.search;
   const loginHref = "/login?returnTo=" + encodeURIComponent(bookingReturnPath);
@@ -254,13 +228,13 @@ export default function TransportBookingPage() {
               <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-slate-900">Choose your route</h3><p className="text-xs text-slate-500">Select the route that works best for you</p></div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => { setSelectedRouteIndex(index); setMapError(""); }} aria-pressed={selectedRouteIndex === index} className={`rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-                  <span className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{index === 0 ? "Fastest route" : `Alternative route ${index}`}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
+                  <span className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{option.label || (index === 0 ? "Google driving route" : `Alternative route ${index}`)}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
                   <span className="mt-3 block text-lg font-semibold text-slate-900">{option.distanceKm} km</span>
                   <span className="mt-1 block text-sm text-slate-600">{option.durationText}</span>
                   <span className={`mt-3 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "View this route on map"}</span>
                 </button>)}
               </div>
-              {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Mapbox found only one suitable driving route for this journey.</p>}
+              {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">ROOMO is showing the configured driving corridor for this journey.</p>}
             </div>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
@@ -271,9 +245,8 @@ export default function TransportBookingPage() {
               <p className="px-4 pb-4 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
             </div>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">{selectedRouteIndex === 0 ? "Recommended route" : `Alternative route ${selectedRouteIndex}`} · {route.origin.name} to {route.destination.name}</p></div>
-              {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block min-h-48 w-full bg-slate-100 object-cover" loading="lazy" onLoad={() => setMapError("")} onError={event => { setMapError("Mapbox could not render this route image (HTTP response unavailable to the browser). Check the browser Network response for the exact Mapbox error."); event.currentTarget.style.display = "none"; }} /> : null}
-              {mapError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapError}</div> : !routeMapUrl ? <div className="px-4 py-5 text-sm text-red-700">{mapBuildError || "The route overlay is still too large after simplification. The route response may contain an unusually complex geometry."}</div> : null}
+              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">{activeRoute.label || "Google driving route"} · {route.origin.name} to {route.destination.name}</p></div>
+              {mapBuildError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapBuildError}</div> : <GoogleRouteMap route={activeRoute} origin={route.origin.name} destination={route.destination.name} />}
             </div>
           </div>}
         </div>
