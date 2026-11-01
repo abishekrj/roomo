@@ -64,6 +64,7 @@ export default function TransportBookingPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
   const [route, setRoute] = useState(null);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [routeBusy, setRouteBusy] = useState(false);
   const [routeError, setRouteError] = useState("");
   const [mapError, setMapError] = useState("");
@@ -93,13 +94,14 @@ export default function TransportBookingPage() {
     selectedFromRef.current = selectedToRef.current;
     selectedToRef.current = from;
     setRoute(null);
+    setSelectedRouteIndex(0);
     setRouteError("");
   }
 
   function change(event) {
     const { name, value } = event.target;
     setForm(current => ({ ...current, [name]: value }));
-    if (name === "pickupLocation" || name === "dropoffLocation") { setRoute(null); setRouteError(""); }
+    if (name === "pickupLocation" || name === "dropoffLocation") { setRoute(null); setSelectedRouteIndex(0); setRouteError(""); }
   }
 
   async function submit(event) {
@@ -118,7 +120,7 @@ export default function TransportBookingPage() {
       if (!response.ok) throw new Error(data.message || "Unable to submit your transport request.");
       setSuccess(data.booking);
       setForm(current => ({ ...current, pickupLocation: "", dropoffLocation: "", travelAt: "", notes: "" }));
-      setRoute(null); setRouteError("");
+      setRoute(null); setSelectedRouteIndex(0); setRouteError("");
     } catch (e) { setError(e.message || "Unable to submit your request. Please try again."); }
     finally { setBusy(false); }
   }
@@ -184,21 +186,23 @@ export default function TransportBookingPage() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || "Unable to calculate this route.");
       setRoute(data);
+      setSelectedRouteIndex(0);
     } catch (e) { setRouteError(e.message || "Unable to calculate the route. Please try again."); }
     finally { setRouteBusy(false); }
   }
 
+  const activeRoute = route ? (route.routes?.[selectedRouteIndex] || route) : null;
   const mapToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   const mapBuildError = !mapToken
     ? "Missing VITE_MAPBOX_ACCESS_TOKEN. Add it to the project-root .env.local file (the same folder as vite.config.js), then restart Vite."
-    : !route?.geometry?.coordinates?.length
+    : !activeRoute?.geometry?.coordinates?.length
       ? "The route API did not return route geometry. Check the /api/transport/route-distance response."
       : !route?.origin?.coordinates || !route?.destination?.coordinates
         ? "The route API did not return valid pickup and destination coordinates."
         : "";
   const routeMapUrl = (() => {
     if (mapBuildError) return null;
-    const coordinates = route.geometry.coordinates;
+    const coordinates = activeRoute.geometry.coordinates;
     // Reduce the route until the GeoJSON overlay fits Mapbox's 8,192-character URL limit.
     for (const tolerance of [0.00015, 0.0003, 0.0006, 0.0012, 0.0024, 0.0048, 0.0096, 0.0192, 0.0384, 0.0768]) {
       const routeFeature = {
@@ -245,17 +249,29 @@ export default function TransportBookingPage() {
         <div className="col-span-full w-full">
           {routeBusy && <p className="text-sm font-medium text-[#2563a6]">Finding your driving distance and travel time…</p>}
           {routeError && <p role="alert" className="mt-2 text-sm text-red-600">{routeError}</p>}
-          {route && <div className="space-y-3">
+          {route && <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-slate-900">Choose your route</h3><p className="text-xs text-slate-500">Select the route that works best for you</p></div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                {(route.routes || [route]).map((option, index) => <button key={option.id ?? index} type="button" onClick={() => { setSelectedRouteIndex(index); setMapError(""); }} aria-pressed={selectedRouteIndex === index} className={`rounded-lg border p-4 text-left transition ${selectedRouteIndex === index ? "border-[#2563a6] bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+                  <span className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-900">{index === 0 ? "Fastest route" : `Alternative route ${index}`}</span>{index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">Recommended</span>}</span>
+                  <span className="mt-3 block text-lg font-semibold text-slate-900">{option.distanceKm} km</span>
+                  <span className="mt-1 block text-sm text-slate-600">{option.durationText}</span>
+                  <span className={`mt-3 block text-xs font-semibold ${selectedRouteIndex === index ? "text-[#2563a6]" : "text-slate-500"}`}>{selectedRouteIndex === index ? "Selected route" : "View this route on map"}</span>
+                </button>)}
+              </div>
+              {(route.routes || []).length < 2 && <p className="text-xs text-slate-500">Mapbox found only one suitable driving route for this journey.</p>}
+            </div>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.distanceKm} km</p></div>
-                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-xl font-semibold text-slate-900">{route.durationText}</p></div>
+                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Distance</p><p className="mt-1 text-xl font-semibold text-slate-900">{activeRoute.distanceKm} km</p></div>
+                <div><p className="text-xs font-medium uppercase tracking-wide text-slate-500">Estimated time</p><p className="mt-1 text-xl font-semibold text-slate-900">{activeRoute.durationText}</p></div>
               </div>
               <div className="border-t border-slate-200 px-4 py-3 text-xs leading-5 text-slate-600"><span className="font-semibold text-slate-800">Route:</span> {route.origin.name} → {route.destination.name}</div>
               <p className="px-4 pb-4 text-xs text-slate-500">Estimate based on the driving route. Actual travel time may vary with traffic and road conditions.</p>
             </div>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">Driving route from {route.origin.name} to {route.destination.name}</p></div>
+              <div className="border-b border-slate-200 px-4 py-3"><h3 className="text-sm font-semibold text-slate-900">Route map</h3><p className="mt-1 text-xs text-slate-500">{selectedRouteIndex === 0 ? "Recommended route" : `Alternative route ${selectedRouteIndex}`} · {route.origin.name} to {route.destination.name}</p></div>
               {routeMapUrl ? <img src={routeMapUrl} alt={`Driving route from ${route.origin.name} to ${route.destination.name}`} className="block min-h-48 w-full bg-slate-100 object-cover" loading="lazy" onLoad={() => setMapError("")} onError={event => { setMapError("Mapbox could not render this route image (HTTP response unavailable to the browser). Check the browser Network response for the exact Mapbox error."); event.currentTarget.style.display = "none"; }} /> : null}
               {mapError ? <div role="alert" className="px-4 py-5 text-sm text-red-700">{mapError}</div> : !routeMapUrl ? <div className="px-4 py-5 text-sm text-red-700">{mapBuildError || "The route overlay is still too large after simplification. The route response may contain an unusually complex geometry."}</div> : null}
             </div>
