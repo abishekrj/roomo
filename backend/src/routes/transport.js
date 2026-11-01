@@ -7,6 +7,7 @@ const prisma = require("../lib/prisma");
 const authenticateToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/requireAdmin");
 const { GUEST_COOKIE, parseCookies } = require("../lib/sessionCookies");
+const { completeTripWithCommission } = require("../services/driverWallet");
 
 const router = express.Router();
 let webpush = null;
@@ -90,8 +91,15 @@ async function sendDriverPush(driverId, payload) {
 }
 async function dispatchBooking(booking) {
   const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+  const walletSettings = await prisma.walletSettings.findUnique({ where: { id: "default" } });
+  if (walletSettings && !walletSettings.isEnabled) return;
+  const minimumBalance = walletSettings ? walletSettings.minimumBalance : 500;
   const candidates = await prisma.driver.findMany({
-    where: { isActive: true, isAvailable: true, vehicleType: booking.vehicleType, passengerCapacity: { gte: booking.passengerCount } },
+    where: {
+      isActive: true, isAvailable: true, vehicleType: booking.vehicleType,
+      passengerCapacity: { gte: booking.passengerCount },
+      wallet: { is: { balance: { gte: minimumBalance }, status: { not: "RESTRICTED" } } }
+    },
     select: { id: true, serviceAreas: true }
   });
   const eligible = candidates.filter(driver => {
@@ -362,13 +370,15 @@ router.patch("/driver/bookings/:id/complete", driverAuth, async (req, res, next)
         where: { id: req.params.id, assignedDriverId: req.driver.sub, status: { in: ["CONFIRMED", "IN_PROGRESS"] } }
       });
       if (!booking) return null;
-      const updated = await tx.transportBooking.update({ where: { id: booking.id }, data: { status: "COMPLETED" } });
+      const completed = await completeTripWithCommission(tx, booking.id);
+      if (completed.error) return { error: completed.error, status: completed.status };
       await tx.driver.update({ where: { id: req.driver.sub }, data: { isAvailable: true } });
       await tx.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
-      return updated;
+      return completed;
     });
     if (!result) return res.status(404).json({ message: "This trip is no longer active or is not assigned to you." });
-    res.json({ message: "Trip marked as completed.", booking: result });
+    if (result.error) return res.status(result.status).json({ message: result.error });
+    res.json({ message: result.alreadyCompleted ? "This trip was already completed; no duplicate commission was deducted." : "Trip completed and ROOMO commission deducted.", booking: result.booking, commissionDeducted: result.commission || 0, walletBalance: result.walletBalance });
   } catch (error) { next(error); }
 });
 
@@ -400,7 +410,11 @@ router.post("/driver/requests/:offerId/accept", driverAuth, async (req, res, nex
     });
     if (!offer) return res.status(409).json({ message: "This trip request has expired or has already been assigned." });
     const booking = offer.booking;
+    const walletSettings = await prisma.walletSettings.findUnique({ where: { id: "default" } });
+    const minimumBalance = Number(walletSettings?.minimumBalance ?? 500);
+    const wallet = await prisma.driverWallet.findUnique({ where: { driverId: offer.driverId } });
     if (!offer.driver.isActive || !offer.driver.isAvailable || offer.driver.passengerCapacity < booking.passengerCount || offer.driver.vehicleType !== booking.vehicleType) return res.status(409).json({ message: "You are no longer eligible for this trip." });
+    if (!walletSettings?.isEnabled || !wallet || Number(wallet.balance) < minimumBalance || wallet.status === "RESTRICTED") return res.status(409).json({ message: "Your wallet balance is below ROOMO's minimum. Recharge your wallet to accept new trips." });
     const tripStart = new Date(booking.travelAt);
     const tripEnd = new Date(tripStart.getTime() + 3 * 60 * 60 * 1000);
     const conflict = await prisma.transportBooking.findFirst({
@@ -460,7 +474,8 @@ adminRouter.post("/drivers", async (req, res, next) => {
         ...driverData, email: data.email.toLowerCase(), phoneNumber: data.phoneNumber.trim(),
         passwordHash: await bcrypt.hash(password, 12),
         licenseNumber: data.licenseNumber || null, vehicleMake: data.vehicleMake || null,
-        vehicleModel: data.vehicleModel || null, notes: data.notes || null
+        vehicleModel: data.vehicleModel || null, notes: data.notes || null,
+        wallet: { create: { balance: 0, status: "LOW_BALANCE" } }
       },
       select: driverFields
     });
@@ -497,10 +512,17 @@ adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
     const driverId = String(req.body?.driverId || "");
     const [booking, driver] = await Promise.all([
       prisma.transportBooking.findUnique({ where: { id: req.params.id } }),
-      prisma.driver.findUnique({ where: { id: driverId } })
+      prisma.driver.findUnique({ where: { id: driverId }, include: { wallet: true } })
     ]);
     if (!booking) return res.status(404).json({ message: "Transport booking not found." });
     if (!driver || !driver.isActive || driver.vehicleType !== booking.vehicleType || driver.passengerCapacity < booking.passengerCount || (!driver.isAvailable && booking.assignedDriverId !== driver.id)) return res.status(400).json({ message: "Choose an active, available driver with a suitable vehicle and capacity." });
+    if (booking.assignedDriverId !== driver.id) {
+      const walletSettings = await prisma.walletSettings.findUnique({ where: { id: "default" } });
+      const minimumBalance = Number(walletSettings?.minimumBalance ?? 500);
+      if (!walletSettings?.isEnabled || !driver.wallet || Number(driver.wallet.balance) < minimumBalance || driver.wallet.status === "RESTRICTED") {
+        return res.status(400).json({ message: "This driver's wallet balance is below ROOMO's minimum. The driver must recharge before receiving a new booking." });
+      }
+    }
     const result = await prisma.$transaction(async tx => {
       const current = await tx.transportBooking.findUnique({ where: { id: booking.id } });
       if (!current || !["PENDING", "CONFIRMED"].includes(current.status)) return false;
@@ -521,16 +543,36 @@ adminRouter.patch("/bookings/:id/assign", async (req, res, next) => {
     res.json({ message: "Driver assigned successfully." });
   } catch (error) { next(error); }
 });
+adminRouter.patch("/bookings/:id/fare", async (req, res, next) => {
+  try {
+    const fare = Number(req.body?.totalTripFare);
+    if (!Number.isFinite(fare) || fare <= 0 || fare > 10000000) return res.status(400).json({ message: "Enter a valid total customer trip fare." });
+    const booking = await prisma.transportBooking.findUnique({ where: { id: req.params.id } });
+    if (!booking) return res.status(404).json({ message: "Transport booking not found." });
+    if (["COMPLETED", "CANCELLED"].includes(booking.status)) return res.status(409).json({ message: "The fare cannot be changed after a trip is completed or cancelled." });
+    const updated = await prisma.transportBooking.update({ where: { id: booking.id }, data: { totalTripFare: fare.toFixed(2) } });
+    res.json({ message: "Total customer trip fare saved.", booking: updated });
+  } catch (error) { next(error); }
+});
 adminRouter.patch("/bookings/:id/status", async (req, res, next) => {
   try {
     const status = String(req.body?.status || "");
     if (!["CONFIRMED", "PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) return res.status(400).json({ message: "Invalid transport booking status." });
-    const booking = await prisma.transportBooking.update({ where: { id: req.params.id }, data: { status } });
+    let booking;
+    let commissionResult = null;
+    if (status === "COMPLETED") {
+      commissionResult = await prisma.$transaction(tx => completeTripWithCommission(tx, req.params.id));
+      if (commissionResult.error) return res.status(commissionResult.status).json({ message: commissionResult.error });
+      booking = commissionResult.booking;
+      if (commissionResult.alreadyCompleted) return res.json({ message: "This trip was already completed; no duplicate commission was deducted.", booking });
+    } else {
+      booking = await prisma.transportBooking.update({ where: { id: req.params.id }, data: { status } });
+    }
     if (booking.assignedDriverId && ["COMPLETED", "CANCELLED"].includes(status)) await prisma.driver.update({ where: { id: booking.assignedDriverId }, data: { isAvailable: true } });
     if (["COMPLETED", "CANCELLED"].includes(status)) {
       await prisma.driverOffer.updateMany({ where: { bookingId: booking.id, status: "OFFERED" }, data: { status: "UNAVAILABLE", respondedAt: new Date() } });
     }
-    res.json({ booking });
+    res.json({ message: status === "COMPLETED" ? "Trip completed and ROOMO commission deducted." : "Booking status updated.", booking, commissionDeducted: commissionResult?.commission || 0, walletBalance: commissionResult?.walletBalance });
   } catch (error) { next(error); }
 });
 router.use("/admin", adminRouter);
