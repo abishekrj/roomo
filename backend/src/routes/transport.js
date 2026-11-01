@@ -144,16 +144,13 @@ async function googleGeocode(query, apiKey) {
   return { coordinates: [result.geometry.location.lng, result.geometry.location.lat], placeName: result.formatted_address };
 }
 
-async function googleRoute(origin, destination, apiKey, viaNames = [], alternatives = false) {
-  // Google does not return alternative routes when intermediate waypoints are supplied.
-  const intermediates = viaNames.map(name => ({ address: `${name}, Tamil Nadu, India` }));
+async function googleRoute(origin, destination, apiKey) {
   const body = {
     origin,
     destination,
     travelMode: "DRIVE",
     routingPreference: "TRAFFIC_UNAWARE",
-    computeAlternativeRoutes: alternatives && intermediates.length === 0,
-    ...(intermediates.length ? { intermediates } : {})
+    computeAlternativeRoutes: true
   };
   const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
     method: "POST",
@@ -220,30 +217,14 @@ router.post("/route-distance", async (req, res) => {
     const destinationName = parsed.data.destinationPlaceName || parsed.data.destination;
     const origin = googleLocation(parsed.data.originCoordinates, originName);
     const destination = googleLocation(parsed.data.destinationCoordinates, destinationName);
-    const routeText = `${parsed.data.origin} ${originName} ${parsed.data.destination} ${destinationName}`.toLowerCase();
-    let viaNames = [];
-    if (routeText.includes("tambaram") && routeText.includes("villupuram")) viaNames = ["Melmaruvathur", "Tindivanam"];
-    else if (routeText.includes("tambaram") && routeText.includes("tiruvannamalai")) viaNames = ["Melmaruvathur", "Tindivanam", "Gingee"];
-
-    let googleRoutes;
-    if (viaNames.length) {
-      const [recommendedRoutes, alternateRoutes] = await Promise.all([
-        googleRoute(origin, destination, apiKey, viaNames),
-        googleRoute(origin, destination, apiKey)
-      ]);
-      googleRoutes = [
-        ...(recommendedRoutes.slice(0, 1).map((item, index) => ({ item, label: "Recommended Route", via: viaNames, id: index }))),
-        ...(alternateRoutes.slice(0, 1).map((item, index) => ({ item, label: "Alternate Route", via: [], id: 1 })))
-      ];
-    } else {
-      const results = await googleRoute(origin, destination, apiKey, [], true);
-      googleRoutes = results.slice(0, 2).map((item, index) => ({
-        item,
-        label: index === 0 ? "Recommended Route" : "Alternate Route",
-        via: [],
-        id: index
-      }));
-    }
+    // Let Google Maps select and return driving routes without forced intermediate towns.
+    const results = await googleRoute(origin, destination, apiKey);
+    const googleRoutes = results.slice(0, 2).map((item, index) => ({
+      item,
+      label: index === 0 ? "Recommended Route" : "Alternate Route",
+      via: [],
+      id: index
+    }));
     const routes = googleRoutes.map(({ item, label, via, id }) => {
       const distanceMeters = item.distanceMeters;
       const durationSeconds = Math.round(Number(String(item.duration || "0s").replace("s", "")));
