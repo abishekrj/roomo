@@ -178,6 +178,7 @@ admin.patch("/recharges/:id/approve", async (req, res, next) => {
       if (!recharge) return { error: "Recharge request not found.", status: 404 };
       if (recharge.status !== "PENDING") return { error: "This recharge request has already been processed.", status: 409 };
       if (recharge.method !== "MANUAL") return { error: "Online recharges must be credited through verified payment confirmation.", status: 400 };
+      await tx.$queryRaw`SELECT id FROM driver_wallets WHERE id = ${recharge.walletId}::uuid FOR UPDATE`;
       const wallet = await tx.driverWallet.findUnique({ where: { id: recharge.walletId } });
       if (!wallet) return { error: "Driver wallet not found.", status: 404 };
       const before = Number(wallet.balance);
