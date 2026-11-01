@@ -18,13 +18,16 @@ function statusStyle(status) { return status === "CONFIRMED" || status === "IN_P
 export default function DriverAdminWorkspace({ pageKey, onNotice }) {
   const isAdd = pageKey === "drivers/add";
   const isList = pageKey === "drivers/list";
+  const bookingSubpage = pageKey.startsWith("drivers/bookings/");
+  const routeTab = { "new-trip-requests": "NEW_REQUEST", "current-trip": "CURRENT", "confirmed-trips": "CONFIRMED", "completed-trips": "COMPLETED" }[pageKey.split("/").pop()];
   const [form, setForm] = useState(emptyDriver);
   const [drivers, setDrivers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState("NEW_REQUEST");
+  const [tab, setTab] = useState(() => routeTab || "NEW_REQUEST");
+  useEffect(() => { if (routeTab) setTab(routeTab); }, [routeTab]);
   const [selected, setSelected] = useState(null);
   const [assignDriverId, setAssignDriverId] = useState("");
   const [search, setSearch] = useState("");
@@ -144,10 +147,10 @@ export default function DriverAdminWorkspace({ pageKey, onNotice }) {
 </section>;
 
   return <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-    <div className="border-b border-slate-200 p-5 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Transport operations</p><h2 className="mt-2 text-xl font-semibold">Transport booking list</h2><p className="mt-1 text-sm text-slate-500">Open any trip to view the full request and assign a driver if needed.</p></div><button className={secondaryButton} onClick={load}>↻ Refresh</button></div>
-      <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Transport booking status">
+    <div className="border-b border-slate-200 p-5 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#2563a6]">Transport operations</p><h2 className="mt-2 text-xl font-semibold">{bookingSubpage ? ({ NEW_REQUEST: "New Trip Request", CURRENT: "Current Trip", CONFIRMED: "Confirmed Trips", COMPLETED: "Completed Trips" }[tab]) : "Transport booking list"}</h2><p className="mt-1 text-sm text-slate-500">Open any trip to view the full request and assign a driver if needed.</p></div><button className={secondaryButton} onClick={load}>↻ Refresh</button></div>
+      {!bookingSubpage && <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Transport booking status">
         {[["NEW_REQUEST","New Trip Request",b => b.status === "PENDING"],["CURRENT","Current Trip",b => b.status === "IN_PROGRESS"],["CONFIRMED","Confirmed Trips",b => b.status === "CONFIRMED"],["COMPLETED","Completed Trips",b => b.status === "COMPLETED"]].map(([key,label,matches]) => <button key={key} role="tab" aria-selected={tab === key} className={tab === key ? primaryButton : secondaryButton} onClick={() => setTab(key)}>{label}<span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{bookings.filter(matches).length}</span></button>)}
-      </div>
+      </div>}
       <div className="mt-4"><input className={inputClass} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search booking reference, guest, phone or location…" aria-label="Search transport bookings" /></div>
     </div>
     {error && <p role="alert" className="m-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
