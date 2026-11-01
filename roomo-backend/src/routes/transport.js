@@ -77,7 +77,7 @@ async function dispatchBooking(booking) {
     where: {
       isActive: true, isAvailable: true, vehicleType: booking.vehicleType,
       passengerCapacity: { gte: booking.passengerCount },
-      wallet: { is: { balance: { gte: minimumBalance } } }
+      wallet: { is: { balance: { gte: minimumBalance }, status: { not: "RESTRICTED" } } }
     },
     select: { id: true, serviceAreas: true }
   });
