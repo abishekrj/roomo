@@ -145,12 +145,9 @@ async function googleGeocode(query, apiKey) {
 }
 
 async function googleRoute(origin, destination, apiKey, viaNames = []) {
-  const intermediates = [];
-  for (const name of viaNames) {
-    const point = await googleGeocode(`${name}, Tamil Nadu, India`, apiKey);
-    if (!point) throw new Error(`Unable to locate required route waypoint: ${name}.`);
-    intermediates.push(googleLocation(point.coordinates, point.placeName));
-  }
+  // Let Routes API resolve these named waypoints directly. Geocoding can return
+  // ZERO_RESULTS for valid towns when queried without a sufficiently specific address.
+  const intermediates = viaNames.map(name => ({ address: `${name}, Tamil Nadu, India` }));
   const body = {
     origin,
     destination,
