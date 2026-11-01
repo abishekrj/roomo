@@ -339,14 +339,15 @@ async function completeOverdueDriverTrips() {
     select: { id: true, assignedDriverId: true }
   });
   if (!overdue.length) return;
-  await prisma.transportBooking.updateMany({
-    where: { id: { in: overdue.map(item => item.id) }, status: { in: ["CONFIRMED", "IN_PROGRESS"] } },
-    data: { status: "COMPLETED" }
-  });
-  await prisma.driver.updateMany({
-    where: { id: { in: [...new Set(overdue.map(item => item.assignedDriverId).filter(Boolean))] } },
-    data: { isAvailable: true }
-  });
+  for (const item of overdue) {
+    const result = await prisma.$transaction(tx => completeTripWithCommission(tx, item.id));
+    if (result.error) continue;
+    await prisma.driver.update({ where: { id: item.assignedDriverId }, data: { isAvailable: true } });
+    await prisma.driverOffer.updateMany({
+      where: { bookingId: item.id, status: "OFFERED" },
+      data: { status: "UNAVAILABLE", respondedAt: new Date() }
+    });
+  }
 }
 
 router.get("/driver/requests", driverAuth, async (req, res, next) => {
