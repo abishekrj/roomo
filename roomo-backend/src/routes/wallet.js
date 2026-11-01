@@ -127,7 +127,7 @@ admin.get("/settings", async (req, res, next) => {
 
 const settingsSchema = z.object({
   commissionModel: z.enum(["PERCENTAGE", "FIXED"]),
-  commissionValue: z.coerce.number().positive().max(100000).refine(Number.isFinite),
+  commissionValue: z.coerce.number().positive().max(999.99).refine(Number.isFinite),
   minimumBalance: z.coerce.number().nonnegative().max(1000000),
   rechargeMethod: z.enum(["ONLINE", "MANUAL", "BOTH"]),
   isEnabled: z.boolean(),
@@ -137,6 +137,7 @@ admin.patch("/settings", async (req, res, next) => {
   try {
     const parsed = settingsSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Please provide valid wallet settings.", errors: parsed.error.flatten().fieldErrors });
+    if (parsed.data.commissionModel === "PERCENTAGE" && parsed.data.commissionValue > 100) return res.status(400).json({ message: "Percentage commission cannot exceed 100%." });
     const settings = await prisma.walletSettings.upsert({
       where: { id: "default" },
       create: { id: "default", ...parsed.data },
