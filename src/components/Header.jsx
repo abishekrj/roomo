@@ -150,7 +150,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
             {menuOpen && <nav className="absolute right-0 z-[100] mt-2 w-60 rounded-roomo border border-slate-200 bg-white p-2 shadow-lg">
               {!authChecked ? <p className="px-3 py-2 text-sm text-slate-500" role="status">Checking your account…</p> : <>
                 {!user && <><a className={linkClass} href={authHref("/login")}>Sign In</a><a className={linkClass} href={authHref("/signup")}>Sign Up</a><a className={`${linkClass} font-semibold text-[#8a6200]`} href="/owner/signup">Bring Your Property</a><hr className="my-1 border-slate-100" /></>}
-                <a className={linkClass} href="/my-bookings">My Travel</a>
+                {user && <><a className={linkClass} href="/my-travel-bookings">My Travel Bookings</a><a className={linkClass} href="/my-room-bookings">My Room Bookings</a><hr className="my-1 border-slate-100" /></>}
                 <a className={linkClass} href={user ? "/my-profile" : authHref("/login")}>My Profile</a>
                 {user && <><a className={linkClass} href="/owner/signup">Bring Your Property</a><button className={`${linkClass} w-full text-left`} type="button" onClick={logout}>Logout</button></>}
               </>}
