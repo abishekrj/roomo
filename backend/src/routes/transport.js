@@ -117,7 +117,7 @@ async function dispatchBooking(booking) {
   })));
 }
 
-// Public route estimate endpoint. The Mapbox secret token stays on the server.
+// Google Maps Platform: public place suggestions and route estimates.
 const routeEstimateSchema = z.object({
   origin: z.string().trim().min(2).max(300),
   destination: z.string().trim().min(2).max(300),
@@ -127,131 +127,138 @@ const routeEstimateSchema = z.object({
   destinationPlaceName: z.string().trim().max(500).optional()
 });
 
-async function geocodeMapboxLocation(query, token) {
-  const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
-  url.searchParams.set("access_token", token);
-  url.searchParams.set("limit", "1");
-  url.searchParams.set("country", "in");
+function googleLocation(coordinates, address) {
+  if (coordinates?.length === 2) return { location: { latLng: { longitude: coordinates[0], latitude: coordinates[1] } } };
+  return { address };
+}
+
+async function googleGeocode(query, apiKey) {
+  const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+  url.searchParams.set("address", query);
+  url.searchParams.set("key", apiKey);
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`Mapbox location search failed (${response.status}).`);
+  if (!response.ok) throw new Error(`Google Geocoding failed (${response.status}).`);
   const data = await response.json();
-  const feature = data.features?.[0];
-  if (!feature?.center || feature.center.length < 2) return null;
-  return { coordinates: feature.center, placeName: feature.place_name || query };
+  const result = data.results?.[0];
+  if (data.status !== "OK" || !result) return null;
+  return { coordinates: [result.geometry.location.lng, result.geometry.location.lat], placeName: result.formatted_address };
+}
+
+async function googleRoute(origin, destination, apiKey, viaNames = []) {
+  const intermediates = [];
+  for (const name of viaNames) {
+    const point = await googleGeocode(`${name}, Tamil Nadu, India`, apiKey);
+    if (!point) throw new Error(`Unable to locate required route waypoint: ${name}.`);
+    intermediates.push(googleLocation(point.coordinates, point.placeName));
+  }
+  const body = {
+    origin,
+    destination,
+    travelMode: "DRIVE",
+    routingPreference: "TRAFFIC_UNAWARE",
+    computeAlternativeRoutes: false,
+    ...(intermediates.length ? { intermediates } : {})
+  };
+  const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline"
+    },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Google Routes failed (${response.status}): ${detail.slice(0, 400)}`);
+  }
+  const data = await response.json();
+  return data.routes?.[0] || null;
+}
+
+function decodeGooglePolyline(encoded) {
+  const points = [];
+  let index = 0, lat = 0, lng = 0;
+  while (index < encoded.length) {
+    let result = 0, shift = 0, byte;
+    do { byte = encoded.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    result = 0; shift = 0;
+    do { byte = encoded.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+    lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+    points.push([lng / 1e5, lat / 1e5]);
+  }
+  return points;
 }
 
 router.get("/place-suggestions", async (req, res) => {
   const query = String(req.query.q || "").trim();
   if (query.length < 3) return res.json({ suggestions: [] });
-  const token = process.env.MAPBOX_SECRET_TOKEN;
-  if (!token) return res.status(503).json({ message: "Place search is not configured." });
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return res.status(503).json({ message: "Google Places is not configured." });
   try {
-    const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
-    url.searchParams.set("access_token", token);
-    url.searchParams.set("autocomplete", "true");
-    url.searchParams.set("limit", "6");
-    url.searchParams.set("country", "in");
-    url.searchParams.set("types", "address,poi,place,locality,neighborhood,postcode");
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Mapbox place search failed (${response.status}).`);
+    const response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text.text" },
+      body: JSON.stringify({ input: query, includedRegionCodes: ["in"], languageCode: "en" })
+    });
+    if (!response.ok) throw new Error(`Google Places failed (${response.status}).`);
     const data = await response.json();
-    return res.json({ suggestions: (data.features || []).map(feature => ({
-      id: feature.id,
-      name: feature.text || feature.place_name,
-      placeName: feature.place_name,
-      coordinates: feature.center
-    })) });
+    return res.json({ suggestions: (data.suggestions || []).map((item, index) => {
+      const prediction = item.placePrediction;
+      return prediction ? { id: prediction.placeId || String(index), placeId: prediction.placeId, name: prediction.text?.text || query, placeName: prediction.text?.text || query } : null;
+    }).filter(Boolean) });
   } catch (error) {
-    console.error("Mapbox place suggestions failed:", error.message);
+    console.error("Google Places suggestions failed:", error.message);
     return res.status(502).json({ message: "Unable to search places right now." });
   }
 });
 
 router.post("/route-distance", async (req, res) => {
   const parsed = routeEstimateSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ message: "Enter a valid pickup location and destination.", errors: parsed.error.flatten().fieldErrors });
-  }
-
-  const token = process.env.MAPBOX_SECRET_TOKEN;
-  if (!token) return res.status(503).json({ message: "Route calculation is not configured. Please contact ROOMO support." });
-
+  if (!parsed.success) return res.status(400).json({ message: "Enter a valid pickup location and destination.", errors: parsed.error.flatten().fieldErrors });
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return res.status(503).json({ message: "Google Maps route calculation is not configured. Please contact ROOMO support." });
   try {
-    const [origin, destination] = await Promise.all([
-      parsed.data.originCoordinates
-        ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: parsed.data.originPlaceName || parsed.data.origin })
-        : geocodeMapboxLocation(parsed.data.origin, token),
-      parsed.data.destinationCoordinates
-        ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: parsed.data.destinationPlaceName || parsed.data.destination })
-        : geocodeMapboxLocation(parsed.data.destination, token)
-    ]);
-    if (!origin) return res.status(422).json({ message: "We couldn't find the pickup location. Please enter a more specific place." });
-    if (!destination) return res.status(422).json({ message: "We couldn't find the destination. Please enter a more specific place." });
+    const originName = parsed.data.originPlaceName || parsed.data.origin;
+    const destinationName = parsed.data.destinationPlaceName || parsed.data.destination;
+    const origin = googleLocation(parsed.data.originCoordinates, originName);
+    const destination = googleLocation(parsed.data.destinationCoordinates, destinationName);
+    const routeText = `${parsed.data.origin} ${originName} ${parsed.data.destination} ${destinationName}`.toLowerCase();
+    let viaNames = [];
+    if (routeText.includes("tambaram") && routeText.includes("villupuram")) viaNames = ["Melmaruvathur", "Tindivanam"];
+    else if (routeText.includes("tambaram") && routeText.includes("tiruvannamalai")) viaNames = ["Melmaruvathur", "Tindivanam", "Gingee"];
 
-    const [originLng, originLat] = origin.coordinates;
-    const [destinationLng, destinationLat] = destination.coordinates;
-    const requestDirections = async (waypoints, alternatives = false) => {
-      const coordinates = waypoints.map(point => point.coordinates.join(",")).join(";");
-      const routeUrl = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}`);
-      routeUrl.searchParams.set("access_token", token);
-      routeUrl.searchParams.set("overview", "full");
-      routeUrl.searchParams.set("geometries", "geojson");
-      routeUrl.searchParams.set("steps", "false");
-      if (alternatives && waypoints.length === 2) routeUrl.searchParams.set("alternatives", "true");
-      const response = await fetch(routeUrl);
-      if (!response.ok) throw new Error(`Mapbox route calculation failed (${response.status}).`);
-      const data = await response.json();
-      return data.routes || [];
+    const result = await googleRoute(origin, destination, apiKey, viaNames);
+    if (!result) return res.status(422).json({ message: "Google Maps could not find a driving route between these locations." });
+    const distanceMeters = result.distanceMeters;
+    const durationSeconds = Math.round(Number(String(result.duration || "0s").replace("s", "")));
+    const coordinates = decodeGooglePolyline(result.polyline?.encodedPolyline || "");
+    if (coordinates.length < 2) return res.status(502).json({ message: "Google Maps returned a route without usable map geometry." });
+    const route = {
+      id: 0,
+      label: viaNames.length ? `Via ${viaNames.join(" · ")}` : "Google driving route",
+      via: viaNames,
+      distanceMeters,
+      distanceKm: Math.round(distanceMeters / 100) / 10,
+      durationSeconds,
+      durationMinutes: Math.round(durationSeconds / 60),
+      durationText: `${Math.floor(durationSeconds / 3600)} hr ${Math.round((durationSeconds % 3600) / 60)} min`,
+      geometry: { type: "LineString", coordinates }
     };
-
-    const [automaticRoutes] = await Promise.all([
-      requestDirections([origin, destination], true)
+    const [originPoint, destinationPoint] = await Promise.all([
+      parsed.data.originCoordinates ? Promise.resolve({ coordinates: parsed.data.originCoordinates, placeName: originName }) : googleGeocode(originName, apiKey),
+      parsed.data.destinationCoordinates ? Promise.resolve({ coordinates: parsed.data.destinationCoordinates, placeName: destinationName }) : googleGeocode(destinationName, apiKey)
     ]);
-    const mapRoutes = automaticRoutes.slice(0, 2).map((item, index) => ({
-      item, label: index === 0 ? "Fastest route" : "Alternative route", via: []
-    }));
-
-    // Add a deliberately waypointed corridor for the commonly requested
-    // Tambaram–Tiruvannamalai journey. Mapbox alternatives alone do not
-    // guarantee that a route passes through these towns.
-    const routeText = `${parsed.data.origin} ${parsed.data.originPlaceName || ""} ${parsed.data.destination} ${parsed.data.destinationPlaceName || ""}`.toLowerCase();
-    const isTambaramToTiruvannamalai =
-      routeText.includes("tambaram") && routeText.includes("tiruvannamalai");
-    if (isTambaramToTiruvannamalai) {
-      const viaNames = ["Melmaruvathur", "Tindivanam", "Gingee"];
-      const viaPlaces = await Promise.all(viaNames.map(name => geocodeMapboxLocation(`${name}, Tamil Nadu, India`, token)));
-      if (viaPlaces.every(Boolean)) {
-        const viaRoute = (await requestDirections([origin, ...viaPlaces, destination]))[0];
-        if (viaRoute) mapRoutes.push({
-          item: viaRoute,
-          label: "Via Melmaruvathur · Tindivanam · Gingee",
-          via: viaNames
-        });
-      }
-    }
-
-    if (!mapRoutes.length) return res.status(422).json({ message: "No driving route was found between these locations." });
-    const formatRoute = (entry, index) => ({
-      id: index,
-      label: entry.label,
-      via: entry.via,
-      distanceMeters: entry.item.distance,
-      distanceKm: Math.round((entry.item.distance / 1000) * 10) / 10,
-      durationSeconds: Math.round(entry.item.duration),
-      durationMinutes: Math.round(entry.item.duration / 60),
-      durationText: `${Math.floor(entry.item.duration / 3600)} hr ${Math.round((entry.item.duration % 3600) / 60)} min`,
-      geometry: entry.item.geometry
-    });
-    const routes = mapRoutes.map(formatRoute);
     return res.json({
-      origin: { name: origin.placeName, coordinates: origin.coordinates },
-      destination: { name: destination.placeName, coordinates: destination.coordinates },
-      ...routes[0],
-      routes
+      origin: { name: originPoint?.placeName || originName, coordinates: originPoint?.coordinates || coordinates[0] },
+      destination: { name: destinationPoint?.placeName || destinationName, coordinates: destinationPoint?.coordinates || coordinates[coordinates.length - 1] },
+      ...route,
+      routes: [route]
     });
   } catch (error) {
-    console.error("Mapbox route estimate failed:", error.message);
-    return res.status(502).json({ message: "Unable to calculate the route right now. Please try again." });
+    console.error("Google route estimate failed:", error.message);
+    return res.status(502).json({ message: "Unable to calculate the Google Maps route right now. Please try again." });
   }
 });
 
