@@ -355,11 +355,13 @@ adminRouter.patch("/bookings/:id/status", async (req, res, next) => {
         });
         if (changed.count !== 1) return { error: "The booking status changed. Refresh and try again.", status: 409 };
 
-        const wallet = await tx.driverWallet.upsert({
+        const walletRecord = await tx.driverWallet.upsert({
           where: { driverId: current.assignedDriverId },
           create: { driverId: current.assignedDriverId, balance: 0, status: "LOW_BALANCE" },
           update: {},
         });
+        await tx.$queryRaw`SELECT id FROM driver_wallets WHERE id = ${walletRecord.id}::uuid FOR UPDATE`;
+        const wallet = await tx.driverWallet.findUnique({ where: { id: walletRecord.id } });
         const before = Number(wallet.balance);
         const after = Math.round((before - commission) * 100) / 100;
 
