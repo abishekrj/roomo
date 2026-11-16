@@ -47,7 +47,7 @@ export default function Gallery() {
   }, []);
 
   // Visual Stories is a photo gallery. YouTube and other video entries are not displayed here.
-  const photos = useMemo(() => items.filter((item) => item.type === "IMAGE" && resolveImageUrl(item.mediaUrl)), [items]);
+  const photos = useMemo(() => items.filter((item) => String(item.type || item.mediaType || "").toUpperCase() === "IMAGE" && resolveImageUrl(item.mediaUrl || item.imageUrl || item.imagePath || item.url)), [items]);
   const selected = selectedIndex === null ? null : photos[selectedIndex];
 
   const showPrevious = () => setSelectedIndex((current) => current === null ? null : (current - 1 + photos.length) % photos.length);
