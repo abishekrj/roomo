@@ -133,18 +133,23 @@ export default function FeaturedStays() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(API_URL, { cache: "no-store" })
-      .then(response => response.ok ? response.json() : null)
-      .then(data => {
+    Promise.all([
+      fetch(API_URL, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null),
+      fetch(`${API_BASE.replace(/\\/$/, "")}/properties?limit=8`, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null)
+    ])
+      .then(([homepageData, listingData]) => {
         if (cancelled) return;
-        // The homepage API returns published section settings under "content" and
-        // uploaded property records separately at the response root. Merge them so
-        // the cards use the real uploaded property images instead of sample-room fallbacks.
-        setContent(data ? {
-          ...(data.content || {}),
-          featuredProperties: (Array.isArray(data.content?.featuredProperties) && data.content.featuredProperties.length)
-            ? data.content.featuredProperties
-            : (Array.isArray(data.featuredProperties) ? data.featuredProperties : (data.content?.featuredProperties || []))
+        // Prefer the homepage's explicitly featured/published records. If that
+        // endpoint is empty (or an older backend does not include the records),
+        // use the public listings endpoint, which also returns published stays.
+        const homepageProperties = Array.isArray(homepageData?.content?.featuredProperties)
+          ? homepageData.content.featuredProperties
+          : (Array.isArray(homepageData?.featuredProperties) ? homepageData.featuredProperties : []);
+        const publicProperties = Array.isArray(listingData?.properties) ? listingData.properties : [];
+        const featuredProperties = homepageProperties.length ? homepageProperties : publicProperties;
+        setContent(homepageData || listingData ? {
+          ...(homepageData?.content || {}),
+          featuredProperties
         } : null);
       })
       .catch(() => { if (!cancelled) setContent(null); })
