@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import roomoLogo from "../../../Roomo/roomo-frontend/assets/roomo-logo.png";
 
 const API = "http://localhost:5001/api/homepage";
+const brandText = value => String(value ?? "").replace(/ROOMO Sacred/gi, "INNZO").replace(/ROOMO/gi, "INNZO").replace(/roomo/gi, "Innzo");
+
 const defaults = {
-  description: "Stay Blessed, Stay Serene. ROOMO Sacred is your devoted hospitality companion in holy Tiruvannamalai.",
+  description: "Stay Blessed, Stay Serene. INNZO is your devoted hospitality companion in holy Tiruvannamalai.",
   social: [
     { label: "Facebook", url: "#", icon: "bi-facebook" },
     { label: "Instagram", url: "#", icon: "bi-instagram" },
@@ -92,8 +93,8 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-9 border-b border-white/15 pb-9 md:grid-cols-2 lg:grid-cols-12">
           <div className="md:col-span-1 lg:col-span-5">
-            <img className="mb-3 h-auto w-44 object-contain" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" />
-            <p className="mb-4 mt-3 max-w-lg text-sm leading-7 text-slate-300">{content?.footerDescription || defaults.description}</p>
+            <div className="mb-3 inline-flex text-3xl font-bold tracking-[0.18em] text-white" aria-label="INNZO">INNZO</div>
+            <p className="mb-4 mt-3 max-w-lg text-sm leading-7 text-slate-300">{brandText(content?.footerDescription || defaults.description)}</p>
             <div className="flex gap-4 text-xl">
               {links.social.filter(item => item && item.label).map((item, i) => <SafeLink item={item} key={item.label || i}><span className={"inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 text-slate-200 transition-colors duration-200 hover:border-transparent hover:text-white " + socialHoverClass(item)}><SocialIcon name={item.icon || item.label} /></span><span className="sr-only">{item.label || "Social link"}</span></SafeLink>)}
             </div>
@@ -109,7 +110,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="flex flex-col gap-4 pt-5 text-xs text-slate-400 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} ROOMO Sacred. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} INNZO. All rights reserved.</p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal links">{links.legal.map((item, i) => <SafeLink item={item} key={item.label || i} />)}</nav>
         </div>
       </div>
