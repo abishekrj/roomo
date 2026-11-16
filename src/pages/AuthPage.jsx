@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import roomoLogo from "../../../Roomo/roomo-frontend/assets/roomo-logo.png";
 
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 
