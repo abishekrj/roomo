@@ -16,10 +16,9 @@ function imageUrl(value) {
     const url = new URL(path, API_ORIGIN);
     // Older uploads may have been saved with Vite's origin instead of the
     // Express server that actually serves /uploads.
-    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port !== "5001" && url.pathname.startsWith("/uploads/")) {
-      url.protocol = "http:";
-      url.hostname = "localhost";
-      url.port = "5001";
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.pathname.startsWith("/uploads/")) {
+      // Old records may point at a local development server. Resolve them against the configured API host.
+      return new URL(url.pathname + url.search, API_ORIGIN).href;
     }
     if (url.protocol !== "http:" && url.protocol !== "https:") return "";
     return url.href;
