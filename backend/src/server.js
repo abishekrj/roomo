@@ -61,6 +61,9 @@ if (sharedUploadsRoot !== uploadsRoot) app.use("/uploads", express.static(shared
 // Serve the previous Roomo upload location too, so existing image URLs keep working.
 const legacyUploadsRoot = path.resolve(path.join(__dirname, "../../../../roomo-backend/uploads"));
 if (legacyUploadsRoot !== uploadsRoot && legacyUploadsRoot !== sharedUploadsRoot) app.use("/uploads", express.static(legacyUploadsRoot, uploadStaticOptions));
+// Also serve files created by the earlier owner-upload path so existing listings do not lose their photos.
+const previousOwnerUploadsRoot = path.resolve(path.join(__dirname, "../../../roomo-backend/uploads"));
+if (![uploadsRoot, sharedUploadsRoot, legacyUploadsRoot].includes(previousOwnerUploadsRoot)) app.use("/uploads", express.static(previousOwnerUploadsRoot, uploadStaticOptions));
 
 // Keep owner/admin and guest sign-in limits independent. Count failed responses only,
  // so a successful login or normal auth response does not consume the attempt budget.
