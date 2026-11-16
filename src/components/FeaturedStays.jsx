@@ -135,7 +135,7 @@ export default function FeaturedStays() {
     let cancelled = false;
     Promise.all([
       fetch(API_URL, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null),
-      fetch(`${API_BASE.replace(/\\/$/, "")}/properties?limit=8`, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null)
+      fetch(`${API_BASE.replace(/\/$/, "")}/properties?limit=8`, { cache: "no-store" }).then(response => response.ok ? response.json() : null).catch(() => null)
     ])
       .then(([homepageData, listingData]) => {
         if (cancelled) return;
