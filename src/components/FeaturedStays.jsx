@@ -161,7 +161,7 @@ export default function FeaturedStays() {
   const hasPublishedProperties = Array.isArray(content?.featuredProperties) && content.featuredProperties.length > 0;
   const stays = hasPublishedProperties
     ? content.featuredProperties
-        .filter(property => property && property.status === "PUBLISHED" && property.isFeatured !== false)
+        .filter(property => property && property.status === "PUBLISHED")
         .sort((a, b) => (a.featuredSortOrder ?? 999) - (b.featuredSortOrder ?? 999))
         .map((property, propertyIndex) => {
           const images = Array.isArray(property.images) ? [...property.images].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999)) : [];
