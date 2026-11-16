@@ -10,10 +10,9 @@ function resolveImageUrl(value) {
   if (/^(data:|blob:)/i.test(raw)) return raw;
   try {
     const url = new URL(raw, API_ORIGIN);
-    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port !== "5001" && url.pathname.startsWith("/uploads/")) {
-      url.protocol = "http:";
-      url.hostname = "localhost";
-      url.port = "5001";
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.pathname.startsWith("/uploads/")) {
+      // Old records may point at a local development server. Resolve them against the configured API host.
+      return new URL(url.pathname + url.search, API_ORIGIN).href;
     }
     return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
   } catch {
