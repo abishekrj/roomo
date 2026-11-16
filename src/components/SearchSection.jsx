@@ -1,6 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const API_BASE = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api") + "/homepage";
+const FALLBACK_PLACES = [
+  { id: "annamalaiyar-temple", name: "Annamalaiyar Temple" },
+  { id: "sri-ramanasramam", name: "Sri Ramanasramam" },
+  { id: "girivalam-path", name: "Girivalam Path" },
+  { id: "arunachala-hill", name: "Arunachala Hill" },
+  { id: "skandashramam", name: "Skandashramam" },
+  { id: "virupaksha-cave", name: "Virupaksha Cave" },
+  { id: "seshadri-swamigal-ashram", name: "Seshadri Swamigal Ashram" },
+  { id: "yogi-ramsuratkumar-ashram", name: "Yogi Ramsuratkumar Ashram" },
+  { id: "adi-annamalai-temple", name: "Adi Annamalai Temple" },
+  { id: "central-bus-stand", name: "Tiruvannamalai Central Bus Stand" },
+  { id: "railway-station", name: "Tiruvannamalai Railway Station" }
+];
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
 const iconPaths = {
   pin: <><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
@@ -23,7 +36,7 @@ export default function SearchSection({ variant = "default", onSearch, initialVa
   const [content, setContent] = useState(null); const [places, setPlaces] = useState([]); const [destination, setDestination] = useState(() => initialValues.destination ?? initialParams.get("ss") ?? initialParams.get("city") ?? ""); const [selectedPlace, setSelectedPlace] = useState(null); const [activeDropdown, setActiveDropdown] = useState("");
   const [checkIn, setCheckIn] = useState(() => initialValues.checkIn ?? initialParams.get("checkin") ?? initialParams.get("checkIn") ?? ""); const [checkOut, setCheckOut] = useState(() => initialValues.checkOut ?? initialParams.get("checkout") ?? initialParams.get("checkOut") ?? ""); const [adults, setAdults] = useState(() => Math.max(1, Number(initialValues.adults ?? initialParams.get("group_adults") ?? initialParams.get("adults") ?? 2))); const [children, setChildren] = useState(() => Math.max(0, Number(initialValues.children ?? initialParams.get("group_children") ?? 0))); const [rooms, setRooms] = useState(() => Math.max(1, Number(initialValues.rooms ?? initialParams.get("no_rooms") ?? initialParams.get("rooms") ?? 1))); const [childrenAges, setChildrenAges] = useState(() => initialParams.getAll("age")); const [dateError, setDateError] = useState("");
   const [calendarMonth, setCalendarMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }); const [loadingPlaces, setLoadingPlaces] = useState(true); const [suggestionBusy, setSuggestionBusy] = useState(false); const [suggestionMessage, setSuggestionMessage] = useState(""); const [suggestionError, setSuggestionError] = useState("");
-  useEffect(() => { let cancelled = false; Promise.all([fetch(API_BASE, { cache: "no-store", credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null), fetch(API_BASE + "/destinations", { cache: "no-store", credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null)]).then(([homepage, destinationData]) => { if (cancelled) return; if (homepage?.content) setContent(homepage.content); if (Array.isArray(destinationData?.places)) setPlaces(destinationData.places.filter(p => p && typeof p.name === "string")); setLoadingPlaces(false); }); return () => { cancelled = true; }; }, []);
+  useEffect(() => { let cancelled = false; Promise.all([fetch(API_BASE, { cache: "no-store", credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null), fetch(API_BASE + "/destinations", { cache: "no-store", credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null)]).then(([homepage, destinationData]) => { if (cancelled) return; if (homepage?.content) setContent(homepage.content); const availablePlaces = Array.isArray(destinationData?.places) ? destinationData.places.filter(p => p && typeof p.name === "string") : []; setPlaces(availablePlaces.length ? availablePlaces : FALLBACK_PLACES); setLoadingPlaces(false); }); return () => { cancelled = true; }; }, []);
   useEffect(() => { const handlePointerDown = event => { if (rootRef.current && !rootRef.current.contains(event.target)) setActiveDropdown(""); }; const handleKeyDown = event => { if (event.key === "Escape") setActiveDropdown(""); }; document.addEventListener("pointerdown", handlePointerDown); document.addEventListener("keydown", handleKeyDown); return () => { document.removeEventListener("pointerdown", handlePointerDown); document.removeEventListener("keydown", handleKeyDown); }; }, []);
   useEffect(() => { setChildrenAges(current => Array.from({ length: children }, (_, index) => current[index] ?? "")); }, [children]);
   const suggestions = useMemo(() => { const query = destination.trim().toLocaleLowerCase(); const list = places.filter(place => !query || place.name.toLocaleLowerCase().includes(query)); return list.slice(0, Number(content?.searchSuggestionLimit) > 0 ? Math.min(10, Number(content.searchSuggestionLimit)) : 5); }, [places, destination, content]);
