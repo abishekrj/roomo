@@ -45,7 +45,7 @@ const AMENITY_CATEGORY_ORDER = ["Parking", "Internet", "Kitchen", "Bedroom", "Ba
 const arrayValue = value => Array.isArray(value) ? value : value && typeof value === "object" ? Object.values(value).filter(v => typeof v === "string") : [];
 const formatPrice = value => Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 const propertyType = property => property.propertyType || "Stay";
-const API_ORIGIN = "http://localhost:5001";
+const API_ORIGIN = (import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api").replace(/\\/api$/, "");
 const resolvePropertyImage = item => {
   const raw = typeof item === "string" ? item : (
     item?.imageUrl || item?.imagePath || item?.fileUrl || item?.mediaUrl ||
