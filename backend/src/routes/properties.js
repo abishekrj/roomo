@@ -9,7 +9,7 @@ const prisma = require("../lib/prisma");
 const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
-const uploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../roomo-backend/uploads"));
+const uploadsRoot = path.resolve(process.env.ROOMO_UPLOAD_DIR || path.join(__dirname, "../../../../roomo-backend/uploads"));
 const propertyUploadDir = path.join(uploadsRoot, "properties");
 fs.mkdirSync(propertyUploadDir, { recursive: true });
 const imageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
