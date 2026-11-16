@@ -23,10 +23,9 @@ function resolveImageUrl(value) {
     const url = new URL(path, API_ORIGIN);
     // Old upload rows can contain a Vite-hosted localhost URL; uploads are
     // actually exposed from the backend's /uploads static directory.
-    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.port !== "5001" && url.pathname.startsWith("/uploads/")) {
-      url.protocol = "http:";
-      url.hostname = "localhost";
-      url.port = "5001";
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && url.pathname.startsWith("/uploads/")) {
+      // Old records may point at a local development server. Resolve them against the configured API host.
+      return new URL(url.pathname + url.search, API_ORIGIN).href;
     }
     if (url.protocol === "http:" || url.protocol === "https:") return url.href;
   } catch { /* Ignore malformed image URLs and render the fallback. */ }
