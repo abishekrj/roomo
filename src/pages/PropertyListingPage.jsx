@@ -58,10 +58,9 @@ const resolvePropertyImage = item => {
     // Uploaded files are served by Express, not by Vite. If an older upload
     // record saved the Vite origin, keep its path but point it at the API server.
     const parsed = new URL(value, API_ORIGIN);
-    if (["localhost", "127.0.0.1"].includes(parsed.hostname) && parsed.port !== "5001" && parsed.pathname.startsWith("/uploads/")) {
-      parsed.protocol = "http:";
-      parsed.hostname = "localhost";
-      parsed.port = "5001";
+    if (["localhost", "127.0.0.1"].includes(parsed.hostname) && parsed.pathname.startsWith("/uploads/")) {
+      // Old records may point at a local development server. Resolve them against the configured API host.
+      return new URL(parsed.pathname + parsed.search, API_ORIGIN).href;
     }
     if (!/^https?:$/.test(parsed.protocol)) return "";
     return parsed.href;
