@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import roomoLogo from "/assets/roomo-logo.png";
 
 const API_BASE = import.meta.env.VITE_ROOMO_API_URL || "http://localhost:5001/api";
 function csrfHeaders() { const item = document.cookie.split("; ").find(part => part.startsWith("roomo_csrf=")); return item ? { "X-CSRF-Token": decodeURIComponent(item.slice("roomo_csrf=".length)) } : {}; }
@@ -125,7 +124,7 @@ export default function Header({ ownerPortal = false, adminNotifications = false
     <header className={`sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className={`mx-auto flex min-h-[72px] w-full items-center justify-between gap-3 px-4 sm:min-h-[82px] sm:px-6 ${ownerPortal ? "max-w-none" : "max-w-7xl"}`}>
         {!ownerPortal && <button type="button" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-700 hover:bg-blue-50 hover:text-[#2563a6] lg:hidden" aria-label={mobileMenuOpen ? "Close main menu" : "Open main menu"} aria-expanded={mobileMenuOpen} onClick={() => { setMobileMenuOpen(!mobileMenuOpen); setMenuOpen(false); setLanguageOpen(false); }}><svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{mobileMenuOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M3 6h18M3 12h18M3 18h18" />}</svg></button>}
-        <a className="roomo-logo-link shrink-0 focus:outline-none" href="/" aria-label="ROOMO Sacred home"><img className="h-auto w-[125px] border-0 object-contain outline-none sm:w-[176px]" src={roomoLogo} alt="ROOMO Sacred" width="176" height="58" /></a>
+        <a className="roomo-logo-link shrink-0 focus:outline-none" href="/" aria-label="INNZO home"><span className="inline-flex items-center text-[27px] font-bold tracking-[0.16em] text-[#2563a6] sm:text-[32px]">INNZO</span></a>
 
         {!ownerPortal && <nav aria-label="Main navigation" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
           <a href="/" className={`rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-blue-50 hover:text-[#2563a6] ${window.location.pathname === "/" || window.location.pathname === "" ? "text-[#2563a6]" : "text-slate-700"}`}>Home</a>
